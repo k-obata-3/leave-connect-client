@@ -1,0 +1,381 @@
+body {
+  max-width: 100%;
+  min-height: 100vh;
+  --bg_base_color: #eeeff1;
+  background: var(--bg_base_color);
+}
+
+.row,
+.col {
+  padding: 0;
+  margin: 0;
+  --bs-gutter-x: 0 !important;
+  --bs-gutter-y: 0 !important;
+}
+
+.bg_base_color {
+  background-color: var(--bg_base_color);
+}
+
+.bg-white {
+  background-color: #efefef;
+}
+.bg-darkBlue {
+  background-color: #1B435D;
+}
+.bg-blue {
+  background-color: #78BBE6;
+}
+.bg-skyBlue {
+  background-color: #D5EEFF;
+}
+.bg-orange {
+  background-color: #F99F48;
+}
+.font-white {
+  color: #efefef !important;
+}
+
+/** --- navbar STR --- */
+.navbar {
+  position: fixed !important;
+  height: 60px;
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  --navbar-height: 60px;
+  background: #164a84;
+}
+/** --- navbar END --- */
+
+/** --- nav-menu STR --- */
+.nav-menu {
+  position: fixed;
+  --nav-menu-width: 150px;
+  max-width: var(--nav-menu-width) !important;
+  min-width: var(--nav-menu-width) !important;
+  top: 60px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  text-align: center;
+  /* background-color: #e7e7eb; */
+  background-color: #c2cbd2;
+  /* background-color: #f8f8f8; */
+  border-right: 1px solid #e7e7e7;
+}
+
+.nav {
+  margin-top: 1rem;
+}
+
+.nav-item {
+  height: 3rem;
+}
+
+.nav-item.pos-bottom {
+  position: absolute;
+  width: 100%;
+  bottom: 2rem;
+}
+
+.nav-link {
+  cursor: pointer;
+  color: rgb(108, 117, 125);
+}
+
+.nav-link:focus {
+  color: rgb(108, 117, 125);
+}
+
+.nav-link:hover {
+  color: rgb(108, 117, 125, 0.8);
+}
+
+.nav-link.disabled {
+  color: rgba(108, 117, 125, 0.1);
+}
+
+.current-nav-item {
+  position: relative;
+  width: calc(100% + 1px);
+  background: var(--bg_base_color);
+  color: rgb(108, 117, 125);
+  font-weight: bold;
+  z-index: 3;
+  /* border-left: 2px solid #e7e7e7; */
+  border-left: 6px solid #164a84;
+  border-top: 1px solid #e7e7e7;
+  border-bottom: 1px solid #e7e7e7;
+}
+/** --- nav-menu END --- */
+
+/** --- コンテンツ表示領域 STR --- */
+.content-body {
+  margin-top: 60px;
+}
+
+.content-parent {
+  margin-left: 150px;
+  padding: 1rem 1rem 1rem 1rem;
+  overflow: auto;
+  z-index: 0;
+  min-height: calc(100vh - 60px);
+  background: var(--bg_base_color);
+}
+
+.content {
+  width: 100%;
+  min-width: 768px;
+  min-height: 100%;
+  z-index: 1;
+  position: relative;
+}
+
+.page-title {
+  display: inline-block;
+  width: 100%;
+  padding: 0rem 1rem 0.5rem 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e7e7e7;
+}
+/** --- コンテンツ表示領域 END --- */
+
+/** --- ログイン画面 STR --- */
+.login-content {
+  z-index: 0;
+  padding: 2rem;
+}
+/** --- ログイン画面 END --- */
+
+/** --- dashboard画面 STR --- */
+.row-dashboard {
+  gap: 1.5rem;
+}
+
+.dashboard-card {
+  padding: 0 0 0.5rem 0;
+  --dashboard-card-width: 200px;
+  min-width: var(--dashboard-card-width);
+}
+
+@media (max-width: 1150px){
+  /* 画面サイズが1150px以下の場合の設定 */
+  .dashboard-card {
+    padding: 0 0.2rem 0 0.2rem;
+    min-width: 25%;
+  }
+ }
+
+.row-dashboard-card {
+  width: var(--dashboard-card-width);
+}
+
+.dashboard-card .card {
+  border-radius: 0;
+}
+
+.row-dashboard-calendar {
+  width: calc(100% - (230px)) !important;
+}
+
+.fc {
+  position: sticky;
+}
+
+/* カレンダー　イベント カーソル */
+.fc-event-main {
+  cursor: pointer;
+}
+
+/* カレンダー　日付リンク無効化　 */
+.fc-daygrid-day-number,
+.fc-col-header-cell-cushion {
+  pointer-events: none;
+  text-decoration: none;
+}
+
+@media screen and (max-width: 1112px) {
+  .dashboard-card {
+    display: inline-block;
+    /* width: calc(50% - 0.2rem); */
+  }
+
+  .row-dashboard-card,
+  .row-dashboard-calendar {
+    width: 100% !important;
+  }
+}
+/** --- dashboard画面 END --- */
+
+/** --- 一覧テーブル STR --- */
+table th,
+table td {
+  border-width: 1px;
+}
+
+table tbody td,
+table tbody th {
+  position: relative;
+  overflow-y: auto;
+  vertical-align: middle;
+}
+
+table tbody p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.comment_col {
+  position: absolute;
+  top: 0;
+}
+
+.comment {
+  white-space: break-spaces;
+  overflow-wrap: anywhere;
+}
+/** --- 一覧テーブル END --- */
+
+/** --- 承認タスク一覧テーブル STR --- */
+.task_list_table {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.task_list_table .table > tbody {
+  vertical-align: middle;
+}
+
+.task_list_table .comment {
+  white-space: break-spaces;
+  overflow-y: auto;
+}
+/** --- 承認タスク一覧テーブル END --- */
+
+/** --- 入力項目スタイル STR --- */
+.flatpickr-input:disabled {
+  background-color: #eaeaea !important;
+  cursor: not-allowed !important;
+}
+
+textarea.non-resize {
+  resize: none;
+}
+
+select {
+  cursor: pointer;
+}
+
+.input_error {
+  color: red;
+  width: 300px;
+  margin: 0;
+}
+
+.disabled_btn .btn.disabled, fieldset:disabled .btn {
+  opacity: 0 !important;
+}
+
+:disabled {
+  cursor: not-allowed;
+}
+
+.error_content {
+  margin-top: 80px;
+}
+/** --- 入力項目スタイル END --- */
+
+/** --- Pager STR --- */
+.pager {
+  display: flex;
+  justify-content: center;
+}
+.pager .page-item {
+  cursor: pointer;
+  user-select: none;
+}
+
+.pager .page-item.disabled,
+.pager .page-item.active
+ {
+  cursor: not-allowed;
+}
+/** --- Pager END --- */
+
+/** --- modal STR --- */
+.modal-overview {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.15);
+  z-index: -999;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.modal-overview.modal-show {
+  z-index: 4;
+  opacity: 1;
+}
+
+.modal-body {
+  position: fixed;
+  top: calc(10% + 30PX);
+  left: 10%;
+  width: 80%;
+  height: 80vh;
+  padding: 2rem;
+  background-color: #fff;
+  border: solid 1px #333333;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+  overflow: auto;
+  z-index: 5;
+}
+
+.modal-content {
+  display: flex;
+  justify-content: center;
+}
+/** --- modal END --- */
+
+.nav-item-contains-sub {
+  position: relative;
+  .nav-item-sub {
+    opacity: 0;
+    transition: height 0.2s 0s ease-in-out;
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 0;
+    background-color: #e7e7e7;
+    border-top: solid 1px #c2cbd2;
+    border-left: solid 1px #c2cbd2;
+    border-right: solid 1px #c2cbd2;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+    z-index: 999;
+  }
+  .sub-item {
+    border-bottom: solid 1px #c2cbd2;
+    height: 3rem;
+  }
+  .sub-item p {
+    margin: 0;
+  }
+}
+
+.nav-item-contains-sub:hover {
+  .nav-item-sub {
+    opacity: 1;
+    height: 6rem;
+    left: 100%;
+  }
+}
