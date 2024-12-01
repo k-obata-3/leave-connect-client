@@ -15,7 +15,7 @@ export default function DashboardCardView() {
     <>
       <div className="dashboard-card">
         <div className="card text-center">
-        <div className="card-header">申請処理中</div>
+        <div className="card-header">承認待ち</div>
           <div className="card-body">
             <blockquote className="blockquote mb-0">
               <p>{getCommonObject().activeApplicationCount}件</p>

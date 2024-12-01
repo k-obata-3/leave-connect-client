@@ -1,23 +1,24 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
-export type getUserNameListRequest = {
+export interface GetUserNameListRequest {
 
 }
 
-export type getUserNameListResponse = {
+export interface GetUserNameListResponse extends ApiResponse {
+  userNameList: UserNameObject[]
+}
+
+export interface UserNameObject {
   id: number,
   fullName: string,
 }
 
 export async function getUserNameList() {
-  try {
-    const response = await axiosClient.get(`/userName/list`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return response.data.result as getUserNameListResponse[];
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosGet(`/userName/list`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      userNameList: res.result,
+    } as GetUserNameListResponse;
+  })
 }

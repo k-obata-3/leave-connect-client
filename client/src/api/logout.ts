@@ -1,21 +1,21 @@
-import { axiosClient } from '@/axiosClient';
+import utils from '@/assets/js/utils';
+import { axiosPost, ApiResponse } from '@/axiosClient';
 
-export type logoutRequest = {
+export interface logoutRequest {
 
 }
 
-export type logoutResponse = {
+export interface logoutResponse extends ApiResponse {
 
 }
 
 export async function logout() {
-  try {
-    const response = await axiosClient.post(`/logout`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-    return response.data.result;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosPost(`/logout`, {}).then((res: ApiResponse) => {
+    document.cookie = `jwt=; path=/; max-age=0`;
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as logoutResponse;
+  })
 }

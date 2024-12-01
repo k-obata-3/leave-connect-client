@@ -1,23 +1,20 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosPost, ApiResponse } from "@/axiosClient";
 
-export type CancelApplicationRequest = {
+export interface CancelApplicationRequest {
   applicationId: number | undefined,
   comment: string,
 }
 
-export type CancelApplicationResponse = {
+export interface CancelApplicationResponse extends ApiResponse {
 
 }
 
 export async function cancelApplication(req: CancelApplicationRequest) {
-  try {
-    const response = await axiosClient.post(`/application/cancel`, req);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return true;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosPost(`/application/cancel`, req).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as CancelApplicationResponse;
+  })
 }

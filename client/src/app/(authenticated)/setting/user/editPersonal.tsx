@@ -71,8 +71,8 @@ export default function EditPersonal() {
           <div className="col-md-2">
             <label className="col-form-label fw-medium">ユーザID</label>
           </div>
-          <div className="col-5 ps-3">
-            <p>{values.userId}</p>
+          <div className="col col-md-5 ps-3">
+          <p className="mb-0">{values.userId}</p>
           </div>
         </div>
 
@@ -80,21 +80,29 @@ export default function EditPersonal() {
           <div className="col-md-2">
             <label className="col-form-label fw-medium">基準日</label>
           </div>
-          <div className="col-5 ps-3">
-          <p>{values.referenceDate}</p>
+          <div className="col col-md-5 ps-3">
+          <p className="mb-0">{values.referenceDate}</p>
           </div>
         </div>
 
         <div className="row align-items-center mb-3 g-3">
           <div className="col-md-2">
-            <label className="col-form-label fw-medium" htmlFor="lastName">名前</label>
+            <label className="col-form-label fw-medium" htmlFor="lastName">名前(姓)</label>
           </div>
-          <div className="col-7 col-md-4 ps-3 mb-2">
+          <div className="col col-md-5 ps-3">
             <input className="form-control" type="text" placeholder="姓" value={inputValues.lastName} name="lastName" id="lastName" onChange={(e) => handleOnChange(e)} />
           </div>
-          <div className="col-7 col-md-4 ps-3 mb-2">
+        </div>
+
+        <div className="row align-items-center mb-3 g-3">
+          <div className="col-md-2">
+            <label className="col-form-label fw-medium" htmlFor="firstName">名前(名)</label>
+          </div>
+          <div className="col col-md-5 ps-3">
             <input className="form-control" type="text" placeholder="名" value={inputValues.firstName} name="firstName" id="firstName" onChange={(e) => handleOnChange(e)} />
           </div>
+        </div>
+        <div className="row align-items-center mb-3 g-3">
           <div className="col-12 offset-md-2 ps-3 mb-2">
             <p className="input_error">{inputError.name}</p>
           </div>

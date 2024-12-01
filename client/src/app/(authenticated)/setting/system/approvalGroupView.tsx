@@ -1,14 +1,14 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
-import { getUserNameList, getUserNameListResponse } from '@/api/getUserNameList';
+import { getUserNameList, GetUserNameListResponse, UserNameObject } from '@/api/getUserNameList';
 import { useCommonStore } from '@/app/store/CommonStore';
 import { saveApprovalGroup, SaveApprovalGroupRequest, SaveApprovalGroupResponse } from '@/api/saveApprovalGroup';
 import { deleteSystemConfig, DeleteSystemConfigRequest, DeleteSystemConfigResponse } from '@/api/deleteSystemConfig';
-import { GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
+import { ApprovalGroupObject, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
 
 type Props = {
-  approvalGroupList: GetApprovalGroupListResponse[] | undefined,
+  approvalGroupList: ApprovalGroupObject[] | undefined,
   updateSystemConfigList: () => Promise<void>,
 }
 
@@ -31,8 +31,8 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
   // 共通Sore
   const { setCommonObject, getCommonObject } = useCommonStore();
 
-  const [userNameList, setUserNameList] = useState<getUserNameListResponse[]>([]);
-  const [userSelectList, setUserSelectList] = useState<getUserNameListResponse[]>([]);
+  const [userNameList, setUserNameList] = useState<UserNameObject[]>([]);
+  const [userSelectList, setUserSelectList] = useState<UserNameObject[]>([]);
   const [inputValues, setInputValues] = useState<ApprovalGroup[]>([]);
   const [inputError, setInputError] = useState<string[]>([]);
   const [edittingId, setEdittingId] = useState<string | null>(null);
@@ -40,7 +40,8 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
 
   useEffect(() =>{
     (async() => {
-      setUserNameList(await getUserNameList());
+      const userNameList: GetUserNameListResponse = await getUserNameList();
+      setUserNameList(userNameList.userNameList);
       resetApprovalGroupList();
     })()
   }, [approvalGroupList])
@@ -49,12 +50,8 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
    * 一覧初期化
    */
   const resetApprovalGroupList = () => {
-    if(!approvalGroupList || !approvalGroupList.length) { 
-      return;
-    }
-
     const list: ApprovalGroup[] = [];
-    approvalGroupList.forEach((res: GetApprovalGroupListResponse) => {
+    approvalGroupList?.forEach((res: ApprovalGroupObject) => {
       const group: ApprovalGroup = {
         groupId: res.groupId ? res.groupId.toString(): null,
         groupName: res.groupName,
@@ -92,7 +89,7 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
     const editItem = getSelectedApprovalGroup();
     if(editItem) {
       const selectedValue = e.target.value ? (e.target.value).toString() : "";
-      const userName = selectedValue ? userNameList.find((user: getUserNameListResponse) => (user.id).toString() === selectedValue)?.fullName : '';
+      const userName = selectedValue ? userNameList.find((user: UserNameObject) => (user.id).toString() === selectedValue)?.fullName : '';
       editItem.approver[e.target.name].id = selectedValue;
       editItem.approver[e.target.name].name = userName;
       setInputValues(inputValues.map((item, index) => (item.groupId === editItem.groupId ? editItem : item)));
@@ -242,15 +239,17 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
     }
 
     await saveApprovalGroup(req).then(async(res: SaveApprovalGroupResponse) => {
-      updateSystemConfigList();
-      resetState();
-    }).catch(async(err) => {
-      setCommonObject({
-        errorMessage: err?.message,
-        actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-        approvalTaskCount: getCommonObject().approvalTaskCount,
-        activeApplicationCount: getCommonObject().activeApplicationCount,
-      })
+      if(res.responseResult) {
+        updateSystemConfigList();
+        resetState();
+      } else {
+        setCommonObject({
+          errorMessage: res.message ? res.message : "",
+          actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
+          approvalTaskCount: getCommonObject().approvalTaskCount,
+          activeApplicationCount: getCommonObject().activeApplicationCount,
+        })
+      }
     });
   };
 
@@ -268,96 +267,93 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
     }
 
     await deleteSystemConfig(req).then(async(res: DeleteSystemConfigResponse) => {
-      updateSystemConfigList();
-      resetState();
-    }).catch(async(err) => {
-      setCommonObject({
-        errorMessage: err?.message,
-        actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-        approvalTaskCount: getCommonObject().approvalTaskCount,
-        activeApplicationCount: getCommonObject().activeApplicationCount,
-      })
+      if(res.responseResult) {
+        updateSystemConfigList();
+        resetState();
+      } else {
+        setCommonObject({
+          errorMessage: res.message ? res.message : "",
+          actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
+          approvalTaskCount: getCommonObject().approvalTaskCount,
+          activeApplicationCount: getCommonObject().activeApplicationCount,
+        })
+      }
     });
   };
 
-  if(inputValues) {
-     return (
-       <>
-         <div className="d-flex justify-content-start mb-2">
-           <button className="btn btn-outline-primary" onClick={() => onNewCreate()} disabled={edittingId !== null || isNewCreate}>新規作成</button>
-         </div>
-         <table className="table">
-           <thead className="table-light">
-             <tr className="row text-center">
-               <th className="col-9">グループ名/承認者</th>
-               <th className="col-3"></th>
-             </tr>
-           </thead>
-           <tbody>
-             {
-               inputValues.map((item: ApprovalGroup, index: number) => (
-                 <tr className="row" key={index + 1}>
-                   <td className="col-9">
-                     <p hidden={edittingId === item.groupId}>{item.groupName}</p>
-                     <p className="ms-3 text-wrap" hidden={item.groupId == null || (edittingId !== null && edittingId === item.groupId)}>
-                     {
-                       APPROVER_COL.map((approverKey: string, approverIndex: number) => (
-                           <span className="" key={approverKey}>
-                             <span className="ms-2 me-2" hidden={approverIndex < 1 || !item.approver[approverKey]?.id}>,</span>
-                             <span className="">{item.approver[approverKey]?.name}</span>
-                           </span>
-                       ))
-                     }
-                     </p>
-                   </td>
-                   <td className="col-3 d-flex align-items-center justify-content-center">
-                     <button className="btn btn-outline-warning btn-sm ms-1 me-1" onClick={() => onEdit(item)} hidden={item.groupId === edittingId} disabled={edittingId !== null || isNewCreate}>編集</button>
-                     <button className="btn btn-outline-danger btn-sm ms-1 me-1" onClick={() => onDelete(item)} hidden={item.groupId === edittingId} disabled={edittingId !== null || isNewCreate}>削除</button>
-                     <button className="btn btn-outline-success btn-sm ms-1 me-1" onClick={() => onSave()} hidden={item.groupId !== edittingId}>保存</button>
-                     <button className="btn btn-outline-secondary btn-sm ms-1 me-1" onClick={() => onCancel()} hidden={item.groupId !== edittingId}>キャンセル</button>
-                   </td>
-                   <td className="row justify-content-start" hidden={edittingId !== item.groupId}>
-                     <p className="col-12 ps-2">
-                       <label className="col-auto col-form-label" htmlFor={`${index}-groupName`}>グループ名</label>
-                       <span className="col-12 col-xl-6 d-block">
-                         <input className="form-control" type="text" value={getApprovalGroupName()} name="groupName" id={`${index}-groupName`} onChange={(e) => handleOnChange(e)} hidden={edittingId !== item.groupId} />
-                       </span>
-                     </p>
-                     {
-                       APPROVER_COL.map((key: string, approverIndex: number) => (
-                         <p className="col-12 col-xl-2 ps-2 pe-2" key={approverIndex}>
-                           <label className="col-auto col-form-label" htmlFor={`${index}-${key}-${approverIndex}`}>第{approverIndex + 1}承認者</label>
-                           <span className="col">
-                             <select className="form-select" id={`${index}-${key}-${approverIndex}`} name={key} value={getApproverValue(key)} onChange={(e) => handleApproverOnChange(e)}>
-                               <option value=''>未選択</option>
-                               {
-                                 userSelectList?.map((user: any, userIndex: number) => (
-                                   <option key={userIndex + 1} value={user.id} hidden={user.selected}>{user['fullName']}</option>
-                                 ))
-                               }
-                             </select>
-                           </span>
-                         </p>
-                       ))
-                     }
-                     <p className="ps-2 mt-2">
-                       {
-                         inputError.map((value: string, index: number) => {
-                           return <span className="input_error d-block" key={index}>{value}</span>
-                         })
-                       }
-                     </p>
-                   </td>
-                 </tr>
-               ))
-             }
-           </tbody>
-         </table>
-      </>
-    )
-  } {
-    return(
-      <></>
-    );
-  }
+    return (
+      <>
+        <div className="d-flex justify-content-start mb-2">
+          <button className="btn btn-outline-primary" onClick={() => onNewCreate()} disabled={edittingId !== null || isNewCreate}>新規作成</button>
+        </div>
+        <table className="table" hidden={!inputValues.length}>
+          <thead className="table-light">
+            <tr className="row text-center">
+              <th className="col-9">グループ名/承認者</th>
+              <th className="col-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              inputValues.map((item: ApprovalGroup, index: number) => (
+                <tr className="row" key={index + 1}>
+                  <td className="col-9">
+                    <p hidden={edittingId === item.groupId}>{item.groupName}</p>
+                    <p className="ms-3 text-wrap" hidden={item.groupId == null || (edittingId !== null && edittingId === item.groupId)}>
+                    {
+                      APPROVER_COL.map((approverKey: string, approverIndex: number) => (
+                          <span className="" key={approverKey}>
+                            <span className="ms-2 me-2" hidden={approverIndex < 1 || !item.approver[approverKey]?.id}>,</span>
+                            <span className="">{item.approver[approverKey]?.name}</span>
+                          </span>
+                      ))
+                    }
+                    </p>
+                  </td>
+                  <td className="col-3 d-flex align-items-center justify-content-center">
+                    <button className="btn btn-outline-warning btn-sm ms-1 me-1" onClick={() => onEdit(item)} hidden={item.groupId === edittingId} disabled={edittingId !== null || isNewCreate}>編集</button>
+                    <button className="btn btn-outline-danger btn-sm ms-1 me-1" onClick={() => onDelete(item)} hidden={item.groupId === edittingId} disabled={edittingId !== null || isNewCreate}>削除</button>
+                    <button className="btn btn-outline-success btn-sm ms-1 me-1" onClick={() => onSave()} hidden={item.groupId !== edittingId}>保存</button>
+                    <button className="btn btn-outline-secondary btn-sm ms-1 me-1" onClick={() => onCancel()} hidden={item.groupId !== edittingId}>キャンセル</button>
+                  </td>
+                  <td className="row justify-content-start" hidden={edittingId !== item.groupId}>
+                    <p className="col-12 ps-2">
+                      <label className="col-auto col-form-label" htmlFor={`${index}-groupName`}>グループ名</label>
+                      <span className="col-12 col-xl-6 d-block">
+                        <input className="form-control" type="text" value={getApprovalGroupName()} name="groupName" id={`${index}-groupName`} onChange={(e) => handleOnChange(e)} hidden={edittingId !== item.groupId} />
+                      </span>
+                    </p>
+                    {
+                      APPROVER_COL.map((key: string, approverIndex: number) => (
+                        <p className="col-12 col-xl-2 ps-2 pe-2" key={approverIndex}>
+                          <label className="col-auto col-form-label" htmlFor={`${index}-${key}-${approverIndex}`}>第{approverIndex + 1}承認者</label>
+                          <span className="col">
+                            <select className="form-select" id={`${index}-${key}-${approverIndex}`} name={key} value={getApproverValue(key)} onChange={(e) => handleApproverOnChange(e)}>
+                              <option value=''>未選択</option>
+                              {
+                                userSelectList?.map((user: any, userIndex: number) => (
+                                  <option key={userIndex + 1} value={user.id} hidden={user.selected}>{user['fullName']}</option>
+                                ))
+                              }
+                            </select>
+                          </span>
+                        </p>
+                      ))
+                    }
+                    <p className="ps-2 mt-2">
+                      {
+                        inputError.map((value: string, index: number) => {
+                          return <span className="input_error d-block" key={index}>{value}</span>
+                        })
+                      }
+                    </p>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+        <p className="text-center" hidden={!!inputValues.length}>承認グループ設定なし</p>
+    </>
+  )
 };

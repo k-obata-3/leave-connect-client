@@ -1,22 +1,19 @@
-import { axiosClient } from "@/axiosClient";
+import { ApiResponse, axiosDelete } from "@/axiosClient";
 
-export type DeleteApplicationRequest = {
+export interface DeleteApplicationRequest {
   id: number | undefined,
 }
 
-export type DeleteApplicationResponse = {
+export interface DeleteApplicationResponse extends ApiResponse {
 
 }
 
 export async function deleteApplication(req: DeleteApplicationRequest) {
-  try {
-    const response = await axiosClient.delete(`/application/delete?id=${req.id}`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return true;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosDelete(`/application/delete?id=${req.id}`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as DeleteApplicationResponse;
+  })
 }

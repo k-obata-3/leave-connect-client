@@ -1,23 +1,22 @@
-import { axiosClient } from '@/axiosClient';
+import { axiosPost, ApiResponse } from '@/axiosClient';
 
-export type loginRequest = {
+export interface loginRequest {
   user_id: string,
   password: string,
 }
 
-export type loginResponse = {
+export interface loginResponse extends ApiResponse {
   user_id: string,
   password: string,
 }
 
-export async function login(request: loginRequest) {
-  try {
-    const response = await axiosClient.post(`/login`, request);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-    return response.data.result;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+export async function login(req: loginRequest) {
+  return await axiosPost(`/login`, req).then((res: ApiResponse) => {
+    document.cookie = `jwt=${res.result.jwt}; path=/; max-age=3600`;
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as loginResponse;
+  })
 }

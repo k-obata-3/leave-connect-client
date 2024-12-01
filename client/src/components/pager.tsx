@@ -34,7 +34,7 @@ export default function Pager(params: any) {
   }
 
   return (
-    <nav className="pager" >
+    <nav className="pager" hidden={!pager.length}>
       <ul className="pagination">
         <li className={currentPage !== 1 ? 'page-item' : 'page-item disabled'} onClick={() => {
           if(currentPage !== 1) {

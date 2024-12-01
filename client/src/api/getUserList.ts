@@ -1,11 +1,11 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
 export type GetUserListRequest = {
   limit: number,
   offset: number,
 }
 
-export type GetUserListResponse = {
+export interface GetUserListResponse extends ApiResponse {
   page: {
     total: number,
   },
@@ -28,21 +28,14 @@ export type User = {
 }
 
 export async function getUserList(req: GetUserListRequest) {
-  try {
-    const response = await axiosClient.get(`/user/list?limit=${req.limit}&offset=${req.offset}`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    const res: GetUserListResponse = {
+  return await axiosGet(`/user/list?limit=${req.limit}&offset=${req.offset}`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
       page: {
-        total: response.data.total,
+        total: res.total,
       },
-      userList: response.data.result as User[],
-    }
-
-    return res;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+      userList: res.result,
+    } as GetUserListResponse;
+  })
 }

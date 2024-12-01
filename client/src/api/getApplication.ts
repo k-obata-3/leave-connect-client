@@ -1,53 +1,114 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
-export type getApplicationRequest = {
-  id: string | string[],
+export interface getApplicationRequest {
+  applicationId: string | null,
+  taskId: string | null,
+  isAdminFlow: boolean,
 }
 
-export type getApplicationResponse = {
+export interface getApplicationResponse extends ApiResponse {
+  application: Application,
+  approvalTtasks: ApprovalTtask[],
+  availableOperation: AvailableOperation,
+}
+
+export interface Application {
   id: number,
-  action: number,
-  applicationDate: string,
   applicationUserId: number,
   applicationUserName: string,
-  classification: string,
-  comment: string,
-  endDate: string,
-  sAction: string,
+  applicationDate: string,
   sApplicationDate: string,
+  action: number,
+  sAction: string,
+  type: string,
+  sType: string,
+  classification: string,
   sClassification: string,
-  sEndDate: string,
-  sEndTime: string,
+  startDate: string,
   sStartDate: string,
   sStartTime: string,
+  endDate: string,
+  sEndDate: string,
+  sEndTime: string,
   totalTime: string,
-  sType: string,
-  startDate: string,
-  type: string,
   approvalGroupId: number,
-  approvalTtasks: ApprovalTtasks[],
+  approvalGroupName: string,
+  approvers: Approver[],
+  comment: string,
 }
 
-export type ApprovalTtasks = {
+export interface ApprovalTtask {
   id: number,
   action: number,
   sAction: string,
   type: number,
-  comment: string,
   status: number,
   userName: string,
-  updated: string,
+  comment: string,
+  operationDate: string,
+}
+
+export interface AvailableOperation {
+  isEdit: boolean,
+  isSave: boolean,
+  isEditApprovalGroup: boolean,
+  isApproval: boolean,
+  isDelete: boolean,
+  isCancel: boolean,
+}
+
+export interface Approver {
+  id: string,
+  name: string,
+}
+
+export interface ApprovalGroupObject {
+  groupId: number | null,
+  groupName: string,
+  approver: Approver[],
 }
 
 export async function getApplication(req: getApplicationRequest) {
-  try {
-    const response = await axiosClient.get(`/application?id=${req.id}`);
-    if(!response || !response.data || !response.data.result ||  response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return response.data.result as getApplicationResponse;
-  } catch (error: any) {
-    throw error.response?.data?.result;
+  let url = `/application?isAdminFlow=${req.isAdminFlow}&applicationId=${req.applicationId}`;
+  if(req.taskId) {
+    url += `&taskId=${req.taskId}`;
   }
+  return await axiosGet(url).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      application: res.result?.application,
+      approvalTtasks: res.result?.approvalTtasks,
+      availableOperation: res.result?.availableOperation,
+      // application: {
+      //   id: res.result?.id,
+      //   applicationUserId: res.result?.applicationUserId,
+      //   applicationUserName: res.result?.applicationUserName,
+      //   applicationDate: res.result?.applicationDate,
+      //   sApplicationDate: res.result?.sApplicationDate,
+      //   action: res.result?.action,
+      //   sAction: res.result?.sAction,
+      //   sType: res.result?.sType,
+      //   type: res.result?.type,
+      //   classification: res.result?.classification,
+      //   sClassification: res.result?.sClassification,
+      //   startDate: res.result?.startDate,
+      //   sStartDate: res.result?.sStartDate,
+      //   sStartTime: res.result?.sStartTime,
+      //   endDate: res.result?.endDate,
+      //   sEndDate: res.result?.sEndDate,
+      //   sEndTime: res.result?.sEndTime,
+      //   totalTime: res.result?.totalTime,
+      //   approvalGroupId: res.result?.approvalGroupId,
+      //   comment: res.result?.comment,
+      // },
+      // approvalTtasks: res.result?.approvalTtasks,
+      // availableOperation: {
+      //   isEdit: res.result?.application,
+      //   isApproval: boolean,
+      //   isDelete: boolean,
+      //   isCancel: boolean,
+      // }
+    } as getApplicationResponse;
+  })
 }

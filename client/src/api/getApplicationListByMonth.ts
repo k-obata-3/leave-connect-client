@@ -1,17 +1,23 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
-export type GetApplicationListByMonthRequest = {
+export interface GetApplicationListByMonthRequest {
   startStr: string,
   endStr: string,
 }
 
-export type GetApplicationListByMonthResponse = {
+export interface GetApplicationListByMonthResponse extends ApiResponse {
+  applicationListByMonth: ApplicationListByMonth[]
+}
+
+export interface ApplicationListByMonth extends ApiResponse {
   id: number,
   applicationUserId: number,
+  type: string,
   sType: string,
-  sClassification: string,
   action: number,
   sAction: string,
+  classification: string,
+  sClassification: string,
   startDate: string,
   sStartDate: string,
   sStartTime: string,
@@ -21,14 +27,12 @@ export type GetApplicationListByMonthResponse = {
 }
 
 export async function getApplicationListByMonth(req: GetApplicationListByMonthRequest) {
-  try {
-    const response = await axiosClient.get(`/application/month?start=${req.startStr}&end=${req.endStr}`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return response.data.result as GetApplicationListByMonthResponse[];
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosGet(`/application/month?start=${req.startStr}&end=${req.endStr}`).then((res: ApiResponse) => {
+    const applicationListByMonth: ApplicationListByMonth[] = res.result;
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      applicationListByMonth: applicationListByMonth,
+    } as GetApplicationListByMonthResponse;
+  })
 }

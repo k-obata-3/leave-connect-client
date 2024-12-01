@@ -17,12 +17,14 @@
     "@types/react-flatpickr": "^3.8.10",
     "axios": "^1.6.0",
     "bootstrap": "^5.3.2",
+    "bootstrap-icons": "^1.11.3",
     "date-fns": "^2.30.0",
     "jwt-decode": "^4.0.0",
     "next": "13.5.6",
     "react": "^18",
     "react-dom": "^18",
     "react-flatpickr": "^3.10.13",
+    "react-responsive": "^10.0.0",
     "zustand": "^5.0.0-rc.2"
   },
   "devDependencies": {

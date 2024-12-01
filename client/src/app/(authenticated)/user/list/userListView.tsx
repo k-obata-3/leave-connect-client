@@ -29,7 +29,7 @@ export default function UserListView({ userList }: Props) {
     router.push(`/user/edit/${id}`, {scroll: true});
   };
 
-  if(userList) {
+  if(userList?.length) {
     return (
       <table className="table">
         <thead className="table-light">
@@ -43,7 +43,7 @@ export default function UserListView({ userList }: Props) {
         </thead>
         <tbody>
           {
-            userList.map((user, index) => (
+            userList?.map((user, index) => (
               <tr key={index + 1}>
                 <td className="align-middle">
                   <p className="text-wrap">
@@ -77,7 +77,9 @@ export default function UserListView({ userList }: Props) {
     )
   } {
     return(
-      <></>
+      <>
+        <p className="text-center">取得結果 0件</p>
+      </>
     );
   }
 };

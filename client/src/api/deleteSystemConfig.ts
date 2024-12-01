@@ -1,22 +1,19 @@
-import { axiosClient } from "@/axiosClient";
+import { ApiResponse, axiosDelete } from "@/axiosClient";
 
-export type DeleteSystemConfigRequest = {
+export interface DeleteSystemConfigRequest {
   id: string,
 }
 
-export type DeleteSystemConfigResponse = {
+export interface DeleteSystemConfigResponse extends ApiResponse {
 
 }
 
 export async function deleteSystemConfig(req: DeleteSystemConfigRequest) {
-  try {
-    const response = await axiosClient.delete(`/systemConfig/delete?id=${req.id}`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return true;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosDelete(`/systemConfig/delete?id=${req.id}`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as DeleteSystemConfigResponse;
+  })
 }

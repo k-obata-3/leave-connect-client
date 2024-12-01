@@ -1,22 +1,25 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { getUserNameList, getUserNameListResponse } from '@/api/getUserNameList';
+import { getUserNameList, GetUserNameListResponse, UserNameObject } from '@/api/getUserNameList';
 import { Application, getApplicationList, GetApplicationListRequest, GetApplicationListResponse } from '@/api/getApplicationList';
 import ApplicationListView from '@/components/applicationListView';
 import ListSearchView from '@/components/listSearchView';
 import Pager from '@/components/pager';
+import { useCommonStore } from '@/app/store/CommonStore';
 
 export default function AdminApplicationList() {
   const SEARCH_ACTIONS = [
     { value: '', name: 'すべて'},
     { value: '1', name: '承認待ち'},
     { value: '3', name: '完了'},
-    { value: '4', name: '却下'},
+    { value: '4', name: '差戻'},
     { value: '5', name: '取消'},
   ];
 
-  const [userNameList, setUserNameList] = useState<getUserNameListResponse[]>([]);
+  // 共通Sore
+  const { setCommonObject, getCommonObject } = useCommonStore();
+  const [userNameList, setUserNameList] = useState<UserNameObject[]>([]);
   const [applicationList, setApplicationList] = useState<Application[]>();
   const [currentSearchParams, setCurrentSearchParams] = useState({
     currentSearchYear: new Date().getFullYear().toString(),
@@ -47,10 +50,10 @@ export default function AdminApplicationList() {
 
   useEffect(() =>{
     (async() => {
-      const userNameList: getUserNameListResponse[] = await getUserNameList();
+      const userNameList: GetUserNameListResponse = await getUserNameList();
       await getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchUser, currentSearchParams.currentSearchAction, pagerParams.limit, pagerParams.currentPage);
 
-      setUserNameList(userNameList);
+      setUserNameList(userNameList.userNameList);
     })()
   },[])
 
@@ -79,14 +82,23 @@ export default function AdminApplicationList() {
       isAdmin: true,
     }
 
-    const applicationListResponse: GetApplicationListResponse = await getApplicationList(req);
-    setApplicationList(applicationListResponse.applicationList);
-    setPagerParams({
-      ...pagerParams,
-      totalCount: applicationListResponse.page.total,
-      currentPage: currentPage,
-    });
-    setIsLoading(false);
+    const res: GetApplicationListResponse = await getApplicationList(req);
+    if(res.responseResult) {
+      setApplicationList(res.applicationList);
+      setPagerParams({
+        ...pagerParams,
+        totalCount: res.page.total,
+        currentPage: currentPage,
+      });
+      setIsLoading(false);
+    }
+
+    setCommonObject({
+      errorMessage: res.message ? res.message : "",
+      actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
+      approvalTaskCount: getCommonObject().approvalTaskCount,
+      activeApplicationCount: getCommonObject().activeApplicationCount,
+    })
   }
 
   /**

@@ -1,20 +1,20 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
-export type GetApprovalTaskListRequest = {
+export interface GetApprovalTaskListRequest {
   searchUserId: string,
   searchAction: string,
   limit: number,
   offset: number,
 }
 
-export type GetApprovalTaskListResponse = {
+export interface GetApprovalTaskListResponse extends ApiResponse {
   page: {
     total: number,
   },
   approvalList: Approval[],
 }
 
-export type Approval = {
+export interface Approval {
   id: number,
   applicationId: number,
   type: number,
@@ -34,25 +34,14 @@ export type Approval = {
 }
 
 export async function getApprovalTaskList(req: GetApprovalTaskListRequest) {
-  try {
-    const response = await axiosClient.get(`/approval/task/list?searchUserId=${req.searchUserId}&searchAction=${req.searchAction}&limit=${req.limit}&offset=${req.offset}`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    response.data.result.forEach((item: Approval) => {
-      item.sStartEndTime = `${item.sStartTime} - ${item.sEndTime}`;
-    });
-
-    const res: GetApprovalTaskListResponse = {
+  return await axiosGet(`/approval/task/list?searchUserId=${req.searchUserId}&searchAction=${req.searchAction}&limit=${req.limit}&offset=${req.offset}`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
       page: {
-        total: response.data.total,
+        total: res.total,
       },
-      approvalList: response.data.result as Approval[],
-    }
-
-    return res;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+      approvalList: res.result,
+    } as GetApprovalTaskListResponse;
+  })
 }

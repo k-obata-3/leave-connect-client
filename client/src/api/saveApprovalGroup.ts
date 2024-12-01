@@ -1,24 +1,21 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosPost, ApiResponse } from "@/axiosClient";
 
-export type SaveApprovalGroupRequest = {
+export interface SaveApprovalGroupRequest {
   id: string | null,
   groupName: string,
   approval: string[],
 }
 
-export type SaveApprovalGroupResponse = {
+export interface SaveApprovalGroupResponse extends ApiResponse {
 
 }
 
 export async function saveApprovalGroup(req: SaveApprovalGroupRequest) {
-  try {
-    const response = await axiosClient.post(`/systemConfig/save/approvalGroup`, req);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return true;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosPost(`/systemConfig/save/approvalGroup`, req).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as SaveApprovalGroupResponse;
+  })
 }

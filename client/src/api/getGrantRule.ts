@@ -1,10 +1,10 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
-export type GetGrantRuleRequest = {
+export interface GetGrantRuleRequest {
 
 }
 
-export type GetGrantRuleResponse = {
+export interface GetGrantRuleResponse extends ApiResponse {
   sectionMonth: string[],
   workingDays1: string[],
   workingDays2: string[],
@@ -15,14 +15,17 @@ export type GetGrantRuleResponse = {
 }
 
 export async function getGrantRule() {
-  try {
-    const response = await axiosClient.get(`/grantRule`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return response.data.result as GetGrantRuleResponse;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosGet(`/grantRule`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      sectionMonth: res.result?.sectionMonth,
+      workingDays1: res.result?.workingDays1,
+      workingDays2: res.result?.workingDays2,
+      workingDays3: res.result?.workingDays3,
+      workingDays4: res.result?.workingDays4,
+      workingDays5: res.result?.workingDays5,
+      workingDays6: res.result?.workingDays6,
+    } as GetGrantRuleResponse;
+  })
 }

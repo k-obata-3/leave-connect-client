@@ -2,23 +2,27 @@
 
 import React, { useState, useEffect } from 'react';
 import GrantRule from './grantRule';
-import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse } from '@/api/getSystemConfigs';
-import { getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
+import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse, SystemConfigObject } from '@/api/getSystemConfigs';
+import { ApprovalGroupObject, getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
 import ApprovalGroupView from './approvalGroupView';
 import { useSearchParams } from 'next/navigation';
+import { useCommonStore } from '@/app/store/CommonStore';
 
 export default function SettingSystem() {
   const ITEM = [
     { contentName: "付与日数設定", keyword: "grantRule" },
     { contentName: "承認グループ設定", keyword: "approvalGroup" }
   ]
+
+  // 共通Sore
+  const { setCommonObject, getCommonObject } = useCommonStore();
   const searchParams = useSearchParams();
   const [currentMenu, setCurrentMenu] = useState({
     contentName: "",
     keyword: "",
   });
-  const [systemConfigsResponse, setSystemConfigsResponse] = useState<GetSystemConfigsResponse[]>([]);
-  const [approvalGroupResponse, setApprovalGroupResponse] = useState<GetApprovalGroupListResponse[]>([]);
+  const [systemConfigsResponse, setSystemConfigsResponse] = useState<SystemConfigObject[]>([]);
+  const [approvalGroupResponse, setApprovalGroupResponse] = useState<ApprovalGroupObject[]>([]);
 
   useEffect(() =>{
     const tab = searchParams?.get("tab") ?? '';
@@ -54,11 +58,29 @@ export default function SettingSystem() {
     }
 
     if(keyword === "grantRule") {
-      const res: GetSystemConfigsResponse[] = await getSystemConfigs(req);
-      setSystemConfigsResponse(res);
+      const res: GetSystemConfigsResponse = await getSystemConfigs(req);
+      if(res.responseResult) {
+        setSystemConfigsResponse(res.systemConfigs);
+      }
+
+      setCommonObject({
+        errorMessage: res.message ? res.message : "",
+        actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
+        approvalTaskCount: getCommonObject().approvalTaskCount,
+        activeApplicationCount: getCommonObject().activeApplicationCount,
+      })
     } else if(keyword === "approvalGroup") {
-      const res: GetApprovalGroupListResponse[] = await getApprovalGroupList();
-      setApprovalGroupResponse(res);
+      const res: GetApprovalGroupListResponse = await getApprovalGroupList();
+      if(res.responseResult) {
+        setApprovalGroupResponse(res.approvalGroupList);
+      }
+
+      setCommonObject({
+        errorMessage: res.message ? res.message : "",
+        actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
+        approvalTaskCount: getCommonObject().approvalTaskCount,
+        activeApplicationCount: getCommonObject().activeApplicationCount,
+      })
     }
   }
 
@@ -73,7 +95,7 @@ export default function SettingSystem() {
         <h5 className="d-inline-block ms-2">-{currentMenu.contentName}-</h5>
       </div>
       <div hidden={currentMenu.keyword !== 'grantRule'}>
-        <GrantRule systemConfig={systemConfigsResponse[0]}></GrantRule>
+        <GrantRule systemConfigs={systemConfigsResponse}></GrantRule>
       </div>
       <div hidden={currentMenu.keyword !== 'approvalGroup'}>
         <ApprovalGroupView approvalGroupList={approvalGroupResponse} updateSystemConfigList={updateSystemConfigList}></ApprovalGroupView>

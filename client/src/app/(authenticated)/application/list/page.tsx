@@ -7,6 +7,7 @@ import { useUserInfoStore } from '@/app/store/UserInfoStore';
 import ApplicationListView from '@/components/applicationListView';
 import ListSearchView from '@/components/listSearchView';
 import Pager from '@/components/pager';
+import { useCommonStore } from '@/app/store/CommonStore';
 
 export default function ApplicationList() {
   const router = useRouter();
@@ -15,10 +16,12 @@ export default function ApplicationList() {
     { value: '0', name: '下書き'},
     { value: '1', name: '承認待ち'},
     { value: '3', name: '完了'},
-    { value: '4', name: '却下'},
+    { value: '4', name: '差戻'},
     { value: '5', name: '取消'},
   ];
 
+  // 共通Sore
+  const { setCommonObject, getCommonObject } = useCommonStore();
   const { getUserInfo } = useUserInfoStore();
   const [applicationList, setApplicationList] = useState<Application[]>([]);
   const [currentSearchParams, setCurrentSearchParams] = useState({
@@ -69,14 +72,23 @@ export default function ApplicationList() {
       offset: (currentPage - 1) * limit,
       isAdmin: false,
     }
-    const applicationListResponse: GetApplicationListResponse = await getApplicationList(req);
-    setApplicationList(applicationListResponse.applicationList);
-    setPagerParams({
-      ...pagerParams,
-      totalCount: applicationListResponse.page.total,
-      currentPage: currentPage,
-    });
-    setIsLoading(false);
+    const res: GetApplicationListResponse = await getApplicationList(req);
+    if(res.responseResult) {
+      setApplicationList(res.applicationList);
+      setPagerParams({
+        ...pagerParams,
+        totalCount: res.page.total,
+        currentPage: currentPage,
+      });
+      setIsLoading(false);
+    }
+
+    setCommonObject({
+      errorMessage: res.message ? res.message : "",
+      actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
+      approvalTaskCount: getCommonObject().approvalTaskCount,
+      activeApplicationCount: getCommonObject().activeApplicationCount,
+    })
   }
 
   /**
@@ -94,7 +106,7 @@ export default function ApplicationList() {
       </div>
       <div className="">
         <div className="row mb-2">
-          <div className="col-2 text-start">
+          <div className="col-4 col-md-2 text-start pc-only">
             <button className="btn btn-outline-primary" onClick={() => router.push('/application/edit', {scroll: true})}>新規申請</button>
           </div>
           <div className="col text-end">

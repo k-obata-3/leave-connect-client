@@ -12,11 +12,15 @@ import { EventClickArg, EventContentArg, EventInput } from '@fullcalendar/core/i
 import utils from '@/assets/js/utils';
 
 import { GetApplicationListByMonthRequest, GetApplicationListByMonthResponse, getApplicationListByMonth } from '@/api/getApplicationListByMonth';
+import { useCommonStore } from '@/app/store/CommonStore';
 
 export default function DashboardCalendarView() {
   const router = useRouter();
   const [calendarInitialDate, setCalendarInitialDate] = useState();
   const calendarRef = useRef<FullCalendar>(null!);
+
+  // 共通Sore
+  const { setCommonObject, getCommonObject } = useCommonStore();
 
   useEffect(() =>{
     if(!utils.getSessionStorage('calendarInitialDate')) {
@@ -31,18 +35,33 @@ export default function DashboardCalendarView() {
    * @param info 
    * @param successCallback 
    */
-  const getMonthApplications = async(info: any, successCallback: any) => {
+  const getMonthApplications = async(info: any, successCallback: any, failureCallback:any) => {
+    // console.log(info)
+    // var sHh = ("00" + (info.start.getHours())).slice(-2);
+    // var sMm = ("00" + (info.start.getMinutes())).slice(-2);
+    // var sSs = ("00" + (info.start.getSeconds())).slice(-2);
+    // var sSss = ("000" + (info.start.getTime())).slice(-3);
+    // var eHh = ("00" + (info.end.getHours())).slice(-2);
+    // var eMm = ("00" + (info.end.getMinutes())).slice(-2);
+    // var eSs = ("00" + (info.end.getSeconds())).slice(-2);
+    // var eSss = ("000" + (info.end.getTime())).slice(-3);
     const req: GetApplicationListByMonthRequest = {
-      startStr: info.startStr,
-      endStr: info.endStr,
+      // startStr: `${sDate} ${sHh}:${sMm}:${sSs}.${sSss}`,
+      // endStr: `${eDate} ${eHh}:${eMm}:${eSs}.${eSss}`,
+      startStr: `${info.start.toLocaleDateString('sv-SE')} 00:00:00.000`,
+      endStr: `${info.end.toLocaleDateString('sv-SE')} 23:59:59.999`,
     }
 
-    const res: GetApplicationListByMonthResponse[] = await getApplicationListByMonth(req);
-
     let eventInputs: EventInput[] = [];
-    for (let index = 0; index < res.length; index++) {
-      const item = res[index];
-      let color = '';
+    const res: GetApplicationListByMonthResponse = await getApplicationListByMonth(req);
+    if(!res.responseResult) {
+      failureCallback();
+      return;
+    }
+
+    for (let index = 0; index < res.applicationListByMonth.length; index++) {
+      const item = res.applicationListByMonth[index];
+      let color = 'rgba(0,0,0,0)';
       if(item.action === 0) {
         // 下書き
         color = '#99ccff';
@@ -53,25 +72,28 @@ export default function DashboardCalendarView() {
         // 完了
         color = '#99cc99';
       } else if(item.action === 4) {
-        // 却下
+        // 差戻
         color = '#ff9999';
       }
 
       const event: EventInput = {
-        title: `${item.sType}`,
-        start: `${item.sStartDate} ${item.sStartTime}`,
-        end: `${item.sEndDate} ${item.sEndTime}`,
-        // allDay: true,
+        title: "",
+        // start: `${item.sStartDate} ${item.sStartTime}`,
+        // end: `${item.sEndDate} ${item.sEndTime}`,
+        start: `${item.sStartDate}`,
+        end: `${item.sEndDate}`,
         extendedProps: {
           'id': item.id,
           'sClassification': item.sClassification,
           'sStartTime': item.sStartTime,
           'sEndTime': item.sEndTime,
           'sAction': item.sAction,
+          'sType': item.sType,
         },
+        // display: 'background',
         textColor: '#333333',
-        backgroundColor: color,
-        borderColor: color,
+        color: color,
+        className: 'event-contents'
       }
 
       eventInputs.push(event);
@@ -87,9 +109,14 @@ export default function DashboardCalendarView() {
    */
   const renderEventContent = (eventContent: EventContentArg) => (
     <>
-      <b>{eventContent.event.title}</b><br></br>
-      <i>{eventContent.event.extendedProps.sStartTime}～{eventContent.event.extendedProps.sEndTime}</i><br></br>
-      <i>{eventContent.event.extendedProps.sAction}</i>
+      <div className="calendar-event-content pc-only">
+        <b>{eventContent.event.extendedProps.sAction}</b><br></br>
+        <i>{eventContent.event.extendedProps.sType}</i><br></br>
+        <i>{eventContent.event.extendedProps.sStartTime}～{eventContent.event.extendedProps.sEndTime}</i>
+      </div>
+      <div className="calendar-event-content sp-only">
+        <b className="">{eventContent.event.extendedProps.sAction}</b>
+      </div>
     </>
   );
 
@@ -106,6 +133,10 @@ export default function DashboardCalendarView() {
    * @param eventArg 
    */
   const onDateClick = (eventArg: DateClickArg) => {
+    if(eventArg.dayEl.querySelectorAll('.event-contents').length) {
+      return;
+    }
+
     router.push(`/application/edit?selectDate=${eventArg.dateStr}`, {scroll: true});
   };
 
@@ -151,7 +182,7 @@ export default function DashboardCalendarView() {
             locale={jaLocale}
             timeZone='UTC'
             aspectRatio={1.5}
-            contentHeight={700}
+            contentHeight='auto'
             businessHours={{ daysOfWeek: [1, 2, 3, 4, 5] }}
             customButtons={{
               prevButton: {
@@ -182,7 +213,7 @@ export default function DashboardCalendarView() {
             initialDate={calendarInitialDate}
             dayCellContent={(e) => e.dayNumberText = e.dayNumberText.replace('日', '')}
             eventDisplay={'block'}
-            events={(fetchInfo, successCallback, failureCallback) => getMonthApplications(fetchInfo, successCallback)}
+            events={(fetchInfo, successCallback, failureCallback) => getMonthApplications(fetchInfo, successCallback, failureCallback)}
             eventContent={renderEventContent}
             eventClick={(e) => onEdit(e)}
             dateClick={(e) => onDateClick(e)}
@@ -201,7 +232,9 @@ export default function DashboardCalendarView() {
 
   return (
     <>
-      {createCalendar()}
+      <div>
+        {createCalendar()}
+      </div>
     </>
   )
 };

@@ -1,6 +1,6 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosPost, ApiResponse } from "@/axiosClient";
 
-export type SaveApplicationRequest = {
+export interface SaveApplicationRequest {
   id: number | undefined,
   type: string,
   classification: string,
@@ -13,19 +13,16 @@ export type SaveApplicationRequest = {
   action: string,
 }
 
-export type SaveApplicationResponse = {
+export interface SaveApplicationResponse extends ApiResponse {
 
 }
 
 export async function saveApplication(req: SaveApplicationRequest) {
-  try {
-    const response = await axiosClient.post(`/application/save`, req);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return true;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosPost(`/application/save`, req).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as SaveApplicationResponse;
+  })
 }

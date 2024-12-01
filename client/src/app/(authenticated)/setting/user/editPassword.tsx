@@ -56,7 +56,7 @@ export default function EditPassword() {
           <div className="col-md-2">
             <label className="col-form-label fw-medium">現在のパスワード</label>
           </div>
-          <div className="col-5 ps-3">
+          <div className="col col-md-5 ps-3">
             <input className="form-control" type="text" placeholder="現在のパスワード" value={inputValues.currentPassword} name="currentPassword" id="currentPassword" onChange={(e) => handleOnChange(e)} />
             <p className="input_error">{inputError.currentPassword}</p>
           </div>
@@ -66,7 +66,7 @@ export default function EditPassword() {
           <div className="col-md-2">
             <label className="col-form-label fw-medium">変更後パスワード</label>
           </div>
-          <div className="col-5 ps-3">
+          <div className="col col-md-5 ps-3">
             <input className="form-control" type="text" placeholder="変更後パスワード" value={inputValues.afterChangePassword} name="afterChangePassword" id="afterChangePassword" onChange={(e) => handleOnChange(e)} />
             <p className="input_error">{inputError.afterChangePassword}</p>
           </div>
@@ -76,7 +76,7 @@ export default function EditPassword() {
           <div className="col-md-2">
             <label className="col-form-label fw-medium">確認用パスワード</label>
           </div>
-          <div className="col-5 ps-3 mb-2">
+          <div className="col col-md-5 ps-3 mb-2">
             <input className="form-control" type="text" placeholder="確認用パスワード" value={inputValues.afterChangePasswordConfirm} name="afterChangePasswordConfirm" id="afterChangePasswordConfirm" onChange={(e) => handleOnChange(e)} />
             <p className="input_error">{inputError.afterChangePasswordConfirm}</p>
           </div>

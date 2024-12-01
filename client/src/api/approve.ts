@@ -1,25 +1,22 @@
-import { axiosClient } from "@/axiosClient";
+import { ApiResponse, axiosPost } from "@/axiosClient";
 
-export type ApproveRequest = {
-  application_id: number | undefined,
-  task_id: number | undefined,
+export interface ApproveRequest {
+  application_id: number | null,
+  task_id: number | null,
   comment: string,
-  action: string,
+  action: number,
 }
 
-export type ApproveResponse = {
+export interface ApproveResponse extends ApiResponse {
 
 }
 
 export async function approve(req: ApproveRequest) {
-  try {
-    const response = await axiosClient.post(`/approval/approve`, req);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return true;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosPost(`/approval/approve`, req).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as ApproveResponse;
+  })
 }

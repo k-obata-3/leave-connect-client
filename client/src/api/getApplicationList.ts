@@ -1,6 +1,6 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
-export type GetApplicationListRequest = {
+export interface GetApplicationListRequest {
   searchUserId: string | null,
   searchAction: string | null,
   searchYear: string | null,
@@ -9,33 +9,33 @@ export type GetApplicationListRequest = {
   isAdmin: boolean,
 }
 
-export type GetApplicationListResponse = {
+export interface GetApplicationListResponse extends ApiResponse {
   page: {
     total: number,
   },
   applicationList: Application[],
 }
 
-export type Application = {
+export interface Application {
   id: number
   applicationUserId: number
-  action: number,
   applicationDate: string,
-  classification: number
-  comment: string,
-  endDate: string,
-  sAction: string,
   sApplicationDate: string,
+  type: number
+  sType: string,
+  sAction: string,
+  action: number,
+  classification: number
   sClassification: string,
-  sEndDate: string,
-  sEndTime: string,
+  startDate: string,
   sStartDate: string,
   sStartTime: string,
-  sType: string,
-  startDate: string,
+  endDate: string,
+  sEndDate: string,
+  sEndTime: string,
   startEndTime: string,
-  type: number
   approvalGroupId: number,
+  comment: string,
 }
 
 export async function getApplicationList(req: GetApplicationListRequest) {
@@ -43,25 +43,14 @@ export async function getApplicationList(req: GetApplicationListRequest) {
     req.searchYear = '';
   }
 
-  try {
-    const response = await axiosClient.get(`/application/list?userId=${req.searchUserId}&searchAction=${req.searchAction}&searchYear=${req.searchYear}&limit=${req.limit}&offset=${req.offset}&isAdmin=${req.isAdmin}`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    response.data.result.forEach((item: Application) => {
-      item.startEndTime = `${item.sStartTime} - ${item.sEndTime}`;
-    });
-
-    const res: GetApplicationListResponse = {
+  return await axiosGet(`/application/list?userId=${req.searchUserId}&searchAction=${req.searchAction}&searchYear=${req.searchYear}&limit=${req.limit}&offset=${req.offset}&isAdmin=${req.isAdmin}`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
       page: {
-        total: response.data.total,
+        total: res.total,
       },
-      applicationList: response.data.result as Application[],
-    }
-
-    return res;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+      applicationList: res.result,
+    } as GetApplicationListResponse;
+  })
 }

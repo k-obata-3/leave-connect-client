@@ -1,24 +1,25 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
-export type GetSystemConfigsRequest = {
+export interface GetSystemConfigsRequest  {
   key: string,
 }
 
-export type GetSystemConfigsResponse = {
+export interface GetSystemConfigsResponse extends ApiResponse {
+  systemConfigs: SystemConfigObject[]
+}
+
+export interface SystemConfigObject extends ApiResponse {
   id: string | null,
   key: string,
   value: string,
 }
 
 export async function getSystemConfigs(req: GetSystemConfigsRequest) {
-  try {
-    const response = await axiosClient.get(`/systemConfigs?key=${req.key}`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-      return response.data.result as GetSystemConfigsResponse[];
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosGet(`/systemConfigs?key=${req.key}`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      systemConfigs: res.result,
+    } as GetSystemConfigsResponse;
+  })
 }

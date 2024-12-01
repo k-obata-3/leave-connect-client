@@ -1,6 +1,6 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosPost, ApiResponse } from "@/axiosClient";
 
-export type SaveUserRequest = {
+export interface SaveUserRequest {
   id: number | undefined,
   lastName: string,
   firstName: string,
@@ -12,19 +12,16 @@ export type SaveUserRequest = {
   totalCarryoverDays: string,
 }
 
-export type SaveUserResponse = {
+export interface SaveUserResponse extends ApiResponse {
 
 }
 
 export async function saveUser(req: SaveUserRequest) {
-  try {
-    const response = await axiosClient.post(`/user/save`, req);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return true;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosPost(`/user/save`, req).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as SaveUserResponse;
+  })
 }

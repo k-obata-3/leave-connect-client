@@ -3,21 +3,24 @@
 import React, { useEffect, useState } from 'react';
 import { Approval, GetApprovalTaskListRequest, GetApprovalTaskListResponse, getApprovalTaskList } from '@/api/getApprovalTaskList';
 import Pager from '@/components/pager';
-import ApprovalListView from './approvalListView';
-import { getUserNameList, getUserNameListResponse } from '@/api/getUserNameList';
+import ApprovalListView from '@/components/approvalListView';
+import { getUserNameList, GetUserNameListResponse, UserNameObject } from '@/api/getUserNameList';
 import ListSearchView from '@/components/listSearchView';
 import { useUserInfoStore } from '@/app/store/UserInfoStore';
+import { useCommonStore } from '@/app/store/CommonStore';
 
 export default function ApprovalList() {
   const SEARCH_ACTIONS = [
     { value: '', name: 'すべて'},
     { value: '1', name: '承認待ち'},
     { value: '2', name: '承認'},
-    { value: '4', name: '却下'},
+    { value: '4', name: '差戻'},
   ];
 
+  // 共通Sore
+  const { setCommonObject, getCommonObject } = useCommonStore();
   const { getUserInfo } = useUserInfoStore();
-  const [userNameList, setUserNameList] = useState<getUserNameListResponse[]>([]);
+  const [userNameList, setUserNameList] = useState<UserNameObject[]>([]);
   const [approvalList, setApprovalList] = useState<Approval[]>([]);
   const [currentSearchParams, setCurrentSearchParams] = useState({
     currentSearchYear: '',
@@ -44,9 +47,9 @@ export default function ApprovalList() {
 
   useEffect(() =>{
     (async() => {
-      const userNameList: getUserNameListResponse[] = await getUserNameList();
+      const userNameList: GetUserNameListResponse = await getUserNameList();
       await getApprovalTasks(currentSearchParams.currentSearchUser, currentSearchParams.currentSearchAction, pagerParams.limit, pagerParams.currentPage);
-      setUserNameList(userNameList.filter(user => user.id !== Number(getUserInfo().id)));
+      setUserNameList(userNameList.userNameList.filter(user => user.id !== Number(getUserInfo().id)));
     })();
   },[])
 
@@ -71,14 +74,23 @@ export default function ApprovalList() {
       offset: (currentPage - 1) * limit,
     }
 
-    const approvalTaskListResponse: GetApprovalTaskListResponse = await getApprovalTaskList(req);
-    setApprovalList(approvalTaskListResponse.approvalList);
-    setPagerParams({
-      ...pagerParams,
-      totalCount: approvalTaskListResponse.page.total,
-      currentPage: currentPage,
-    });
-    setIsLoading(false);
+    const res: GetApprovalTaskListResponse = await getApprovalTaskList(req);
+    if(res.responseResult) {
+      setApprovalList(res.approvalList);
+      setPagerParams({
+        ...pagerParams,
+        totalCount: res.page.total,
+        currentPage: currentPage,
+      });
+      setIsLoading(false);
+    }
+
+    setCommonObject({
+      errorMessage: res.message ? res.message : "",
+      actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
+      approvalTaskCount: getCommonObject().approvalTaskCount,
+      activeApplicationCount: getCommonObject().activeApplicationCount,
+    })
   }
 
   /**

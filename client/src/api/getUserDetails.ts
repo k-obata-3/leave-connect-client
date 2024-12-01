@@ -1,10 +1,10 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
-export type getUserDetailsRequest = {
+export interface getUserDetailsRequest {
   id: string | string[],
 }
 
-export type getUserDetailsResponse = {
+export interface getUserDetailsResponse extends ApiResponse {
   id: number,
   userId: string,
   firstName: string,
@@ -20,14 +20,22 @@ export type getUserDetailsResponse = {
 }
 
 export async function getUserDetails(req: getUserDetailsRequest) {
-  try {
-    const response = await axiosClient.get(`/userDetails?id=${req.id}`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return response.data.result as getUserDetailsResponse;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosGet(`/userDetails?id=${req.id}`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      id: res.result?.id,
+      userId: res.result?.userId,
+      firstName: res.result?.firstName,
+      lastName: res.result?.lastName,
+      auth: res.result?.auth,
+      referenceDate: res.result?.referenceDate,
+      workingDays: res.result?.workingDays,
+      totalDeleteDays: res.result?.totalDeleteDays,
+      totalAddDays: res.result?.totalAddDays,
+      totalRemainingDays: res.result?.totalRemainingDays,
+      autoCalcRemainingDays: res.result?.autoCalcRemainingDays,
+      totalCarryoverDays: res.result?.totalCarryoverDays,
+    } as getUserDetailsResponse;
+  })
 }

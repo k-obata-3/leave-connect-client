@@ -1,14 +1,37 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
+
+export interface getLoginUserInfoResponse extends ApiResponse {
+  id: string,
+  companyId: string,
+  firstName: string,
+  lastName: string,
+  auth: string,
+  referenceDate: string,
+  workingDays: string,
+  totalDeleteDays: string,
+  totalAddDays: string,
+  totalRemainingDays: string,
+  autoCalcRemainingDays: string,
+  totalCarryoverDays: string,
+}
 
 export async function getLoginUserInfo() {
-  try {
-    const response = await axiosClient.get(`/loginUserInfo`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return response.data.result;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosGet(`/loginUserInfo`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      id: res.result?.id,
+      companyId: res.result?.companyId,
+      firstName: res.result?.firstName,
+      lastName: res.result?.lastName,
+      auth: res.result?.auth,
+      referenceDate: res.result?.referenceDate,
+      workingDays: res.result?.workingDays,
+      totalDeleteDays: res.result?.totalDeleteDays,
+      totalAddDays: res.result?.totalAddDays,
+      totalRemainingDays: res.result?.totalRemainingDays,
+      autoCalcRemainingDays: res.result?.autoCalcRemainingDays,
+      totalCarryoverDays: res.result?.totalCarryoverDays,
+    } as getLoginUserInfoResponse;
+  })
 }

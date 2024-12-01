@@ -1,22 +1,19 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosPost, ApiResponse } from "@/axiosClient";
 
-export type UpdateGrantDaysRequest = {
+export interface UpdateGrantDaysRequest {
   id: number | undefined,
 }
 
-export type UpdateGrantDaysResponse = {
+export interface UpdateGrantDaysResponse extends ApiResponse {
 
 }
 
 export async function updateGrantDays(req: UpdateGrantDaysRequest) {
-  try {
-    const response = await axiosClient.post(`/user/updateGrantDays`, req);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return true;
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosPost(`/user/updateGrantDays`, req).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      result: res.result,
+    } as UpdateGrantDaysResponse;
+  })
 }

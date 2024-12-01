@@ -1,35 +1,91 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import utils from './assets/js/utils';
 
 // const BaseUrl = 'http://localhost:3001';
-const BaseUrl = 'http://192.168.0.253:3001';
+const BaseUrl = 'http://192.168.0.253:3001/api';
 
 /**
  * デフォルト config の設定
  */
 export const axiosClient = axios.create({
   baseURL: BaseUrl,
-  timeout: 3000,
+  timeout: 60000,  // 60秒
   headers: {
     'Content-Type': 'application/json',
-    // 'Access-Control-Allow-Origin': BaseUrl,
-    // 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE',
-    'Access-Control-Allow-Headers': '*',
-    'Access-Control-Allow-Credentials': true,
+    // 'Access-Control-Allow-Origin': '*',
+    // 'Access-Control-Allow-Headers': '*',
+    // 'Access-Control-Allow-Credentials': true,
   },
-  withCredentials: true,
+  // withCredentials: true,
 })
+
+export interface ApiResponse {
+  responseResult?: boolean,
+  result?: any,
+  message?: string,
+  total?: number,
+}
+
+export const axiosGet = async(url: string) => {
+  return await axiosClient.get(url).then((res: AxiosResponse) => {
+    return {
+      responseResult: true,
+      result: res?.data?.result,
+      total: res?.data?.total,
+    } as ApiResponse;
+  }).catch((err) => {
+    console.log(err.response?.data?.message)
+    return {
+      responseResult: false,
+      message: err.response?.data?.message,
+      result: err.response?.data?.result,
+      total: err?.data?.total,
+    } as ApiResponse;
+  })
+}
+
+export const axiosPost = async(url: string, req: any) => {
+  return await axiosClient.post(url, req).then((res: AxiosResponse) => {
+    return {
+      responseResult: true,
+      result: res?.data?.result,
+    } as ApiResponse;
+  }).catch((err) => {
+    console.log(err.response?.data?.message)
+    return {
+      responseResult: false,
+      message: err.response?.data?.message,
+      result: err.response?.data?.result,
+    } as ApiResponse;
+  })
+}
+
+export const axiosDelete = async(url: string) => {
+  return await axiosClient.delete(url).then((res: AxiosResponse) => {
+    return {
+      responseResult: true,
+      result: res?.data?.result,
+    } as ApiResponse;
+  }).catch((err) => {
+    console.log(err.response?.data?.message)
+    return {
+      responseResult: false,
+      message: err.response?.data?.message,
+      result: err.response?.data?.result,
+    } as ApiResponse;
+  })
+}
 
 /**
  * リクエスト インターセプター
  */
 // axiosClient.interceptors.request.use((config: AxiosRequestConfig) => {
 axiosClient.interceptors.request.use((config: any) => {
+  const accessToken = utils.getCookieValue('jwt');
   if (config.headers !== undefined) {
-    // --ヘッダにアクセストークンを埋める
-    // const accessToken = getAccessToken()
-    // if (accessToken) {
-    //   config.headers.Authorization = `Bearer ${accessToken}`
-    // }
+    if (accessToken) {
+      config.headers.Authorization = `JWT ${accessToken}`;
+    }
   }
   return config
 })
@@ -75,4 +131,4 @@ axiosClient.interceptors.response.use(
     }
     return Promise.reject(error);
    }
- )
+)

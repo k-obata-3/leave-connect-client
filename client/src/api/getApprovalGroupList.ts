@@ -1,25 +1,26 @@
-import { axiosClient } from "@/axiosClient";
+import { axiosGet, ApiResponse } from "@/axiosClient";
 
-export type GetApprovalGroupListResponse = {
+export interface GetApprovalGroupListResponse extends ApiResponse {
+  approvalGroupList: ApprovalGroupObject[]
+}
+
+export interface Approver {
+  id: string,
+  name: string,
+}
+
+export interface ApprovalGroupObject {
   groupId: number | null,
   groupName: string,
   approver: Approver[],
 }
 
-export type Approver = {
-  id: string,
-  name: string,
-}
-
 export async function getApprovalGroupList() {
-  try {
-    const response = await axiosClient.get(`/systemConfig/approvalGroup`);
-    if(!response || !response.data || response.data.resultCode !== 200) {
-      throw new Error("error");
-    }
-
-    return response.data.result as GetApprovalGroupListResponse[];
-  } catch (error: any) {
-    throw error.response?.data?.result;
-  }
+  return await axiosGet(`/systemConfig/approvalGroup`).then((res: ApiResponse) => {
+    return {
+      responseResult: res.responseResult,
+      message: res.responseResult ? "" : res.message,
+      approvalGroupList: res.result
+    } as GetApprovalGroupListResponse;
+  })
 }
