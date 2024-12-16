@@ -7,7 +7,7 @@ import ApprovalListView from '@/components/approvalListView';
 import { getUserNameList, GetUserNameListResponse, UserNameObject } from '@/api/getUserNameList';
 import ListSearchView from '@/components/listSearchView';
 import { useUserInfoStore } from '@/app/store/UserInfoStore';
-import { useCommonStore } from '@/app/store/CommonStore';
+import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 export default function ApprovalList() {
   const SEARCH_ACTIONS = [
@@ -18,8 +18,8 @@ export default function ApprovalList() {
   ];
 
   // 共通Sore
-  const { setCommonObject, getCommonObject } = useCommonStore();
   const { getUserInfo } = useUserInfoStore();
+  const { setNotificationMessageObject } = useNotificationMessageStore();
   const [userNameList, setUserNameList] = useState<UserNameObject[]>([]);
   const [approvalList, setApprovalList] = useState<Approval[]>([]);
   const [currentSearchParams, setCurrentSearchParams] = useState({
@@ -83,14 +83,12 @@ export default function ApprovalList() {
         currentPage: currentPage,
       });
       setIsLoading(false);
+    } else {
+      setNotificationMessageObject({
+        errorMessageList: res.message ? [res.message] : [],
+        inputErrorMessageList: [],
+      })
     }
-
-    setCommonObject({
-      errorMessage: res.message ? res.message : "",
-      actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-      approvalTaskCount: getCommonObject().approvalTaskCount,
-      activeApplicationCount: getCommonObject().activeApplicationCount,
-    })
   }
 
   /**
@@ -98,12 +96,13 @@ export default function ApprovalList() {
    * @param page 
    */
   const getPageList = (page : any) => {
+    setApprovalList([]);
     getApprovalTasks(currentSearchParams.currentSearchUser, currentSearchParams.currentSearchAction, pagerParams.limit, page);
   }
 
   return (
     <div className="approval-list">
-      <div className="page-title">
+      <div className="page-title pc-only">
         <h3>承認一覧</h3>
       </div>
       <div className="">

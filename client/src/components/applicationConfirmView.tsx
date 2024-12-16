@@ -9,6 +9,7 @@ import { useCommonStore } from '@/app/store/CommonStore';
 import { getNotification, GetNotificationResponse } from '@/api/getNotification';
 import { ApprovalGroupObject } from '@/api/getApprovalGroupList';
 import ApprovalStatusListView from './approvalStatusListView';
+import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 type Props = {
   applicationId: string | null,
@@ -18,7 +19,8 @@ type Props = {
 export default function ApplicationConfirmView({ applicationId, taskId }: Props) {
   const router = useRouter();
   // 共通Sore
-  const { setCommonObject, getCommonObject } = useCommonStore();
+  const { setCommonObject } = useCommonStore();
+  const { setNotificationMessageObject } = useNotificationMessageStore();
 
   const [application, setApplication] = useState<Application | null>(null);
   const [approvalTtasks, setApprovalTtasks] = useState<ApprovalTtask[]>([]);
@@ -58,11 +60,9 @@ export default function ApplicationConfirmView({ applicationId, taskId }: Props)
             approvalComment: approvalTask?.comment ? approvalTask.comment : ''
           })
         } else {
-          setCommonObject({
-            errorMessage: res.message ? res.message : "",
-            actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-            approvalTaskCount: getCommonObject().approvalTaskCount,
-            activeApplicationCount: getCommonObject().activeApplicationCount,
+          setNotificationMessageObject({
+            errorMessageList: res.message ? [res.message] : [],
+            inputErrorMessageList: [],
           })
         }
       })
@@ -78,12 +78,20 @@ export default function ApplicationConfirmView({ applicationId, taskId }: Props)
    * @param action 
    */
   const onSubmit = async(action: string) => {
-    setInputError({ ...inputError,
-      ['approvalComment']: !inputValues.approvalComment ? '承認者コメントは必須入力です。' : '',
-    });
+    const requiredErrors = {
+      ...inputError,
+      ['approvalComment']: !inputValues.approvalComment.trim() ? '承認者コメントは必須入力です。' : '',
+    };
 
-    if(!inputValues.approvalComment) {
-      return;
+    for (const value of Object.values(requiredErrors)) {
+      if(value.length) {
+        setInputError(requiredErrors);
+        setNotificationMessageObject({
+          errorMessageList: [],
+          inputErrorMessageList: ['入力内容が不正です。'],
+        })
+        return;
+      }
     }
 
     const request: ApproveRequest = {
@@ -97,6 +105,7 @@ export default function ApplicationConfirmView({ applicationId, taskId }: Props)
       if(approveRes.responseResult) {
         // 通知情報の更新
         updateNotificationObject();
+        
         router.push('/approval/list', {scroll: true});
       } else {
         setErrorMessage(approveRes.message);
@@ -112,7 +121,6 @@ export default function ApplicationConfirmView({ applicationId, taskId }: Props)
     return await getNotification().then((res: GetNotificationResponse) => {
       if(res.responseResult) {
         setCommonObject({
-          errorMessage: getCommonObject().errorMessage,
           actionRequiredApplicationCount: res.actionRequiredApplicationCount,
           approvalTaskCount: res.approvalTaskCount,
           activeApplicationCount: res.activeApplicationCount,
@@ -126,18 +134,28 @@ export default function ApplicationConfirmView({ applicationId, taskId }: Props)
    * @param message 
    */
   const setErrorMessage = (message: string | undefined) => {
-    setCommonObject({
-      errorMessage: message ? message : "",
-      actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-      approvalTaskCount: getCommonObject().approvalTaskCount,
-      activeApplicationCount: getCommonObject().activeApplicationCount,
+    setNotificationMessageObject({
+      errorMessageList: message ? [message] : [],
+      inputErrorMessageList: [],
     })
   }
 
   if(application) {
     return (
-      <div className="row">
+      <div className="row pb-5">
         <div className="col-xxl-6 ps-1 pe-1">
+          <div className="operation-btn-parent-view" hidden={!availableOperation?.isApproval}>
+            <div className="pc-only operation-btn-view-pc">
+              <button className="btn btn-outline-danger" onClick={() => onSubmit('4')}>差戻</button>
+              <button className="btn btn-outline-success ms-2" onClick={() => onSubmit('2')}>承認</button>
+            </div>
+            <div className="sp-only operation-btn-view-sp">
+              <div className="operation-btn-view-sp">
+                <button className="btn btn-danger flex-grow-1 m-1" onClick={() => onSubmit('4')}>差戻</button>
+                <button className="btn btn-success flex-grow-1 m-1" onClick={() => onSubmit('2')}>承認</button>
+              </div>
+            </div>
+          </div>
           {/* 状況 */}
           <div className="row align-items-center mb-3 g-3">
             <div className="col-md-2">
@@ -231,7 +249,7 @@ export default function ApplicationConfirmView({ applicationId, taskId }: Props)
             </div>
           </div>
           {/* 承認グループ 詳細表示 */}
-          <div className="row align-items-center g-3">
+          <div className="row align-items-center g-3 mb-2">
             <ol className="list-group list-group-numbered col-md-10 offset-md-2">
               {
                 approvalGroup?.approver?.map((user: any, index: number) => (
@@ -239,13 +257,6 @@ export default function ApplicationConfirmView({ applicationId, taskId }: Props)
                 ))
               }
             </ol>
-          </div>
-          <div className="row col-12 mt-4" hidden={!availableOperation?.isApproval}>
-            <div className="col-1 text-start"></div>
-            <div className="col text-end">
-              <button className="btn btn-outline-danger me-5" onClick={() => onSubmit('4')}>差戻</button>
-              <button className="btn btn-outline-success" onClick={() => onSubmit('2')}>承認</button>
-            </div>
           </div>
         </div>
         {/* 承認状況表示エリア */}

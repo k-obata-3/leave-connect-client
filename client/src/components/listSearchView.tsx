@@ -58,7 +58,7 @@ export default function ListSearchView({ searchActions, userNameList, currentSea
       <select className="form-select inline-block" id="searchUser" value={currentSearchParams.currentSearchUser} onChange={(e) => searchHandler.changeSearchUser(e.target.value)}>
         <option value=''>すべて</option>
         {
-          userNameList.map((user: any, index: number) => (
+          userNameList?.map((user: any, index: number) => (
             <option value={user.id} key={index}>{user.fullName}</option>
           ))
         }
@@ -86,8 +86,8 @@ export default function ListSearchView({ searchActions, userNameList, currentSea
           {createSearchYearSelect()}
         </div>
 
-        <label className="col-2 col-md-auto col-form-label ms-2" htmlFor="searchUser" hidden={!userNameList.length}>申請者</label>
-        <div className="col-9 col-md-4 ms-2" hidden={!userNameList.length}>
+        <label className="col-2 col-md-auto col-form-label ms-2" htmlFor="searchUser" hidden={!userNameList?.length}>申請者</label>
+        <div className="col-9 col-md-4 ms-2" hidden={!userNameList?.length}>
           {createSearchUserSelect()}
         </div>
 

@@ -1,5 +1,4 @@
 const utils = {
-
   getSessionStorageName() {
     return 'leave-connect';
   },
@@ -73,6 +72,14 @@ const utils = {
       return cookieValue
     }
     return ''
-  }
+  },
+  getHash(text) {
+    const salt = "TgX7s3nwYPNq";
+    const crypto = require("crypto");
+    const sha1 = crypto.createHash('sha1');
+    sha1.update(text + salt);
+    const encoding = "hex";
+    return sha1.digest(encoding);
+  },
 }
 module.exports = utils;

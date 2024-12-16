@@ -1,78 +1,88 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { getUserDetails, getUserDetailsRequest, getUserDetailsResponse,  } from '@/api/getUserDetails';
 import { useUserInfoStore } from '@/app/store/UserInfoStore';
+// import { getUserDetails, getUserDetailsRequest, getUserDetailsResponse,  } from '@/api/getUserDetails';
+// import { useSearchParams } from 'next/navigation';
+// import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 export default function EditPersonal() {
+  // const searchParams = useSearchParams();
+  // 共通Sore
   const { getUserInfo } = useUserInfoStore();
-  const [values, setValues] = useState({
-    userId: '',
-    referenceDate: '',
-  });
+  // const { setNotificationMessageObject } = useNotificationMessageStore();
+  // const [inputValues, setInputValues] = useState({
+  //   firstName: '',
+  //   lastName: '',
+  // });
 
-  const [inputValues, setInputValues] = useState({
-    firstName: '',
-    lastName: '',
-  });
+  // const [inputError, setInputError] = useState({
+  //   name: '',
+  // });
 
-  const [inputError, setInputError] = useState({
-    name: '',
-  });
+  // useEffect(() =>{
+  //   setInputValues({
+  //     ...inputValues,
+  //     firstName: getUserInfo().firstName,
+  //     lastName: getUserInfo().lastName,
+  //   })
 
-  const handleOnChange = (e: any) => {
-    setInputValues({ ...inputValues, [e.target.name]: e.target.value});
-  }
+  //   setInputError({
+  //     ...inputError,
+  //     ['name']: '',
+  //   });
+  // },[searchParams])
 
-  const onSave = (e: any) => {
-    let nameError = '';
-    if(!inputValues.lastName || !inputValues.firstName) {
-      nameError = '名前は必須入力です。';
-    }
+  // const handleOnChange = (e: any) => {
+  //   setInputValues({ ...inputValues, [e.target.name]: e.target.value});
+  // }
 
-    setInputError({
-      name: nameError,
-    })
-  }
+  // const onSave = (e: any) => {
+  //   const errors = {
+  //     ...inputError,
+  //     ['name']: !inputValues.lastName.trim() || !inputValues.firstName.trim() ? '名前は必須入力です。' : '',
+  //   };
 
-  useEffect(() =>{
-    (async() => {
-      await getUser(getUserInfo().id);
-    })();
-  },[])
-
-  /**
-   * ユーザ情報取得
-   * @param id 
-   */
-  const getUser = async(id: string) => {
-      const req: getUserDetailsRequest = {
-        id: id
-      }
-      const user: getUserDetailsResponse = await getUserDetails(req);
-
-      setInputValues({
-        ...inputValues,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      })
-
-      setValues({
-        ...values,
-        userId: user.userId,
-        referenceDate: user.referenceDate,
-      })
-  }
+  //   for (const value of Object.values(errors)) {
+  //     if(value.length) {
+  //       setInputError(errors);
+  //       setNotificationMessageObject({
+  //         errorMessageList: [],
+  //         inputErrorMessageList: ['入力内容が不正です。'],
+  //       })
+  //       return;
+  //     }
+  //   }
+  // }
 
   return (
     <>
       <div className="">
+
+        {/* <div className="operation-btn-parent-view">
+          <div className="pc-only operation-btn-view-pc">
+            <button className="btn btn-outline-primary" onClick={(e) => onSave(e)}>保存</button>
+          </div>
+          <div className="sp-only operation-btn-view-sp">
+            <button className="btn btn-primary flex-grow-1 m-1" onClick={(e) => onSave(e)}>保存</button>
+          </div>
+        </div> */}
+
         <div className="row align-items-center mb-3 g-3">
           <div className="col-md-2">
             <label className="col-form-label fw-medium">ユーザID</label>
           </div>
           <div className="col col-md-5 ps-3">
-          <p className="mb-0">{values.userId}</p>
+            <p className="mb-0">{getUserInfo().userId}</p>
+          </div>
+        </div>
+
+        <div className="row align-items-center mb-3 g-3">
+          <div className="col-md-2">
+            <label className="col-form-label fw-medium">名前</label>
+          </div>
+          <div className="col col-md-5 ps-3">
+            <p className="mb-0">{getUserInfo().lastName} {getUserInfo().firstName}</p>
           </div>
         </div>
 
@@ -81,20 +91,20 @@ export default function EditPersonal() {
             <label className="col-form-label fw-medium">基準日</label>
           </div>
           <div className="col col-md-5 ps-3">
-          <p className="mb-0">{values.referenceDate}</p>
+            <p className="mb-0">{getUserInfo().referenceDate.substring(0, 10).replaceAll('-', '/')}</p>
           </div>
         </div>
 
-        <div className="row align-items-center mb-3 g-3">
+        {/* <div className="row align-items-center mb-3 g-3">
           <div className="col-md-2">
             <label className="col-form-label fw-medium" htmlFor="lastName">名前(姓)</label>
           </div>
           <div className="col col-md-5 ps-3">
             <input className="form-control" type="text" placeholder="姓" value={inputValues.lastName} name="lastName" id="lastName" onChange={(e) => handleOnChange(e)} />
           </div>
-        </div>
+        </div> */}
 
-        <div className="row align-items-center mb-3 g-3">
+        {/* <div className="row align-items-center mb-3 g-3">
           <div className="col-md-2">
             <label className="col-form-label fw-medium" htmlFor="firstName">名前(名)</label>
           </div>
@@ -106,12 +116,8 @@ export default function EditPersonal() {
           <div className="col-12 offset-md-2 ps-3 mb-2">
             <p className="input_error">{inputError.name}</p>
           </div>
-        </div>
+        </div> */}
 
-        <div className="col-1 text-start"></div>
-        <div className="col-11 text-end">
-          <button className="btn btn-outline-success" onClick={(e) => onSave(e)}>保存</button>
-        </div>
       </div>
     </>
   );

@@ -1,4 +1,3 @@
-import utils from '@/assets/js/utils';
 import { axiosPost, ApiResponse } from '@/axiosClient';
 
 export interface logoutRequest {

@@ -2,6 +2,7 @@ import { axiosGet, ApiResponse } from "@/axiosClient";
 
 export interface getLoginUserInfoResponse extends ApiResponse {
   id: string,
+  userId: string
   companyId: string,
   firstName: string,
   lastName: string,
@@ -21,6 +22,7 @@ export async function getLoginUserInfo() {
       responseResult: res.responseResult,
       message: res.responseResult ? "" : res.message,
       id: res.result?.id,
+      userId: res.result?.userId,
       companyId: res.result?.companyId,
       firstName: res.result?.firstName,
       lastName: res.result?.lastName,

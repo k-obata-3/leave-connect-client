@@ -7,6 +7,7 @@ import ApplicationListView from '@/components/applicationListView';
 import ListSearchView from '@/components/listSearchView';
 import Pager from '@/components/pager';
 import { useCommonStore } from '@/app/store/CommonStore';
+import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 export default function AdminApplicationList() {
   const SEARCH_ACTIONS = [
@@ -18,9 +19,9 @@ export default function AdminApplicationList() {
   ];
 
   // 共通Sore
-  const { setCommonObject, getCommonObject } = useCommonStore();
+  const { setNotificationMessageObject } = useNotificationMessageStore();
   const [userNameList, setUserNameList] = useState<UserNameObject[]>([]);
-  const [applicationList, setApplicationList] = useState<Application[]>();
+  const [applicationList, setApplicationList] = useState<Application[]>([]);
   const [currentSearchParams, setCurrentSearchParams] = useState({
     currentSearchYear: new Date().getFullYear().toString(),
     currentSearchUser: '',
@@ -91,14 +92,12 @@ export default function AdminApplicationList() {
         currentPage: currentPage,
       });
       setIsLoading(false);
+    } else {
+      setNotificationMessageObject({
+        errorMessageList: res.message ? [res.message] : [],
+        inputErrorMessageList: [],
+      })
     }
-
-    setCommonObject({
-      errorMessage: res.message ? res.message : "",
-      actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-      approvalTaskCount: getCommonObject().approvalTaskCount,
-      activeApplicationCount: getCommonObject().activeApplicationCount,
-    })
   }
 
   /**
@@ -106,12 +105,13 @@ export default function AdminApplicationList() {
    * @param page 
    */
   const getPageList = (page : any) => {
+    setApplicationList([]);
     getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchUser, currentSearchParams.currentSearchAction, pagerParams.limit, page);
   }
 
   return (
     <div className="application-list">
-      <div className="page-title">
+      <div className="page-title pc-only">
         <h3>申請管理</h3>
       </div>
       <div className="">

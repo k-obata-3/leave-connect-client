@@ -1,11 +1,17 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { getUserDetails, getUserDetailsRequest, getUserDetailsResponse,  } from '@/api/getUserDetails';
-import { useUserInfoStore } from '@/app/store/UserInfoStore';
+import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
+import { changePassword, ChangePasswordRequest, ChangePasswordResponse } from '@/api/changePassword';
+import utils from '@/assets/js/utils';
+import { logout } from '@/api/logout';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function EditPassword() {
-  const { getUserInfo } = useUserInfoStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // 共通Sore
+  const { setNotificationMessageObject } = useNotificationMessageStore();
   const [inputValues, setInputValues] = useState({
     currentPassword: '',
     afterChangePassword: '',
@@ -16,42 +22,79 @@ export default function EditPassword() {
     currentPassword: '',
     afterChangePassword: '',
     afterChangePasswordConfirm: '',
+    mismatchPassword: '',
   });
+
+  useEffect(() =>{
+    setInputValues({
+      ...inputValues,
+      ['currentPassword']: '',
+      ['afterChangePassword']: '',
+      ['afterChangePasswordConfirm']: '',
+    });
+    setInputError({
+      ...inputError,
+      ['currentPassword']: '',
+      ['afterChangePassword']: '',
+      ['afterChangePasswordConfirm']: '',
+      ['mismatchPassword']: '',
+    });
+  },[searchParams])
 
   const handleOnChange = (e: any) => {
     setInputValues({ ...inputValues, [e.target.name]: e.target.value});
   }
 
-  const onSave = (e: any) => {
-    let currentPasswordError = '';
-    let afterChangePasswordError = '';
-    let afterChangePasswordConfirmError = '';
-    if(!inputValues.currentPassword) {
-      currentPasswordError = '現在のパスワードは必須入力です。';
+  const onChangePassword = async(e: any) => {
+    const errors = {
+      ...inputError,
+      ['currentPassword']: !inputValues.currentPassword.trim() ? '現在のパスワードは必須入力です。' : '',
+      ['afterChangePassword']: !inputValues.afterChangePassword.trim() ? '変更後パスワードは必須入力です。' : '',
+      ['afterChangePasswordConfirm']: !inputValues.afterChangePasswordConfirm.trim() ? '確認用パスワードは必須入力です。' : '',
+      ['mismatchPassword']: inputValues.afterChangePassword.trim() != inputValues.afterChangePasswordConfirm.trim() ? '確認用パスワードが不一致です。' : '',
+    };
+
+    for (const value of Object.values(errors)) {
+      if(value.length) {
+        setInputError(errors);
+        setNotificationMessageObject({
+          errorMessageList: [],
+          inputErrorMessageList: ['入力内容が不正です。'],
+        })
+        return;
+      }
     }
 
-    if(!inputValues.afterChangePassword) {
-      afterChangePasswordError = '変更後パスワードは必須入力です。';
+    const req: ChangePasswordRequest = {
+      oldPassword: utils.getHash(inputValues.currentPassword),
+      newPassword: utils.getHash(inputValues.afterChangePassword),
     }
 
-    if(!inputValues.afterChangePasswordConfirm) {
-      afterChangePasswordConfirmError = '確認用パスワードは必須入力です。';
-    }
-
-    setInputError({
-      currentPassword: currentPasswordError,
-      afterChangePassword: afterChangePasswordError,
-      afterChangePasswordConfirm: afterChangePasswordConfirmError,
-    })
+    await changePassword(req).then(async(res: ChangePasswordResponse) => {
+      if(res.responseResult) {
+        const res = await logout();
+        router.replace('/', {scroll: true});
+      } else {
+        setNotificationMessageObject({
+          errorMessageList: res.message ? [res.message] : [],
+          inputErrorMessageList: [],
+        })
+      }
+    });
   }
-
-  useEffect(() =>{
-
-  },[])
 
   return (
     <>
       <div className="">
+        <div className="operation-btn-parent-view">
+          <div className="pc-only operation-btn-view-pc">
+            <button className="btn btn-outline-primary" onClick={(e) => onChangePassword(e)}>変更</button>
+          </div>
+          <div className="sp-only operation-btn-view-sp">
+            <button className="btn btn-primary flex-grow-1 m-1" onClick={(e) => onChangePassword(e)}>変更</button>
+          </div>
+        </div>
+
         <div className="row align-items-center mb-3 g-3">
           <div className="col-md-2">
             <label className="col-form-label fw-medium">現在のパスワード</label>
@@ -72,19 +115,15 @@ export default function EditPassword() {
           </div>
         </div>
 
-        <div className="row align-items-center mb-3 g-3">
+        <div className="row align-items-center mb-3 g-3 pb-5">
           <div className="col-md-2">
             <label className="col-form-label fw-medium">確認用パスワード</label>
           </div>
           <div className="col col-md-5 ps-3 mb-2">
             <input className="form-control" type="text" placeholder="確認用パスワード" value={inputValues.afterChangePasswordConfirm} name="afterChangePasswordConfirm" id="afterChangePasswordConfirm" onChange={(e) => handleOnChange(e)} />
             <p className="input_error">{inputError.afterChangePasswordConfirm}</p>
+            <p className="input_error">{inputError.mismatchPassword}</p>
           </div>
-        </div>
-
-        <div className="col-1 text-start"></div>
-        <div className="col-11 text-end">
-          <button className="btn btn-outline-success" onClick={(e) => onSave(e)}>変更</button>
         </div>
       </div>
     </>

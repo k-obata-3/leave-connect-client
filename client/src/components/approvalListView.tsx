@@ -67,8 +67,8 @@ export default function ApprovalListView({ approvalList }: Props) {
       approvalList?.map((item, index) => (
         <div className="list-row" key={index + 1} onClick={() => router.push(`/approval/edit/${item.id}?applicationId=${item.applicationId}`, {scroll: true})}>
           <p className="row mb-2">
-            <span className="col-auto fw-bold">{item.sType}</span>
-            <span className="col-auto ms-2 classification-label me-auto">{item.sClassification}</span>
+            <span className="col-auto ms-2 classification-label">{item.sClassification}</span>
+            <span className="col-auto ms-1 me-auto fw-bold">{item.sType}</span>
             <span className={`col-3 col-md-2 align-self-end badge status-color ${getStatusColrClassName(item)}`}>{item.sAction}</span>
           </p>
           <p className="row mb-1">

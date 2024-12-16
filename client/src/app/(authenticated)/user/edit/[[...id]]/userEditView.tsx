@@ -9,8 +9,9 @@ import 'flatpickr/dist/flatpickr.min.css';
 import "flatpickr/dist/themes/material_blue.css";
 
 import { getUserDetailsResponse } from '@/api/getUserDetails';
-import { SaveUserRequest, saveUser } from '@/api/saveUser';
-import { updateGrantDays, UpdateGrantDaysRequest } from '@/api/updateGrantDays';
+import { SaveUserRequest, SaveUserResponse, saveUser } from '@/api/saveUser';
+import { updateGrantDays, UpdateGrantDaysRequest, UpdateGrantDaysResponse } from '@/api/updateGrantDays';
+import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 type Props = {
   id: number | undefined,
@@ -24,6 +25,8 @@ export default function UserEditView({ id, user }: Props) {
     dateFormat: 'Y/m/d',
   };
 
+  // 共通Sore
+  const { setNotificationMessageObject } = useNotificationMessageStore();
   const [values, setValues] = useState({
     autoCalcRemainingDays: '',
   });
@@ -32,8 +35,7 @@ export default function UserEditView({ id, user }: Props) {
     userId: '',
     firstName: '',
     lastName: '',
-    referenceDateStr: '',
-    referenceDate: new Date(),
+    referenceDate: new Date().toLocaleDateString('ja-JP'),
     workingDays: '5',
     totalDeleteDays: '',
     totalAddDays: '',
@@ -45,9 +47,6 @@ export default function UserEditView({ id, user }: Props) {
     firstName: '',
     lastName: '',
     referenceDate: '',
-  });
-
-  const [inputNumberError, setInputNumberError] = useState({
     totalDeleteDays: '',
     totalAddDays: '',
     totalRemainingDays: '',
@@ -67,8 +66,7 @@ export default function UserEditView({ id, user }: Props) {
         userId: user.userId,
         firstName: user.firstName,
         lastName: user.lastName,
-        referenceDateStr: new Date(utcReferenceDate.getUTCFullYear(), utcReferenceDate.getMonth(), utcReferenceDate.getDate()).toLocaleDateString('ja-JP'),
-        referenceDate: new Date(utcReferenceDate.getUTCFullYear(), utcReferenceDate.getMonth(), utcReferenceDate.getDate()),
+        referenceDate: new Date(utcReferenceDate.getUTCFullYear(), utcReferenceDate.getMonth(), utcReferenceDate.getDate()).toLocaleDateString('ja-JP'),
         workingDays: user.workingDays,
         totalDeleteDays: user.totalDeleteDays,
         totalAddDays: user.totalAddDays,
@@ -78,47 +76,16 @@ export default function UserEditView({ id, user }: Props) {
     }
   }, [id])
 
-  const setHandleInputError = (e: any) => {
-    const value = e.target.value;
-    let errorMsg = '';
-    if(!value) {
-      errorMsg = "必須入力です"
-    }
-
-    setInputError({ ...inputError, [e.target.name]: errorMsg});
-  }
-
-  const setHandleInputNumberError = (e: any) => {
-    const regexp = /^([1-9]\d*|0)(\.\d+)?$/;
-    const value = e.target.value;
-    let errorMsg = '';
-    if(!value) {
-      errorMsg = "必須入力です"
-    }
-
-    const isValid = regexp.test(value);
-    if(value && !isValid) {
-      errorMsg = '入力値が不正です';
-    }
-
-    setInputNumberError({ ...inputNumberError, [e.target.name]: errorMsg});
-  }
-
   const handleOnChange = (e: any) => {
     setInputValues({ ...inputValues, [e.target.name]: e.target.value});
   }
 
   const handleOnDateChange = (date: Date, name: any) => {
-    let errorMsg = '';
-    let value = '';
     if(date) {
-      value = date.toLocaleDateString('ja-JP');
+      setInputValues({ ...inputValues, [name]: date.toLocaleDateString('ja-JP')});
     } else {
-      errorMsg = "必須入力です"
+      setInputValues({ ...inputValues, [name]: ''});
     }
-
-    setInputValues({ ...inputValues, [name]: value});
-    setInputError({ ...inputError, [name]: errorMsg});
   }
 
   /**
@@ -130,10 +97,16 @@ export default function UserEditView({ id, user }: Props) {
       id: id,
     }
 
-    const res = await updateGrantDays(request);
-    if(res) {
+    await updateGrantDays(request).then(async(res: UpdateGrantDaysResponse) => {
+      if(res.responseResult) {
 
-    }
+      } else {
+        setNotificationMessageObject({
+          errorMessageList: res.message ? [res.message] : [],
+          inputErrorMessageList: [],
+        })
+      }
+    });
   };
 
   /**
@@ -141,23 +114,39 @@ export default function UserEditView({ id, user }: Props) {
    * @returns 
    */
   const onSubmit = async() => {
-    let hasError = false;
-    for (let [key, value] of Object.entries(inputError)) {
-      if(value !== '') {
-        hasError = true;
-        break;
+    const requiredErrors = {
+      ...inputError,
+      ['lastName']: !inputValues.lastName ? '姓は必須入力です。' : '',
+      ['firstName']: !inputValues.firstName ? '名は必須入力です。' : '',
+      ['referenceDate']: !inputValues.referenceDate ? '基準日は必須入力です。' : '',
+      // ['workingDays']: !inputValues.workingDays ? '稼働日数は必須入力です。' : '',
+      ['totalDeleteDays']: inputValues.totalDeleteDays < '0' ? '有給取得日数は必須入力です。' : '',
+      ['totalAddDays']: inputValues.totalAddDays < '0' ? '付与日数は必須入力です。' : '',
+      ['totalRemainingDays']: inputValues.totalRemainingDays < '0' ? '有給残日数は必須入力です。' : '',
+      ['totalCarryoverDays']: inputValues.totalCarryoverDays < '0' ? '繰越日数は必須入力です。' : '',
+    }
+
+    for (const value of Object.values(requiredErrors)) {
+      if(value.length) {
+        setInputError(requiredErrors);
+        return;
       }
     }
 
-    for (let [key, value] of Object.entries(inputNumberError)) {
-      if(value !== '') {
-        hasError = true;
-        break;
-      }
-    }
+    const regexp = /^([1-9]\d*|0)(\.\d+)?$/;
+    const formatErrors = {
+      ...inputError,
+      ['totalDeleteDays']: !regexp.test(inputValues.totalDeleteDays) ? '有給取得日数の入力値が不正です。' : '',
+      ['totalAddDays']: !regexp.test(inputValues.totalAddDays) ? '付与日数の入力値が不正です。' : '',
+      ['totalRemainingDays']: !regexp.test(inputValues.totalRemainingDays) ? '有給残日数の入力値が不正です。' : '',
+      ['totalCarryoverDays']: !regexp.test(inputValues.totalCarryoverDays) ? '繰越日数の入力値が不正です。' : '',
+    };
 
-    if(hasError) {
-      return;
+    for (const value of Object.values(formatErrors)) {
+      if(value.length) {
+        setInputError(formatErrors);
+        return;
+      }
     }
 
     const request: SaveUserRequest = {
@@ -172,17 +161,25 @@ export default function UserEditView({ id, user }: Props) {
       totalCarryoverDays: inputValues.totalCarryoverDays,
     }
 
-    const res = await saveUser(request);
-    if(res) {
-      router.replace('/user/list', {scroll: true});
-    }
+    await saveUser(request).then(async(res: SaveUserResponse) => {
+      if(res.responseResult) {
+        router.replace('/user/list', {scroll: true});
+      } else {
+        // 自分自身だった場合、共通Storeも更新する。
+        setNotificationMessageObject({
+          errorMessageList: res.message ? [res.message] : [],
+          inputErrorMessageList: [],
+        })
+      }
+    });
   };
 
   return (
     <>
-      <div className="row col-12">
-        <div className="col text-end">
-        <button className="btn btn-outline-success" onClick={onUpdateGrantDays}>付与日数更新</button>
+      <div className="operation-btn-parent-view">
+        <div className="operation-btn-view-pc">
+          <button className="btn btn-outline-success" onClick={onUpdateGrantDays}>付与日数更新</button>
+          <button className="btn btn-outline-primary ms-2" onClick={onSubmit}>保存</button>
         </div>
       </div>
 
@@ -201,11 +198,11 @@ export default function UserEditView({ id, user }: Props) {
           <label className="col-form-label fw-medium" htmlFor="lastName">名前</label>
         </div>
         <div className="col-md-5 col-6 pe-3">
-          <input className="form-control" type="text" placeholder="姓" value={inputValues.lastName} name="lastName" id="lastName" onChange={(e) => handleOnChange(e)} onBlur={(e) => setHandleInputError(e)} />
+          <input className="form-control" type="text" placeholder="姓" value={inputValues.lastName} name="lastName" id="lastName" onChange={(e) => handleOnChange(e)} />
           <p className="input_error">{inputError.lastName}</p>
         </div>
         <div className="col-md-5 col-6 ps-3">
-          <input className="form-control" type="text" placeholder="名" value={inputValues.firstName} name="firstName" id="firstName" onChange={(e) => handleOnChange(e)} onBlur={(e) => setHandleInputError(e)} />
+          <input className="form-control" type="text" placeholder="名" value={inputValues.firstName} name="firstName" id="firstName" onChange={(e) => handleOnChange(e)} />
           <p className="input_error">{inputError.firstName}</p>
         </div>
       </div>
@@ -242,8 +239,8 @@ export default function UserEditView({ id, user }: Props) {
             {/* 有給取得日数 */}
             <div className="col-md-2 col-3 me-3">
               <label className="form-label fw-medium" htmlFor="totalDeleteDays">有給取得日数</label>
-              <input className="form-control" type="text" value={inputValues.totalDeleteDays} name="totalDeleteDays" id="totalDeleteDays" onChange={(e) => handleOnChange(e)} onBlur={(e) => setHandleInputNumberError(e)} />
-              <p className="input_error">{inputNumberError.totalDeleteDays}</p>
+              <input className="form-control" type="text" value={inputValues.totalDeleteDays} name="totalDeleteDays" id="totalDeleteDays" onChange={(e) => handleOnChange(e)} />
+              <p className="input_error">{inputError.totalDeleteDays}</p>
             </div>
             {/* 有給残日数 */}
             <div className="col-md-2 col-3 me-3">
@@ -260,23 +257,17 @@ export default function UserEditView({ id, user }: Props) {
             {/* 繰越日数 */}
             <div className="col-md-2 col-3 me-3">
               <label className="form-label fw-medium" htmlFor="totalCarryoverDays">繰越日数</label>
-              <input className="form-control" type="text" value={inputValues.totalCarryoverDays} name="totalCarryoverDays" id="totalCarryoverDays" onChange={(e) => handleOnChange(e)} onBlur={(e) => setHandleInputNumberError(e)} />
-              <p className="input_error">{inputNumberError.totalCarryoverDays}</p>
+              <input className="form-control" type="text" value={inputValues.totalCarryoverDays} name="totalCarryoverDays" id="totalCarryoverDays" onChange={(e) => handleOnChange(e)} />
+              <p className="input_error">{inputError.totalCarryoverDays}</p>
             </div>
             {/* 付与日数 */}
             <div className="col-md-2 col-3 me-3">
               <label className="form-label fw-medium" htmlFor="totalAddDays">付与日数</label>
-              <input className="form-control" type="text" value={inputValues.totalAddDays} name="totalAddDays" id="totalAddDays" onChange={(e) => handleOnChange(e)} onBlur={(e) => setHandleInputNumberError(e)} />
-              <p className="input_error">{inputNumberError.totalAddDays}</p>
+              <input className="form-control" type="text" value={inputValues.totalAddDays} name="totalAddDays" id="totalAddDays" onChange={(e) => handleOnChange(e)} />
+              <p className="input_error">{inputError.totalAddDays}</p>
             </div>
             <div className="col-md-3 col-3"></div>
           </div>
-        </div>
-      </div>
-      <div className="row col-12 mt-4">
-        <div className="col-1 text-start"></div>
-        <div className="col text-end">
-          <button className="btn btn-outline-primary me-3" onClick={onSubmit}>保存</button>
         </div>
       </div>
     </>

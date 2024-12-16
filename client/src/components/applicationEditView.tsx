@@ -16,6 +16,7 @@ import { useCommonStore } from '@/app/store/CommonStore';
 import { getNotification, GetNotificationResponse } from '@/api/getNotification';
 import { ApprovalGroupObject, getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
 import ApprovalStatusListView from './approvalStatusListView';
+import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 type Props = {
   isAdminFlow: boolean,
@@ -42,7 +43,8 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
   };
 
   // 共通Sore
-  const { setCommonObject, getCommonObject } = useCommonStore();
+  const { setCommonObject } = useCommonStore();
+  const { setNotificationMessageObject } = useNotificationMessageStore();
   const [application, setApplication] = useState<Application | null>(null);
   const [approvalTtasks, setApprovalTtasks] = useState<ApprovalTtask[]>([]);
   const [availableOperation, setAvailableOperation] = useState<AvailableOperation | null>(null);
@@ -70,6 +72,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
 
   const [inputError, setInputError] = useState({
     startEndDate: '',
+    startEndTime: '',
     approvalGroup: '',
     comment: '',
   });
@@ -85,7 +88,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
 
       if(applicationId && !isNew) {
         await setApplicationInput();
-        setIsLoadComplete(true);
       } else if(isNew && !applicationId) {
         const startDate = selectDate ? new Date(selectDate) : today;
         setInputValues({ ...inputValues,
@@ -146,6 +148,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
           name: res.application.approvalGroupName,
           users: res.application.approvers,
         });
+        setIsLoadComplete(true);
       } else {
         setErrorMessage(res.message);
       }
@@ -187,7 +190,11 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
   }
 
   const handleOnStartEndTimeChange = (date: Date, name: any) => {
-    setInputValues({ ...inputValues, [name]: date ? date.toLocaleTimeString('ja-JP') : ""});
+    if(date) {
+      setInputValues({ ...inputValues, [name]: date.toLocaleTimeString('ja-JP')});
+    } else {
+      setInputValues({ ...inputValues, [name]: null});
+    }
   }
 
   /**
@@ -196,14 +203,23 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
    * @returns 
    */
   const onSave = async(action: string) => {
-    setInputError({ ...inputError,
+    const requiredErrors = {
+      ...inputError,
       ['startEndDate']: !inputValues.startEndDate ? '取得日は必須入力です。' : '',
-      ['comment']: !inputValues.comment ? '申請コメントは必須入力です。' : '',
+      ['startEndTime']: !inputValues.startTime || !inputValues.endTime ? '取得時間は必須入力です。' : '',
+      ['comment']: !inputValues.comment.trim() ? '申請コメントは必須入力です。' : '',
       ['approvalGroup']: !currentSelectApprovalGroup.id ? '承認グループを選択してください。' : '',
-    });
+    };
 
-    if(!inputValues.startEndDate || !inputValues.comment || !currentSelectApprovalGroup.id) {
-      return;
+    for (const value of Object.values(requiredErrors)) {
+      if(value.length) {
+        setInputError(requiredErrors);
+        setNotificationMessageObject({
+          errorMessageList: [],
+          inputErrorMessageList: ['入力内容が不正です。'],
+        })
+        return;
+      }
     }
 
     const request: SaveApplicationRequest = {
@@ -254,12 +270,20 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
    * 取消ボタン押下
    */
   const onCancel = async() => {
-    setInputError({ ...inputError,
-      ['comment']: !inputValues.comment ? '取消コメントは必須入力です。' : '',
-    });
+    const requiredErrors = {
+      ...inputError,
+      ['comment']: !inputValues.comment.trim() ? '取消コメントは必須入力です。' : '',
+    };
 
-    if(!inputValues.comment) {
-      return;
+    for (const value of Object.values(requiredErrors)) {
+      if(value.length) {
+        setInputError(requiredErrors);
+        setNotificationMessageObject({
+          errorMessageList: [],
+          inputErrorMessageList: ['入力内容が不正です。'],
+        })
+        return;
+      }
     }
 
     const request: CancelApplicationRequest = {
@@ -286,7 +310,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     return await getNotification().then((res: GetNotificationResponse) => {
       if(res.responseResult) {
         setCommonObject({
-          errorMessage: getCommonObject().errorMessage,
           actionRequiredApplicationCount: res.actionRequiredApplicationCount,
           approvalTaskCount: res.approvalTaskCount,
           activeApplicationCount: res.activeApplicationCount,
@@ -300,183 +323,189 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
    * @param message 
    */
   const setErrorMessage = (message: string | undefined) => {
-    setCommonObject({
-      errorMessage: message ? message : "",
-      actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-      approvalTaskCount: getCommonObject().approvalTaskCount,
-      activeApplicationCount: getCommonObject().activeApplicationCount,
+    setNotificationMessageObject({
+      errorMessageList: message ? [message] : [],
+      inputErrorMessageList: [],
     })
   }
 
   return (
-    <div className="row" hidden={!isLoadComplete}>
-      <div className="col-xxl-6 ps-1 pe-1">
-        {/* 状況 */}
-        <div className="row align-items-center mb-3 g-3" hidden={!application}>
-          <div className="col-md-2">
-            <label className="col-form-label fw-medium">ステータス</label>
+    <>
+      <div className="row pb-5" hidden={!isLoadComplete}>
+        <div className="col-xxl-6 ps-1 pe-1">
+          <div className="operation-btn-parent-view">
+            <div className="pc-only operation-btn-view-pc">
+              <button className="btn btn-outline-danger" onClick={() => onCancel()} hidden={!availableOperation?.isCancel}>取消</button>
+              <button className="btn btn-outline-danger" onClick={() => onDelete()} hidden={!availableOperation?.isDelete}>削除</button>
+              <button className="btn btn-outline-primary ms-2" onClick={() => onSave('0')} hidden={!(!application || availableOperation?.isSave)}>保存</button>
+              <button className="btn btn-outline-success ms-2" onClick={() => onSave('1')} hidden={!(!application || availableOperation?.isEdit)}>申請</button>
+            </div>
+            <div className="sp-only operation-btn-view-sp">
+              <button className="btn btn-danger flex-grow-1 m-1" onClick={() => onCancel()} hidden={!availableOperation?.isCancel}>取消</button>
+              <button className="btn btn-danger flex-grow-1 m-1" onClick={() => onDelete()} hidden={!availableOperation?.isDelete}>削除</button>
+              <button className="btn btn-primary flex-grow-1 m-1 " onClick={() => onSave('0')} hidden={!(!application || availableOperation?.isSave)}>保存</button>
+              <button className="btn btn-success flex-grow-1 m-1" onClick={() => onSave('1')} hidden={!(!application || availableOperation?.isEdit)}>申請</button>
+            </div>
           </div>
-          <div className="col ps-3">
-            <p className="mb-0">{application?.sAction}</p>
+          {/* 状況 */}
+          <div className="row align-items-center mb-3 g-3" hidden={!application}>
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium">ステータス</label>
+            </div>
+            <div className="col-md-3 ps-3">
+              <p className="mb-0">{application?.sAction}</p>
+            </div>
           </div>
-        </div>
-        {/* 申請日 */}
-        <div className="row align-items-center mb-3 g-3" hidden={!isAdminFlow}>
-          <div className="col-md-2">
-            <label className="col-form-label fw-medium">申請日</label>
+          {/* 申請日 */}
+          <div className="row align-items-center mb-3 g-3" hidden={!isAdminFlow}>
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium">申請日</label>
+            </div>
+            <div className="col ps-3">
+              <p className="mb-0">{application?.sApplicationDate}</p>
+            </div>
           </div>
-          <div className="col ps-3">
-            <p className="mb-0">{application?.sApplicationDate}</p>
+          {/* 申請者 */}
+          <div className="row align-items-center mb-3 g-3" hidden={!isAdminFlow}>
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium">申請者</label>
+            </div>
+            <div className="col ps-3">
+              <p className="mb-0">{application?.applicationUserName}</p>
+            </div>
           </div>
-        </div>
-        {/* 申請者 */}
-        <div className="row align-items-center mb-3 g-3" hidden={!isAdminFlow}>
-          <div className="col-md-2">
-            <label className="col-form-label fw-medium">申請者</label>
+          {/* 申請種類 */}
+          <div className="row align-items-center mb-3 g-3">
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium" htmlFor="type">申請種類</label>
+            </div>
+            <div className="col col-md-5" hidden={!editEnabled}>
+              <select className="form-select" id="type" value={inputValues.type} name="type" onChange={(e) => handleOnChange(e)}>
+                <option value="0">年次有給休暇申請</option>
+                <option value="1">休暇申請</option>
+              </select>
+            </div>
+            <div className="col ps-3" hidden={editEnabled}>
+              <p className="mb-0">{application?.sType}</p>
+            </div>
           </div>
-          <div className="col ps-3">
-            <p className="mb-0">{application?.applicationUserName}</p>
+          {/* 区分 */}
+          <div className="row align-items-center mb-3 g-3">
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium" htmlFor="classification">区分</label>
+            </div>
+            <div className="col col-md-5" hidden={!editEnabled}>
+              <select className="form-select" id="classification" value={inputValues.classification} name="classification" onChange={(e) => handleOnChange(e)}>
+                <option value="0">全日</option>
+                <option value="1">AM半休</option>
+                <option value="2">PM半休</option>
+                <option value="3">時間単位</option>
+              </select>
+            </div>
+            <div className="col ps-3" hidden={editEnabled}>
+              <p className="mb-0">
+                <span className="me-3">{application?.sClassification}</span>
+                <span hidden={application?.classification != '3'}>{application?.totalTime}時間</span>
+              </p>
+            </div>
           </div>
-        </div>
-        {/* 申請種類 */}
-        <div className="row align-items-center mb-3 g-3">
-          <div className="col-md-2">
-            <label className="col-form-label fw-medium" htmlFor="type">申請種類</label>
+          {/* 取得日 */}
+          <div className="row align-items-center mb-3 g-3">
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium" htmlFor="startEndDate">取得日</label>
+            </div>
+            <div className="col-8 col-md-5" hidden={!editEnabled}>
+              <Flatpickr className="form-select" id="startEndDate" options={dateOption}
+                value={inputValues.currentDate} name="startEndDate" onChange={([date]: any) => handleOnDateChange(date, "startEndDate")}/>
+              <p className="input_error">{inputError.startEndDate}</p>
+            </div>
+            <div className="col ps-3" hidden={editEnabled}>
+              <p className="mb-0">{application?.sStartDate}</p>
+            </div>
           </div>
-          <div className="col col-md-5" hidden={!editEnabled}>
-            <select className="form-select" id="type" value={inputValues.type} name="type" onChange={(e) => handleOnChange(e)}>
-              <option value="0">年次有給休暇申請</option>
-              <option value="1">休暇申請</option>
-            </select>
+          {/* 取得時間 */}
+          <div className="row align-items-center mb-3 g-3">
+            <div className="col-md-2 mb-2">
+              <label className="col-form-label fw-medium" htmlFor="startDate">取得時間</label>
+            </div>
+            <div className="col-5 col-md-2 mb-2" hidden={!editEnabled}>
+              <Flatpickr className="form-select" id="startDate" options={timeOption}
+                value={inputValues.startTime} name="startTime" onChange={([date]: any) => handleOnStartEndTimeChange(date, "startTime")}/>
+            </div>
+            <div className="col-1 text-center mb-2" hidden={!editEnabled}>
+              <span>～</span>
+            </div>
+            <div className="col-5 col-md-2 mb-2 me-2" hidden={!editEnabled}>
+              <Flatpickr className="form-select" id="endDate" options={timeOption}
+                value={inputValues.endTime} name="endTime" onChange={([date]: any) => handleOnStartEndTimeChange(date, "endTime")}/>
+            </div>
+            <div className="col-5 col-md-2 mb-2" hidden={!editEnabled}>
+              <select className="form-select" id="totalTime" value={inputValues.totalTime} name="totalTime" onChange={(e) => handleOnChange(e)} disabled={inputValues.classification != '3'}>
+                {
+                  ["1", "2", "3", "4", "5", "6", "7", "8"].map((num: any, index: number) => (
+                    <option value={num} key={index}>{num}時間</option>
+                  ))
+                }
+              </select>
+            </div>
+            <p className="input_error" hidden={!editEnabled}>{inputError.startEndTime}</p>
+            <div className="col ps-3" hidden={editEnabled}>
+              <span>{application?.sStartTime} ～ {application?.sEndTime}</span>
+            </div>
           </div>
-          <div className="col ps-3" hidden={editEnabled}>
-            <p className="mb-0">{application?.sType}</p>
+          {/* 申請コメント */}
+          <div className="row mb-3 g-3" hidden={!application || (editEnabled && availableOperation?.isEditApprovalGroup)}>
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium" htmlFor="comment">{editEnabled && !availableOperation?.isEditApprovalGroup ? '前回申請コメント' : '申請コメント'}</label>
+            </div>
+            <div className="col ps-3">
+              <p className="mb-0 comment">{application?.comment}</p>
+            </div>
           </div>
-        </div>
-        {/* 区分 */}
-        <div className="row align-items-center mb-3 g-3">
-          <div className="col-md-2">
-            <label className="col-form-label fw-medium" htmlFor="classification">区分</label>
+          {/* コメント入力欄 */}
+          <div className="row mb-3 g-3" hidden={!editEnabled && !availableOperation?.isCancel}>
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium" htmlFor="comment">{availableOperation?.isCancel ? '取消コメント' : '申請コメント'}</label>
+            </div>
+            <div className="col-12">
+              <textarea className="form-control non-resize" id="comment" rows={5} placeholder="コメントを入力してください。"
+                value={inputValues.comment} name="comment" onChange={(e) => handleOnChange(e)}></textarea>
+              <p className="input_error">{inputError.comment}</p>
+            </div>
           </div>
-          <div className="col col-md-5" hidden={!editEnabled}>
-            <select className="form-select" id="classification" value={inputValues.classification} name="classification" onChange={(e) => handleOnChange(e)}>
-              <option value="0">全日</option>
-              <option value="1">AM半休</option>
-              <option value="2">PM半休</option>
-              <option value="3">時間単位</option>
-            </select>
+          {/* 承認グループ */}
+          <div className="row align-items-center mb-3 g-3">
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium" htmlFor="approvalGroup">承認グループ</label>
+            </div>
+            <div className="col col-md-5">
+              <select className="form-select" id="approvalGroup" value={currentSelectApprovalGroup.id} name="approvalGroup" onChange={(e) => handleOnChange(e)} disabled={!(!application || availableOperation?.isEditApprovalGroup || (editEnabled && !application.approvers.length))}>
+                <option value=''>未選択</option>
+                {
+                  approvalGroup.map((approvalGroup: any, index: number) => (
+                    <option value={approvalGroup.groupId} key={index}>{approvalGroup.groupName}</option>
+                  ))
+                }
+              </select>
+              <p className="input_error">{inputError.approvalGroup}</p>
+            </div>
           </div>
-          <div className="col ps-3" hidden={editEnabled}>
-            <p className="mb-0">
-              <span className="me-3">{application?.sClassification}</span>
-              <span hidden={application?.classification != '3'}>{application?.totalTime}時間</span>
-            </p>
-          </div>
-        </div>
-        {/* 取得日 */}
-        <div className="row align-items-center mb-3 g-3">
-          <div className="col-md-2">
-            <label className="col-form-label fw-medium" htmlFor="startEndDate">取得日</label>
-          </div>
-          <div className="col-8 col-md-5" hidden={!editEnabled}>
-            <Flatpickr className="form-select" id="startEndDate" options={dateOption}
-              value={inputValues.currentDate} name="startEndDate" onChange={([date]: any) => handleOnDateChange(date, "startEndDate")}/>
-            <p className="input_error">{inputError.startEndDate}</p>
-          </div>
-          <div className="col ps-3" hidden={editEnabled}>
-            <p className="mb-0">{application?.sStartDate}</p>
-          </div>
-        </div>
-        {/* 取得時間 */}
-        <div className="row align-items-center mb-3 g-3">
-          <div className="col-md-2 mb-2">
-            <label className="col-form-label fw-medium" htmlFor="startDate">取得時間</label>
-          </div>
-          <div className="col-5 col-md-2 mb-2" hidden={!editEnabled}>
-            <Flatpickr className="form-select" id="startDate" options={timeOption}
-              value={inputValues.startTime} name="startTime" onChange={([date]: any) => handleOnStartEndTimeChange(date, "startTime")}/>
-          </div>
-          <div className="col-1 text-center mb-2" hidden={!editEnabled}>
-            <span>～</span>
-          </div>
-          <div className="col-5 col-md-2 mb-2 me-2" hidden={!editEnabled}>
-            <Flatpickr className="form-select" id="endDate" options={timeOption}
-              value={inputValues.endTime} name="endTime" onChange={([date]: any) => handleOnStartEndTimeChange(date, "endTime")}/>
-          </div>
-          <div className="col-5 col-md-2 mb-2" hidden={!editEnabled}>
-            <select className="form-select" id="totalTime" value={inputValues.totalTime} name="totalTime" onChange={(e) => handleOnChange(e)} disabled={inputValues.classification != '3'}>
+          {/* 承認グループ 詳細表示 */}
+          <div className="row align-items-center g-3 mb-2" hidden={!currentSelectApprovalGroup.id}>
+            <ol className="list-group list-group-numbered col-md-10 offset-md-2">
               {
-                ["1", "2", "3", "4", "5", "6", "7", "8"].map((num: any, index: number) => (
-                  <option value={num} key={index}>{num}時間</option>
+                currentSelectApprovalGroup.users?.map((user: any, index: number) => (
+                  <li className="list-group-item" key={index}>{user.name}</li>
                 ))
               }
-            </select>
-          </div>
-          <div className="col ps-3" hidden={editEnabled}>
-            <span>{application?.sStartTime} ～ {application?.sEndTime}</span>
+            </ol>
           </div>
         </div>
-        {/* 申請コメント */}
-        <div className="row mb-3 g-3" hidden={!application || (editEnabled && availableOperation?.isEditApprovalGroup)}>
-          <div className="col-md-2">
-            <label className="col-form-label fw-medium" htmlFor="comment">{editEnabled && !availableOperation?.isEditApprovalGroup ? '前回申請コメント' : '申請コメント'}</label>
-          </div>
-          <div className="col ps-3">
-            <p className="mb-0 comment">{application?.comment}</p>
-          </div>
-        </div>
-        {/* コメント入力欄 */}
-        <div className="row mb-3 g-3" hidden={!editEnabled && !availableOperation?.isCancel}>
-          <div className="col-md-2">
-            <label className="col-form-label fw-medium" htmlFor="comment">{availableOperation?.isCancel ? '取消コメント' : '申請コメント'}</label>
-          </div>
-          <div className="col-12">
-            <textarea className="form-control non-resize" id="comment" rows={5} placeholder="コメントを入力してください。"
-              value={inputValues.comment} name="comment" onChange={(e) => handleOnChange(e)}></textarea>
-            <p className="input_error">{inputError.comment}</p>
-          </div>
-        </div>
-        {/* 承認グループ */}
-        <div className="row align-items-center mb-3 g-3">
-          <div className="col-md-2">
-            <label className="col-form-label fw-medium" htmlFor="approvalGroup">承認グループ</label>
-          </div>
-          <div className="col col-md-5">
-            <select className="form-select" id="approvalGroup" value={currentSelectApprovalGroup.id} name="approvalGroup" onChange={(e) => handleOnChange(e)} disabled={!(!application || availableOperation?.isEditApprovalGroup)}>
-              <option value=''>未選択</option>
-              {
-                approvalGroup.map((approvalGroup: any, index: number) => (
-                  <option value={approvalGroup.groupId} key={index}>{approvalGroup.groupName}</option>
-                ))
-              }
-            </select>
-            <p className="input_error">{inputError.approvalGroup}</p>
-          </div>
-        </div>
-        {/* 承認グループ 詳細表示 */}
-        <div className="row align-items-center g-3" hidden={!currentSelectApprovalGroup.id}>
-          <ol className="list-group list-group-numbered col-md-10 offset-md-2">
-            {
-              currentSelectApprovalGroup.users?.map((user: any, index: number) => (
-                <li className="list-group-item" key={index}>{user.name}</li>
-              ))
-            }
-          </ol>
-        </div>
-        <div className="row col-12 mt-4">
-          <div className="col-1 text-start"></div>
-          <div className="col text-end">
-            <button className="btn btn-outline-danger" onClick={() => onCancel()} hidden={!availableOperation?.isCancel}>取消</button>
-            <button className="btn btn-outline-danger" onClick={() => onDelete()} hidden={!availableOperation?.isDelete}>削除</button>
-            <button className="btn btn-outline-primary ms-5 me-3" onClick={() => onSave('0')} hidden={!(!application || availableOperation?.isSave)}>保存</button>
-            <button className="btn btn-outline-success ms-3 me-3" onClick={() => onSave('1')} hidden={!(!application || availableOperation?.isEdit)}>申請</button>
-          </div>
+        {/* 承認状況表示エリア */}
+        <div className="col ps-1 pe-1" hidden={!application || availableOperation?.isSave}>
+          <ApprovalStatusListView tasks={approvalTtasks}></ApprovalStatusListView>
         </div>
       </div>
-      {/* 承認状況表示エリア */}
-      <div className="col ps-1 pe-1" hidden={!application || availableOperation?.isSave}>
-        <ApprovalStatusListView tasks={approvalTtasks}></ApprovalStatusListView>
-      </div>
-    </div>
+    </>
   )
 };

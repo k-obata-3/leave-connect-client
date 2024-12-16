@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 type UserInfo = {
   id: string,
+  userId: string,
   companyId: string,
   firstName: string,
   lastName: string,
@@ -26,6 +27,7 @@ type UserInfoStore = {
 export const useUserInfoStore = create<UserInfoStore>((set, get) => ({
   userInfo: {
     id: '',
+    userId: '',
     companyId: '',
     firstName: '',
     lastName: '',
@@ -44,6 +46,7 @@ export const useUserInfoStore = create<UserInfoStore>((set, get) => ({
   clearUserInfo: () => set((state) => ({
     userInfo: {
       id: '',
+      userId: '',
       companyId: '',
       firstName: '',
       lastName: '',

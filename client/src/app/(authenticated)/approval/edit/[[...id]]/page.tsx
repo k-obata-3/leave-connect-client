@@ -21,7 +21,7 @@ export default function ApprovalEdit() {
 
   return (
     <div className="approval-edit">
-      <div className="page-title">
+      <div className="page-title pc-only">
         <h3>承認</h3>
       </div>
       <ApplicationConfirmView applicationId={applicationId} taskId={taskId}></ApplicationConfirmView>

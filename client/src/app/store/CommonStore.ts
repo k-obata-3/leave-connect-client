@@ -1,7 +1,6 @@
 import { create } from "zustand";
 
 type CommonObject = {
-  errorMessage: string,
   actionRequiredApplicationCount: string,
   approvalTaskCount: string,
   activeApplicationCount: string,
@@ -16,7 +15,6 @@ type CommonStore = {
 
 export const useCommonStore = create<CommonStore>((set, get) => ({
   commonObject: {
-    errorMessage: '',
     actionRequiredApplicationCount: '0',
     approvalTaskCount: '0',
     activeApplicationCount: '0',
@@ -26,7 +24,6 @@ export const useCommonStore = create<CommonStore>((set, get) => ({
   })),
   clearCommonObject: () => set((state) => ({
     commonObject: {
-      errorMessage: '',
       actionRequiredApplicationCount: '0',
       approvalTaskCount: '0',
       activeApplicationCount: '0',

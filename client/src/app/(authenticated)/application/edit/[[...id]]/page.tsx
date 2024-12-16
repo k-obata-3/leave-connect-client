@@ -22,7 +22,7 @@ export default function ApplicationEdit() {
 
   return (
     <div className="application-edit">
-      <div className="page-title">
+      <div className="page-title pc-only">
         <h3>申請</h3>
       </div>
       <ApplicationEditView isAdminFlow={false} isNew={isNew} selectDate={searchParams?.get("selectDate")} applicationId={applicationId}></ApplicationEditView>

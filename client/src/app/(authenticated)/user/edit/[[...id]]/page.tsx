@@ -25,11 +25,11 @@ export default function UserEdit() {
 
   return (
     <div className="user-edit">
-      {/* ページタイトル */}
-      <div className="page-title">
+      <div className="page-title pc-only">
         <h3>ユーザ編集</h3>
       </div>
-      <div className="col-xl-10 offset-xl-1">
+      <div className="sp-only text-center">Not supported</div>
+      <div className="pc-only col-xl-10 offset-xl-1">
         <UserEditView id={user?.id} user={user}></UserEditView>
       </div>
     </div>

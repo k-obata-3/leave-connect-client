@@ -3,11 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { Application, GetApplicationListRequest, GetApplicationListResponse, getApplicationList } from '@/api/getApplicationList';
 import { useRouter } from 'next/navigation'
-import { useUserInfoStore } from '@/app/store/UserInfoStore';
 import ApplicationListView from '@/components/applicationListView';
 import ListSearchView from '@/components/listSearchView';
 import Pager from '@/components/pager';
-import { useCommonStore } from '@/app/store/CommonStore';
+import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 export default function ApplicationList() {
   const router = useRouter();
@@ -21,20 +20,22 @@ export default function ApplicationList() {
   ];
 
   // 共通Sore
-  const { setCommonObject, getCommonObject } = useCommonStore();
-  const { getUserInfo } = useUserInfoStore();
+  const { setNotificationMessageObject } = useNotificationMessageStore();
   const [applicationList, setApplicationList] = useState<Application[]>([]);
   const [currentSearchParams, setCurrentSearchParams] = useState({
-    currentSearchYear: '',
+    currentSearchYear: new Date().getFullYear().toString(),
     currentSearchUser: '',
     currentSearchAction: ''
   });
   const [searchHandler, setSearchHandler] = useState({
-    changeSearchYear: (val: string) => {},
+    changeSearchYear: (val: string) => {
+      currentSearchParams.currentSearchYear = val;
+      getApplications(val, currentSearchParams.currentSearchAction, pagerParams.limit, 1);
+    },
     changeSearchUser: (val: string) => {},
     changeSearchAction: (val: string) => {
       currentSearchParams.currentSearchAction = val;
-      getApplications(val, pagerParams.limit, 1);
+      getApplications(currentSearchParams.currentSearchYear, val, pagerParams.limit, 1);
     },
   });
 
@@ -47,18 +48,19 @@ export default function ApplicationList() {
 
   useEffect(() =>{
     (async() => {
-      await getApplications(currentSearchParams.currentSearchAction, pagerParams.limit, pagerParams.currentPage);
+      await getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchAction, pagerParams.limit, pagerParams.currentPage);
     })();
   },[])
 
   /**
    * 申請一覧取得
+   * @param searchYear 
    * @param searchAction 
    * @param limit 
    * @param currentPage 
    * @returns 
    */
-  const getApplications = async(searchAction: string, limit: number, currentPage: number) => {
+  const getApplications = async(searchYear: string, searchAction: string, limit: number, currentPage: number) => {
     if(isLoading) {
       return;
     }
@@ -67,7 +69,7 @@ export default function ApplicationList() {
     const req: GetApplicationListRequest = {
       searchUserId: null,
       searchAction: searchAction,
-      searchYear: null,
+      searchYear: searchYear,
       limit: limit,
       offset: (currentPage - 1) * limit,
       isAdmin: false,
@@ -81,14 +83,12 @@ export default function ApplicationList() {
         currentPage: currentPage,
       });
       setIsLoading(false);
+    } else {
+      setNotificationMessageObject({
+        errorMessageList: res.message ? [res.message] : [],
+        inputErrorMessageList: [],
+      })
     }
-
-    setCommonObject({
-      errorMessage: res.message ? res.message : "",
-      actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-      approvalTaskCount: getCommonObject().approvalTaskCount,
-      activeApplicationCount: getCommonObject().activeApplicationCount,
-    })
   }
 
   /**
@@ -96,12 +96,13 @@ export default function ApplicationList() {
    * @param page 
    */
   const getPageList = (page : any) => {
-    getApplications(currentSearchParams.currentSearchAction, pagerParams.limit, page);
+    setApplicationList([]);
+    getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchAction, pagerParams.limit, page);
   }
 
   return (
     <div className="application-list">
-      <div className="page-title">
+      <div className="page-title pc-only">
         <h3>申請一覧</h3>
       </div>
       <div className="">

@@ -6,7 +6,7 @@ import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse, Sy
 import { ApprovalGroupObject, getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
 import ApprovalGroupView from './approvalGroupView';
 import { useSearchParams } from 'next/navigation';
-import { useCommonStore } from '@/app/store/CommonStore';
+import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 export default function SettingSystem() {
   const ITEM = [
@@ -15,7 +15,7 @@ export default function SettingSystem() {
   ]
 
   // 共通Sore
-  const { setCommonObject, getCommonObject } = useCommonStore();
+  const { setNotificationMessageObject } = useNotificationMessageStore();
   const searchParams = useSearchParams();
   const [currentMenu, setCurrentMenu] = useState({
     contentName: "",
@@ -61,26 +61,22 @@ export default function SettingSystem() {
       const res: GetSystemConfigsResponse = await getSystemConfigs(req);
       if(res.responseResult) {
         setSystemConfigsResponse(res.systemConfigs);
+      } else {
+        setNotificationMessageObject({
+          errorMessageList: res.message ? [res.message] : [],
+          inputErrorMessageList: [],
+        })
       }
-
-      setCommonObject({
-        errorMessage: res.message ? res.message : "",
-        actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-        approvalTaskCount: getCommonObject().approvalTaskCount,
-        activeApplicationCount: getCommonObject().activeApplicationCount,
-      })
     } else if(keyword === "approvalGroup") {
       const res: GetApprovalGroupListResponse = await getApprovalGroupList();
       if(res.responseResult) {
         setApprovalGroupResponse(res.approvalGroupList);
+      } else {
+        setNotificationMessageObject({
+          errorMessageList: res.message ? [res.message] : [],
+          inputErrorMessageList: [],
+        })
       }
-
-      setCommonObject({
-        errorMessage: res.message ? res.message : "",
-        actionRequiredApplicationCount: getCommonObject().actionRequiredApplicationCount,
-        approvalTaskCount: getCommonObject().approvalTaskCount,
-        activeApplicationCount: getCommonObject().activeApplicationCount,
-      })
     }
   }
 
@@ -90,15 +86,17 @@ export default function SettingSystem() {
 
   return (
     <div className="config-system">
-      <div className="page-title">
-        <h3 className="d-inline-block">システム管理</h3>
-        <h5 className="d-inline-block ms-2">-{currentMenu.contentName}-</h5>
+      <div className="page-title pc-only">
+        <h3 className="">{currentMenu.contentName}</h3>
       </div>
-      <div hidden={currentMenu.keyword !== 'grantRule'}>
-        <GrantRule systemConfigs={systemConfigsResponse}></GrantRule>
-      </div>
-      <div hidden={currentMenu.keyword !== 'approvalGroup'}>
-        <ApprovalGroupView approvalGroupList={approvalGroupResponse} updateSystemConfigList={updateSystemConfigList}></ApprovalGroupView>
+      <div className="sp-only text-center">Not supported</div>
+      <div className="pc-only">
+        <div hidden={currentMenu.keyword !== 'grantRule'}>
+          <GrantRule systemConfigs={systemConfigsResponse}></GrantRule>
+        </div>
+        <div hidden={currentMenu.keyword !== 'approvalGroup'}>
+          <ApprovalGroupView approvalGroupList={approvalGroupResponse} updateSystemConfigList={updateSystemConfigList}></ApprovalGroupView>
+        </div>
       </div>
     </div>
   );

@@ -30,6 +30,11 @@ export default function Pager(params: any) {
     if(currentPage !== page) {
       params.params.pageClickFnc(page);
       setPageList(page);
+
+      window.scroll({
+        top: 0,
+        behavior: "smooth",
+      });
     }
   }
 

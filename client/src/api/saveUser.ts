@@ -4,7 +4,7 @@ export interface SaveUserRequest {
   id: number | undefined,
   lastName: string,
   firstName: string,
-  referenceDate: Date,
+  referenceDate: string,
   workingDays: string,
   totalDeleteDays: string,
   totalAddDays: string,

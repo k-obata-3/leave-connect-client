@@ -53,15 +53,17 @@ export default function UserList() {
    * @param page 
    */
   const getPageList = (page : any) => {
+    setUserList([]);
     getList(pagerParams.limit, page);
   }
 
   return (
     <div className="user-list">
-      <div className="page-title">
+      <div className="page-title pc-only">
         <h3>ユーザ管理</h3>
       </div>
-      <div className="">
+      <div className="sp-only text-center">Not supported</div>
+      <div className="pc-only">
         <UserListView userList={userList}></UserListView>
         <Pager params={{pageClickFnc: getPageList, limit: pagerParams.limit, totalCount: pagerParams.totalCount, page: pagerParams.currentPage}} />
       </div>

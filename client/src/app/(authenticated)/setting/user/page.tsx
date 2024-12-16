@@ -6,6 +6,7 @@ import { useUserInfoStore } from '@/app/store/UserInfoStore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import EditPersonal from './editPersonal';
 import EditPassword from './editPassword';
+import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 export default function SettingUser() {
   const ITEM = [
@@ -18,7 +19,9 @@ export default function SettingUser() {
     contentName: "",
     keyword: "",
   });
+  // 共通Sore
   const { getUserInfo } = useUserInfoStore();
+  const { setNotificationMessageObject } = useNotificationMessageStore();
 
   useEffect(() =>{
     const tab = searchParams?.get("tab") ?? '';
@@ -27,28 +30,19 @@ export default function SettingUser() {
       setCurrentMenu(item)
     }
 
-    getUser(getUserInfo().id);
+    setNotificationMessageObject({
+      errorMessageList: [],
+      inputErrorMessageList: [],
+    })
   },[searchParams])
-
-  /**
-   * ユーザ情報取得
-   * @param id 
-   */
-  const getUser = async(id: string) => {
-      const req: getUserDetailsRequest = {
-        id: id
-      }
-      const user: getUserDetailsResponse = await getUserDetails(req);
-  }
 
   return (
     <div className="config-user">
-      <div className="page-title">
-        <h3 className="pc-only">{currentMenu.contentName}</h3>
-        <h3 className="sp-only">個人設定</h3>
+      <div className="page-title pc-only">
+        <h3 className="">{currentMenu.contentName}</h3>
       </div>
 
-      <div className="sp-only mb-2 config-user-tab">
+      <div className="menu-tab sp-only mt-1 mb-2">
         <nav className="nav nav-underline nav-justified">
           <div className={currentMenu.keyword===ITEM[0].keyword ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => router.replace('/setting/user?tab=editPersonal', {scroll: true})}>
             <span>{ITEM[0].contentName}</span>

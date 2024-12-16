@@ -5,17 +5,6 @@ body {
   background: var(--bg_base_color);
 }
 
-@media screen and (min-width: 1024px) {
-  /* PC */
-  .sp-only { display: none; }
-  .size-normal { font-size: 1.4rem; }
-}
-@media screen and (max-width: 1023px) {
-  /* SP */
-  .pc-only { display: none; }
-  .size-normal { font-size: 1.2rem; }
-}
-
 .row,
 .col {
   padding: 0;
@@ -423,7 +412,7 @@ select {
 
 .input_error {
   color: red;
-  width: 300px;
+  width: 100%;
   margin: 0;
 }
 
@@ -509,7 +498,7 @@ select {
   width: 100%;
   height: auto;
   margin-top: 50px;
-  margin-bottom: 80px;
+  margin-bottom: 60px;
   z-index: 1;
   position: relative;
 }
@@ -520,12 +509,19 @@ select {
 }
 .nav-menu-sp {
   bottom: 0;
+  width: 100%;
   position: fixed;
   width: 100%;
   z-index: 2;
   background: var(--bg_base_color);
   grid-auto-flow: column;
 }
+
+.menu-tab-application {
+  /* width: 100%; */
+  /* z-index: 2; */
+}
+
 .nav-menu-sp .nav-item {
   width: 20%;
   text-align: center;
@@ -578,12 +574,12 @@ select {
   color: #333333;
 }
 
-.config-user-tab {
+.menu-tab {
   cursor: pointer;
   margin-top: -1.5rem;
 }
 
-.config-user-tab .nav-link.active {
+.menu-tab .nav-link.active {
   color: #164a84;
 }
 
@@ -609,3 +605,56 @@ select {
   }
 }
 /** --- SP専用スタイル END --- */
+
+.operation-btn-parent-view {
+  position: relative;
+  background: var(--bg_base_color);
+}
+.operation-btn-view-pc {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.operation-btn-view-sp {
+  position: fixed;
+  display: flex;
+  width: 100%;
+  bottom: 60px;
+  left: 0;
+  z-index: 1;
+}
+
+.approval-list-tr {
+  td:nth-of-type(1) {
+    width: 30%;
+  }
+  td:nth-of-type(2) {
+    width: auto;
+  }
+  td:nth-of-type(3) {
+    width: 140px;
+  }
+  td > p {
+    position: absolute;
+    top: 1rem;
+    line-height: 1rem;
+    width: 95%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+
+/** --- 他スタイルに上書きされることを避けるために必ずスタイルシートの最下部に記載すること --- */
+@media screen and (min-width: 1024px) {
+  /* PC */
+  .sp-only { display: none; }
+  .size-normal { font-size: 1.4rem; }
+}
+@media screen and (max-width: 1023px) {
+  /* SP */
+  .pc-only { display: none; }
+  .size-normal { font-size: 1.2rem; }
+}

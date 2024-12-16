@@ -3,10 +3,11 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { login, loginRequest } from '@/api/login';
+// import getHash from '@/assets/utils';
+import utils from '@/assets/js/utils';
 
 export default function Login() {
   const router = useRouter();
-
   const [inputUserId, setInputUserId] = useState('test01@test.abc.123');
   const [inputPassword, setInputPassword] = useState('password');
 
@@ -16,7 +17,8 @@ export default function Login() {
   const onLogin = async() => {
     const request: loginRequest = {
       user_id: inputUserId,
-      password: inputPassword,
+      // password: inputPassword,
+      password: utils.getHash(inputPassword),
     };
 
     await login(request);

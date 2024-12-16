@@ -16,7 +16,7 @@ export default function AdminApplicationEdit() {
 
   return (
     <div className="application-edit">
-      <div className="page-title">
+      <div className="page-title pc-only">
         <h3>申請確認</h3>
       </div>
       <ApplicationEditView isAdminFlow={true} isNew={false} selectDate={null} applicationId={applicationId}></ApplicationEditView>
