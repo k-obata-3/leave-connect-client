@@ -17,14 +17,18 @@ export type User = {
   userId: string,
   firstName: string,
   lastName: string,
+  status: number,
   auth: number,
   referenceDate: string,
   workingDays: number,
   totalDeleteDays: number,
   totalAddDays: number,
   totalRemainingDays: number,
-  autoCalcRemainingDays: number,
   totalCarryoverDays: number,
+  periodStart: string,
+  periodEnd: string,
+  isUpdateGrant: boolean,
+  lastGrantDate: string,
 }
 
 export async function getUserList(req: GetUserListRequest) {

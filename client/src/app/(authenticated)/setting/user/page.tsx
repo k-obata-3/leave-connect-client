@@ -1,39 +1,41 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { getUserDetails, getUserDetailsRequest, getUserDetailsResponse,  } from '@/api/getUserDetails';
-import { useUserInfoStore } from '@/app/store/UserInfoStore';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+
+import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import usePageBack from '@/hooks/usePageBack';
+import { pageCommonConst } from '@/consts/pageCommonConst';
 import EditPersonal from './editPersonal';
 import EditPassword from './editPassword';
-import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 export default function SettingUser() {
-  const ITEM = [
-    { contentName: "個人情報編集", keyword: "editPersonal" },
-    { contentName: "パスワード変更", keyword: "editPassword" }
-  ]
-  const router = useRouter();
   const searchParams = useSearchParams();
+
+  const ITEM = [
+    { contentName: pageCommonConst.pageName.settingUserEditPersonal, keyword: pageCommonConst.tabName.editPersonal },
+    { contentName: pageCommonConst.pageName.settingUserEditPassword, keyword: pageCommonConst.tabName.editPassword }
+  ]
+
+  // 共通Store
+  const { clearNotificationMessageObject } = useNotificationMessageStore();
+  // 戻るボタン カスタムフック
+  const pageBack = usePageBack();
+
   const [currentMenu, setCurrentMenu] = useState({
     contentName: "",
     keyword: "",
   });
-  // 共通Sore
-  const { getUserInfo } = useUserInfoStore();
-  const { setNotificationMessageObject } = useNotificationMessageStore();
 
   useEffect(() =>{
-    const tab = searchParams?.get("tab") ?? '';
+    const tab = searchParams?.get(pageCommonConst.param.tab) ?? '';
     const item = ITEM.find((item: any) => item.keyword === tab);
     if(item) {
       setCurrentMenu(item)
     }
 
-    setNotificationMessageObject({
-      errorMessageList: [],
-      inputErrorMessageList: [],
-    })
+    clearNotificationMessageObject();
+    pageBack(false);
   },[searchParams])
 
   return (
@@ -41,22 +43,10 @@ export default function SettingUser() {
       <div className="page-title pc-only">
         <h3 className="">{currentMenu.contentName}</h3>
       </div>
-
-      <div className="menu-tab sp-only mt-1 mb-2">
-        <nav className="nav nav-underline nav-justified">
-          <div className={currentMenu.keyword===ITEM[0].keyword ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => router.replace('/setting/user?tab=editPersonal', {scroll: true})}>
-            <span>{ITEM[0].contentName}</span>
-          </div>
-          <div className={currentMenu.keyword===ITEM[1].keyword ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => router.replace('/setting/user?tab=editPassword', {scroll: true})}>
-            <span>{ITEM[1].contentName}</span>
-          </div>
-        </nav>
-      </div>
-
-      <div hidden={currentMenu.keyword !== 'editPersonal'}>
+      <div hidden={currentMenu.keyword !== pageCommonConst.tabName.editPersonal}>
         <EditPersonal></EditPersonal>
       </div>
-      <div hidden={currentMenu.keyword !== 'editPassword'}>
+      <div hidden={currentMenu.keyword !== pageCommonConst.tabName.editPassword}>
         <EditPassword></EditPassword>
       </div>
     </div>

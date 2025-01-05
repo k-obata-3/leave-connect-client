@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useEffect } from 'react'
+
+import { commonConst } from '@/consts/commonConst';
 import { ApprovalTtask } from '@/api/getApplication';
 
 type Props = {
@@ -10,7 +12,7 @@ type Props = {
 export default function ApprovalStatusListView({ tasks }: Props) {
   const TABLE_HEADER = [
     { label: '', key: 'progress' },
-    { label: '確認結果', key: 'action' },
+    { label: 'アクション', key: 'action' },
     { label: '確認者', key: 'operationUserName' },
     { label: 'コメント', key: 'comment' },
     { label: '確認日時', key: 'operationDate' },
@@ -83,16 +85,16 @@ export default function ApprovalStatusListView({ tasks }: Props) {
   }
 
   const getStatusColrClassName = (item: ApprovalTtask) => {
-    if(item.action === 1) {
+    if(item.action === commonConst.actionValue.panding) {
       // 承認待ち
       return 'pending';
-    } else if(item.action === 2) {
+    } else if(item.action === commonConst.actionValue.approval) {
       // 承認
       return 'approval';
-    } else if(item.action === 4) {
+    } else if(item.action === commonConst.actionValue.reject) {
       // 差戻
       return 'reject';
-    } else if(item.action === 5) {
+    } else if(item.action === commonConst.actionValue.cancel) {
       // 取消
       return 'cancel';
     } else {

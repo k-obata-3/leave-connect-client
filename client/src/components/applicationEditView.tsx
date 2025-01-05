@@ -8,25 +8,34 @@ import { Japanese } from 'flatpickr/dist/l10n/ja.js';
 import 'flatpickr/dist/flatpickr.min.css';
 import "flatpickr/dist/themes/material_blue.css";
 
+import { useCommonStore } from '@/store/commonStore';
+import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import useConfirm from '@/hooks/useConfirm';
+import { commonConst } from '@/consts/commonConst';
+import { pageCommonConst } from '@/consts/pageCommonConst';
+import { confirmModalConst } from '@/consts/confirmModalConst';
+import { ApplicationClassificationObject, ApplicationTypeFormat, ApplicationTypeObject, useApplicationTypeStore } from '@/store/applicationTypeStore';
 import { Application, ApprovalTtask, AvailableOperation, getApplication, getApplicationRequest, getApplicationResponse } from '@/api/getApplication';
 import { SaveApplicationRequest, SaveApplicationResponse, saveApplication } from '@/api/saveApplication';
 import { DeleteApplicationRequest, deleteApplication } from '@/api/deleteApplication';
 import { CancelApplicationRequest, cancelApplication } from '@/api/cancelApplication';
-import { useCommonStore } from '@/app/store/CommonStore';
 import { getNotification, GetNotificationResponse } from '@/api/getNotification';
 import { ApprovalGroupObject, getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
 import ApprovalStatusListView from './approvalStatusListView';
-import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 type Props = {
   isAdminFlow: boolean,
   isNew: boolean,
   selectDate: string | null,
   applicationId: string | null,
+  onReload: () => void,
 }
 
-export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, applicationId }: Props) {
+export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, applicationId, onReload }: Props) {
   const router = useRouter();
+  // モーダル表示 カスタムフック
+  const confirm = useConfirm();
+
   const today = new Date();
   let dateOption = {
     locale: Japanese,
@@ -42,26 +51,34 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     minuteIncrement: 10,
   };
 
-  // 共通Sore
+  // 共通Store
   const { setCommonObject } = useCommonStore();
   const { setNotificationMessageObject } = useNotificationMessageStore();
+  const { getApplicationTypeObject } = useApplicationTypeStore();
   const [application, setApplication] = useState<Application | null>(null);
   const [approvalTtasks, setApprovalTtasks] = useState<ApprovalTtask[]>([]);
   const [availableOperation, setAvailableOperation] = useState<AvailableOperation | null>(null);
   const [approvalGroup, setApprovalGroup] = useState<ApprovalGroupObject[]>([]);
   const [editEnabled, setEditEnabled] = useState(false);
+  const [isTimeFormat, setIsTimeFormat] = useState(false);
+  const [isPeriodFormat, setIsPeriodFormat] = useState(false);
+  const [currentTotalTimeArray, setCurrentTotalTimeArray] = useState<string[]>([]);
   const [isLoadComplete, setIsLoadComplete] = useState(false);
 
   const [inputValues, setInputValues] = useState({
-    currentDate: today,
-    startEndDate: '',
+    // currentDate: today,
+    currentStartDate: today,
+    currentEndDate: today,
+    startDateObj: '',
+    endDateObj: '',
     startTime: '',
     endTime: '',
-    totalTime: '8',
+    totalTime: '',
     classification: '',
     type: '',
     applicationUserName: '',
     comment: '',
+    remarks: '',
   });
 
   const [currentSelectApprovalGroup, setCurrentSelectApprovalGroup] = useState({
@@ -71,7 +88,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
   });
 
   const [inputError, setInputError] = useState({
-    startEndDate: '',
+    startEndDateObj: '',
     startEndTime: '',
     approvalGroup: '',
     comment: '',
@@ -79,9 +96,29 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
 
   useEffect(() =>{
     (async() => {
+      if(!(applicationId || isNew)) {
+        return;
+      }
+
+      setApplication(null);
+      setApprovalTtasks([]);
+      setAvailableOperation(null);
+      setApprovalGroup([]);
+      setEditEnabled(false);
+      setIsTimeFormat(false);
+      setIsPeriodFormat(false);
+      setCurrentTotalTimeArray([]);
+      setIsLoadComplete(false);
+      setInputError({ ...inputError,
+        startEndDateObj: '',
+        startEndTime: '',
+        approvalGroup: '',
+        comment: '',
+      });
+
       // 承認グループ設定
       const approvalGroupList = await callGetApprovalGroupList();
-      if(!approvalGroupList.length) {
+      if(!approvalGroupList?.length) {
         return;
       }
       setApprovalGroup(approvalGroupList);
@@ -89,15 +126,14 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
       if(applicationId && !isNew) {
         await setApplicationInput();
       } else if(isNew && !applicationId) {
-        const startDate = selectDate ? new Date(selectDate) : today;
-        setInputValues({ ...inputValues,
-          type: '0',
-          classification: '0',
-          startEndDate: startDate.toLocaleDateString('ja-JP'),
-          currentDate: startDate,
-          startTime: `09:00:00`,
-          endTime: `18:00:00`,
-        });
+        const initialDate = selectDate ? new Date(selectDate) : today;
+        inputValues.startDateObj = initialDate.toLocaleDateString('ja-JP');
+        inputValues.endDateObj = initialDate.toLocaleDateString('ja-JP');
+        inputValues.currentStartDate = initialDate;
+        inputValues.currentEndDate = initialDate;
+        inputValues.comment = "";
+        inputValues.remarks = "";
+        resetSelectApplicationType(commonConst.initialApplicationTypeValues);
         setEditEnabled(true);
         setIsLoadComplete(true);
       }
@@ -123,9 +159,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     }
     await getApplication(req).then(async(res: getApplicationResponse) => {
       if(res.responseResult) {
-        // console.log(res.application)
-        // console.log(res.approvalTtasks)
-        console.log(res.availableOperation)
+        // console.log(res.availableOperation)
         const startDate = new Date(res.application.startDate);
         const endDate = new Date(res.application.endDate);
         setApplication(res.application);
@@ -133,8 +167,10 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
         setAvailableOperation(res.availableOperation);
         setEditEnabled(!!res.availableOperation?.isEdit);
         setInputValues({ ...inputValues,
-          currentDate: startDate,
-          startEndDate: startDate.toLocaleDateString('jp'),
+          currentStartDate: startDate,
+          currentEndDate: endDate,
+          startDateObj: startDate.toLocaleDateString('jp'),
+          endDateObj: endDate.toLocaleDateString('jp'),
           startTime: `${startDate.getHours()}:${startDate.getMinutes()}:00`,
           endTime: `${endDate.getHours()}:${endDate.getMinutes()}:00`,
           totalTime: res.application.totalTime,
@@ -142,17 +178,76 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
           type: res.application.type,
           applicationUserName: res.application.applicationUserName,
           comment: !res.application.comment || !res.availableOperation?.isEditApprovalGroup || res.availableOperation?.isCancel ? '' : res.application.comment,
+          remarks: !res.application.remarks ? '' : res.application.remarks,
         });
         setCurrentSelectApprovalGroup({ ...currentSelectApprovalGroup,
           id: res.application.approvalGroupId.toString(),
           name: res.application.approvalGroupName,
           users: res.application.approvers,
         });
+        resetSelectApplicationType(res.application.type);
         setIsLoadComplete(true);
       } else {
         setErrorMessage(res.message);
       }
     })
+  }
+
+  const getApplicationType = (applicationType: string) => {
+    const typeObject = getApplicationTypeObject()?.find(item => item.value?.toString() == applicationType);
+    if(!typeObject){
+      return null;
+    }
+
+    return typeObject;
+  }
+
+  const getApplicationClassifications = (applicationType: string) => {
+    const typeObject = getApplicationType(applicationType);
+    if(!typeObject){
+      return [];
+    }
+
+    return typeObject.classifications;
+  }
+
+  const resetSelectApplicationType = (applicationType: string) => {
+    const typeObject = getApplicationTypeObject()?.find(item => item.value?.toString() == applicationType);
+    if(!typeObject){
+      return null;
+    }
+
+    inputValues.type = applicationType;
+    inputValues.classification = typeObject.initialValue?.classification.toString();
+    inputValues.startTime = typeObject.initialValue?.startTime;
+    inputValues.endTime = typeObject.initialValue?.endTime;
+    inputValues.totalTime = typeObject.initialValue?.totalTime.toString();
+    setIsTimeFormat(typeObject.format == ApplicationTypeFormat.time);
+    setIsPeriodFormat(typeObject.format == ApplicationTypeFormat.period);
+    const classificationObject = typeObject.classifications?.find(item => item.value == typeObject.initialValue?.classification);
+    if(classificationObject) {
+      setCurrentTotalTimeArray(getSelectTotalTimeArray(classificationObject));
+    }
+
+    return typeObject;
+  }
+
+  const resetSelectClassification = (applicationClassification: string) => {
+    const classifications = getApplicationClassifications(inputValues.type);
+    const classificationObject = classifications?.find(item => item.value.toString() == applicationClassification);
+    if(classificationObject) {
+      inputValues.totalTime = classificationObject?.min.toString();
+      setCurrentTotalTimeArray(getSelectTotalTimeArray(classificationObject));
+    }
+  }
+
+  const getSelectTotalTimeArray = (classification: ApplicationClassificationObject) => {
+    let totalTimes = [];
+    for(let i = classification.min; i <= classification.max; i++){
+      totalTimes.push(i.toString());
+    }
+
+    return totalTimes
   }
 
   const handleOnChange = (e: any) => {
@@ -168,24 +263,21 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
           users: selectedApprovalGroup.approver.filter((user) => user.id),
         });
       }
+    } else if(e.target.name === 'type') {
+      resetSelectApplicationType(targetValue);
     } else if(e.target.name === 'classification') {
-      if(targetValue == '0') {
-        inputValues.totalTime = '8';
-      } else if(targetValue === '1' || targetValue === '2') {
-        inputValues.totalTime = '4';
-      } else {
-        inputValues.totalTime = '1';
-      }
+      resetSelectClassification(targetValue);
     }
 
     setInputValues({ ...inputValues, [e.target.name]: targetValue});
   }
 
   const handleOnDateChange = (date: Date, name: any) => {
-    if(date) {
-      setInputValues({ ...inputValues, [name]: date.toLocaleDateString('ja-JP')});
+    if(isPeriodFormat) {
+      setInputValues({ ...inputValues, [name]: date ? date.toLocaleDateString('ja-JP') : null});
     } else {
-      setInputValues({ ...inputValues, [name]: null});
+      setInputValues({ ...inputValues, ['startDateObj']: date ? date.toLocaleDateString('ja-JP') : ''});
+      setInputValues({ ...inputValues, ['endDateObj']: date ? date.toLocaleDateString('ja-JP') : ''});
     }
   }
 
@@ -205,10 +297,10 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
   const onSave = async(action: string) => {
     const requiredErrors = {
       ...inputError,
-      ['startEndDate']: !inputValues.startEndDate ? '取得日は必須入力です。' : '',
-      ['startEndTime']: !inputValues.startTime || !inputValues.endTime ? '取得時間は必須入力です。' : '',
-      ['comment']: !inputValues.comment.trim() ? '申請コメントは必須入力です。' : '',
-      ['approvalGroup']: !currentSelectApprovalGroup.id ? '承認グループを選択してください。' : '',
+      ['startEndDateObj']: inputValues.startDateObj && inputValues.endDateObj ? '' : '取得日は必須入力です。',
+      ['startEndTime']: inputValues.startTime && inputValues.endTime ? '' : '取得時間は必須入力です。',
+      ['comment']: inputValues.comment.trim() ? '' : '申請コメントは必須入力です。',
+      ['approvalGroup']: currentSelectApprovalGroup.id ? '' : '承認グループを選択してください。',
     };
 
     for (const value of Object.values(requiredErrors)) {
@@ -222,29 +314,41 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
       }
     }
 
-    const request: SaveApplicationRequest = {
-      id: application?.id,
-      type: inputValues.type,
-      classification: inputValues.classification,
-      startEndDate: inputValues.startEndDate,
-      startTime: inputValues.startTime,
-      endTime: inputValues.endTime,
-      totalTime: inputValues.totalTime,
-      comment: inputValues.comment,
-      approvalGroupId: Number(currentSelectApprovalGroup.id),
-      action: action,
-    }
+    const cancel = await confirm({
+      description: `${action == commonConst.actionValue.draft.toString() ? confirmModalConst.message.saveApplication : confirmModalConst.message.submitApplication}`,
+    }).then(async() => {
+      const request: SaveApplicationRequest = {
+        id: application?.id,
+        type: inputValues.type,
+        classification: inputValues.classification,
+        startDate: inputValues.startDateObj,
+        endDate: inputValues.endDateObj,
+        startTime: inputValues.startTime,
+        endTime: inputValues.endTime,
+        totalTime: inputValues.totalTime,
+        comment: inputValues.comment,
+        approvalGroupId: Number(currentSelectApprovalGroup.id),
+        action: action,
+        remarks: inputValues.remarks,
+      }
 
-    const saveApplicationRes = await saveApplication(request).then((res: SaveApplicationResponse) => {
-      return res;
+      const saveApplicationRes = await saveApplication(request).then((res: SaveApplicationResponse) => {
+        return res;
+      })
+  
+      if(saveApplicationRes?.responseResult) {
+        // 通知情報の更新
+        await updateNotificationObject();
+        onReload();
+        router.push(pageCommonConst.path.application, {scroll: true});
+      } else {
+        setErrorMessage(saveApplicationRes.message);
+      }
+    }).catch(() => {
+      return true
     })
 
-    if(saveApplicationRes?.responseResult) {
-      // 通知情報の更新
-      await updateNotificationObject();
-      router.push('/application/list', {scroll: true});
-    } else {
-      setErrorMessage(saveApplicationRes.message);
+    if (cancel) {
     }
   }
 
@@ -252,17 +356,31 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
    * 削除ボタン押下
    */
   const onDelete = async() => {
-    const request: DeleteApplicationRequest = {
-      id: application?.id,
-    }
+    const cancel = await confirm({
+      title: confirmModalConst.label.delete,
+      icon: 'warn',
+      confirmationText: confirmModalConst.button.delete,
+      confirmationBtnColor: 'danger',
+      description: confirmModalConst.message.deleteApplication,
+    }).then(async() => {
+      const request: DeleteApplicationRequest = {
+        id: application?.id,
+      }
+  
+      const res = await deleteApplication(request);
+      if(res.responseResult) {
+        // 通知情報の更新
+        await updateNotificationObject();
+        onReload();
+        router.push(isAdminFlow ? pageCommonConst.path.adminApplication : pageCommonConst.path.application, {scroll: true});
+      } else {
+        setErrorMessage(res.message);
+      }
+    }).catch(() => {
+      return true
+    })
 
-    const res = await deleteApplication(request);
-    if(res.responseResult) {
-      // 通知情報の更新
-      await updateNotificationObject();
-      router.push(isAdminFlow ? '/admin/application/list' : '/application/list', {scroll: true});
-    } else {
-      setErrorMessage(res.message);
+    if (cancel) {
     }
   };
 
@@ -286,20 +404,34 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
       }
     }
 
-    const request: CancelApplicationRequest = {
-      applicationId: application?.id,
-      comment: inputValues.comment,
-    }
-
-    await cancelApplication(request).then(async(cancelRes) => {
-      if(cancelRes.responseResult) {
-        // 通知情報の更新
-        await updateNotificationObject();
-        router.push('/admin/application/list', {scroll: true});
-      } else {
-        setErrorMessage(cancelRes.message);
+    const cancel = await confirm({
+      title: confirmModalConst.label.applicationCancel,
+      icon: 'warn',
+      confirmationText: confirmModalConst.button.applicationCancel,
+      confirmationBtnColor: 'danger',
+      description: confirmModalConst.message.cancelApplication,
+    }).then(async() => {
+      const request: CancelApplicationRequest = {
+        applicationId: application?.id,
+        comment: inputValues.comment,
       }
+
+      await cancelApplication(request).then(async(cancelRes) => {
+        if(cancelRes.responseResult) {
+          // 通知情報の更新
+          await updateNotificationObject();
+          onReload();
+          router.push(pageCommonConst.path.adminApplication, {scroll: true});
+        } else {
+          setErrorMessage(cancelRes.message);
+        }
+      })
+    }).catch(() => {
+      return true
     })
+
+    if (cancel) {
+    }
   }
 
   /**
@@ -331,23 +463,23 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
 
   return (
     <>
-      <div className="row pb-5" hidden={!isLoadComplete}>
+      <div className="row application-edit" hidden={!isLoadComplete}>
         <div className="col-xxl-6 ps-1 pe-1">
           <div className="operation-btn-parent-view">
             <div className="pc-only operation-btn-view-pc">
               <button className="btn btn-outline-danger" onClick={() => onCancel()} hidden={!availableOperation?.isCancel}>取消</button>
               <button className="btn btn-outline-danger" onClick={() => onDelete()} hidden={!availableOperation?.isDelete}>削除</button>
-              <button className="btn btn-outline-primary ms-2" onClick={() => onSave('0')} hidden={!(!application || availableOperation?.isSave)}>保存</button>
-              <button className="btn btn-outline-success ms-2" onClick={() => onSave('1')} hidden={!(!application || availableOperation?.isEdit)}>申請</button>
+              <button className="btn btn-outline-primary ms-2" onClick={() => onSave(commonConst.actionValue.draft.toString())} hidden={!(!application || availableOperation?.isSave)}>保存</button>
+              <button className="btn btn-outline-success ms-2" onClick={() => onSave(commonConst.actionValue.panding.toString())} hidden={!(!application || availableOperation?.isEdit)}>申請</button>
             </div>
             <div className="sp-only operation-btn-view-sp">
               <button className="btn btn-danger flex-grow-1 m-1" onClick={() => onCancel()} hidden={!availableOperation?.isCancel}>取消</button>
               <button className="btn btn-danger flex-grow-1 m-1" onClick={() => onDelete()} hidden={!availableOperation?.isDelete}>削除</button>
-              <button className="btn btn-primary flex-grow-1 m-1 " onClick={() => onSave('0')} hidden={!(!application || availableOperation?.isSave)}>保存</button>
-              <button className="btn btn-success flex-grow-1 m-1" onClick={() => onSave('1')} hidden={!(!application || availableOperation?.isEdit)}>申請</button>
+              <button className="btn btn-primary flex-grow-1 m-1 " onClick={() => onSave(commonConst.actionValue.draft.toString())} hidden={!(!application || availableOperation?.isSave)}>保存</button>
+              <button className="btn btn-success flex-grow-1 m-1" onClick={() => onSave(commonConst.actionValue.panding.toString())} hidden={!(!application || availableOperation?.isEdit)}>申請</button>
             </div>
           </div>
-          {/* 状況 */}
+          {/* ステータス */}
           <div className="row align-items-center mb-3 g-3" hidden={!application}>
             <div className="col-md-2">
               <label className="col-form-label fw-medium">ステータス</label>
@@ -381,8 +513,11 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
             </div>
             <div className="col col-md-5" hidden={!editEnabled}>
               <select className="form-select" id="type" value={inputValues.type} name="type" onChange={(e) => handleOnChange(e)}>
-                <option value="0">年次有給休暇申請</option>
-                <option value="1">休暇申請</option>
+                {
+                  getApplicationTypeObject()?.map((item: ApplicationTypeObject, index: number) => {
+                    return <option value={item.value} key={index}>{item.name}</option>
+                  })
+                }
               </select>
             </div>
             <div className="col ps-3" hidden={editEnabled}>
@@ -395,36 +530,52 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
               <label className="col-form-label fw-medium" htmlFor="classification">区分</label>
             </div>
             <div className="col col-md-5" hidden={!editEnabled}>
-              <select className="form-select" id="classification" value={inputValues.classification} name="classification" onChange={(e) => handleOnChange(e)}>
-                <option value="0">全日</option>
-                <option value="1">AM半休</option>
-                <option value="2">PM半休</option>
-                <option value="3">時間単位</option>
+              <select className="form-select" id="classification" value={inputValues.classification} name="classification" onChange={(e) => handleOnChange(e)} disabled={!isTimeFormat}>
+                {
+                  getApplicationClassifications(inputValues.type).map((item: ApplicationClassificationObject, index: number) => {
+                    return <option value={item.value} key={index}>{item.name}</option>
+                  })
+                }
               </select>
             </div>
             <div className="col ps-3" hidden={editEnabled}>
               <p className="mb-0">
                 <span className="me-3">{application?.sClassification}</span>
-                <span hidden={application?.classification != '3'}>{application?.totalTime}時間</span>
+                <span>{application?.totalTime}時間</span>
               </p>
             </div>
           </div>
-          {/* 取得日 */}
+          {/* 取得日 開始 */}
           <div className="row align-items-center mb-3 g-3">
             <div className="col-md-2">
-              <label className="col-form-label fw-medium" htmlFor="startEndDate">取得日</label>
+              <label className="col-form-label fw-medium" htmlFor="startDateObj">{isPeriodFormat ? '取得日開始' : '取得日'}</label>
             </div>
             <div className="col-8 col-md-5" hidden={!editEnabled}>
-              <Flatpickr className="form-select" id="startEndDate" options={dateOption}
-                value={inputValues.currentDate} name="startEndDate" onChange={([date]: any) => handleOnDateChange(date, "startEndDate")}/>
-              <p className="input_error">{inputError.startEndDate}</p>
+              <Flatpickr className="form-select" id="startDateObj" options={dateOption}
+                value={inputValues.currentStartDate} name="startDateObj" onChange={([date]: any) => handleOnDateChange(date, "startDateObj")}/>
             </div>
             <div className="col ps-3" hidden={editEnabled}>
               <p className="mb-0">{application?.sStartDate}</p>
             </div>
           </div>
+          {/* 取得日 終了 */}
+          <div className="row align-items-center mb-3 g-3" hidden={!isPeriodFormat}>
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium" htmlFor="endDateObj">取得日終了</label>
+            </div>
+            <div className="col-8 col-md-5" hidden={!editEnabled}>
+              <Flatpickr className="form-select" id="endDateObj" options={dateOption}
+                value={inputValues.currentEndDate} name="endDateObj" onChange={([date]: any) => handleOnDateChange(date, "endDateObj")}/>
+            </div>
+            <div className="col ps-3" hidden={editEnabled}>
+              <p className="mb-0">{application?.sEndDate}</p>
+            </div>
+          </div>
+          <div className="col-12 col-md-8 offset-md-2 mb-3 g-3">
+            <span className="input_error">{inputError.startEndDateObj}</span>
+          </div>
           {/* 取得時間 */}
-          <div className="row align-items-center mb-3 g-3">
+          <div className="row align-items-center mb-3 g-3" hidden={!isTimeFormat}>
             <div className="col-md-2 mb-2">
               <label className="col-form-label fw-medium" htmlFor="startDate">取得時間</label>
             </div>
@@ -440,9 +591,9 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
                 value={inputValues.endTime} name="endTime" onChange={([date]: any) => handleOnStartEndTimeChange(date, "endTime")}/>
             </div>
             <div className="col-5 col-md-2 mb-2" hidden={!editEnabled}>
-              <select className="form-select" id="totalTime" value={inputValues.totalTime} name="totalTime" onChange={(e) => handleOnChange(e)} disabled={inputValues.classification != '3'}>
+              <select className="form-select" id="totalTime" value={inputValues.totalTime} name="totalTime" onChange={(e) => handleOnChange(e)} disabled={currentTotalTimeArray.length == 1}>
                 {
-                  ["1", "2", "3", "4", "5", "6", "7", "8"].map((num: any, index: number) => (
+                  currentTotalTimeArray.map((num: any, index: number) => (
                     <option value={num} key={index}>{num}時間</option>
                   ))
                 }
@@ -451,6 +602,19 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
             <p className="input_error" hidden={!editEnabled}>{inputError.startEndTime}</p>
             <div className="col ps-3" hidden={editEnabled}>
               <span>{application?.sStartTime} ～ {application?.sEndTime}</span>
+            </div>
+          </div>
+          {/* 備考 */}
+          <div className="row mb-3 g-3">
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium" htmlFor="remarks">備考</label>
+            </div>
+            <div className="col-12" hidden={!editEnabled}>
+              <textarea className="form-control non-resize" id="remarks" rows={2} placeholder="任意"
+                value={inputValues.remarks} name="remarks" onChange={(e) => handleOnChange(e)}></textarea>
+            </div>
+            <div className="col ps-3" hidden={editEnabled}>
+              <p className="mb-0 comment">{application?.remarks}</p>
             </div>
           </div>
           {/* 申請コメント */}

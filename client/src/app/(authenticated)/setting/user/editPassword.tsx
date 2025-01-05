@@ -1,17 +1,22 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
-import { changePassword, ChangePasswordRequest, ChangePasswordResponse } from '@/api/changePassword';
-import utils from '@/assets/js/utils';
-import { logout } from '@/api/logout';
 import { useRouter, useSearchParams } from 'next/navigation';
+
+import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import useConfirm from '@/hooks/useConfirm';
+import utils from '@/assets/js/utils';
+import { confirmModalConst } from '@/consts/confirmModalConst';
+import { logout } from '@/api/logout';
+import { changePassword, ChangePasswordRequest, ChangePasswordResponse } from '@/api/changePassword';
 
 export default function EditPassword() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // 共通Sore
+  // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
+  // モーダル表示 カスタムフック
+  const confirm = useConfirm();
   const [inputValues, setInputValues] = useState({
     currentPassword: '',
     afterChangePassword: '',
@@ -65,27 +70,36 @@ export default function EditPassword() {
       }
     }
 
-    const req: ChangePasswordRequest = {
-      oldPassword: utils.getHash(inputValues.currentPassword),
-      newPassword: utils.getHash(inputValues.afterChangePassword),
-    }
-
-    await changePassword(req).then(async(res: ChangePasswordResponse) => {
-      if(res.responseResult) {
-        const res = await logout();
-        router.replace('/', {scroll: true});
-      } else {
-        setNotificationMessageObject({
-          errorMessageList: res.message ? [res.message] : [],
-          inputErrorMessageList: [],
-        })
+    const cancel = await confirm({
+      description: confirmModalConst.message.changePassword,
+    }).then(async() => {
+      const req: ChangePasswordRequest = {
+        oldPassword: utils.getHash(inputValues.currentPassword),
+        newPassword: utils.getHash(inputValues.afterChangePassword),
       }
-    });
+  
+      await changePassword(req).then(async(res: ChangePasswordResponse) => {
+        if(res.responseResult) {
+          const res = await logout();
+          router.replace('/', {scroll: true});
+        } else {
+          setNotificationMessageObject({
+            errorMessageList: res.message ? [res.message] : [],
+            inputErrorMessageList: [],
+          })
+        }
+      });
+    }).catch(() => {
+      return true
+    })
+
+    if (cancel) {
+    }
   }
 
   return (
     <>
-      <div className="">
+      <div className="ps-1 pe-1">
         <div className="operation-btn-parent-view">
           <div className="pc-only operation-btn-view-pc">
             <button className="btn btn-outline-primary" onClick={(e) => onChangePassword(e)}>変更</button>

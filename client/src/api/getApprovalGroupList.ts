@@ -16,7 +16,7 @@ export interface ApprovalGroupObject {
 }
 
 export async function getApprovalGroupList() {
-  return await axiosGet(`/systemConfig/approvalGroup`).then((res: ApiResponse) => {
+  return await axiosGet(`/systemConfig/approvalGroup/list`).then((res: ApiResponse) => {
     return {
       responseResult: res.responseResult,
       message: res.responseResult ? "" : res.message,

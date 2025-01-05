@@ -2,14 +2,23 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation'
-import { logout } from '@/api/logout';
-import utils from '@/assets/js/utils';
-import { getLoginUserInfo, getLoginUserInfoResponse } from '@/api/getLoginUserInfo';
-import { useUserInfoStore } from '../store/UserInfoStore';
-import { useCommonStore } from '../store/CommonStore';
-import { useNotificationMessageStore } from '../store/NotificationMessageStore';
-import { getNotification, GetNotificationResponse } from '@/api/getNotification';
 import { useMediaQuery } from 'react-responsive'
+
+import { useCommonStore } from '@/store/commonStore';
+import { useUserInfoStore } from '@/store/userInfoStore';
+import { useUserNameListStore } from '@/store/userNameListStore';
+import { useApplicationTypeStore } from '@/store/applicationTypeStore';
+import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import { SubHeaderProvider } from '@/contexts/subHeaderProvider';
+import useConfirm from '@/hooks/useConfirm';
+import utils from '@/assets/js/utils';
+import { pageCommonConst } from '@/consts/pageCommonConst';
+import { confirmModalConst } from '@/consts/confirmModalConst';
+import { logout } from '@/api/logout';
+import { getNotification, GetNotificationResponse } from '@/api/getNotification';
+import { getUserNameList, GetUserNameListResponse } from '@/api/getUserNameList';
+import { getLoginUserInfo, getLoginUserInfoResponse } from '@/api/getLoginUserInfo';
+import { getApplicationTypeList, GetApplicationTypeListResponse } from '@/api/getApplicationTypeList';
 import NavMenuPcView from '@/components/navMenuPcView';
 import NavMenuSpView from '@/components/navMenuSpView';
 
@@ -20,20 +29,51 @@ export default function RootLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isDisabledBackBtn, setIsDisabledBackBtn] = useState(true);
-  const { setUserInfo } = useUserInfoStore();
-  const { setCommonObject, getCommonObject } = useCommonStore();
-  const { setNotificationMessageObject } = useNotificationMessageStore();
+  const { setUserInfo, clearUserInfo } = useUserInfoStore();
+  const { setCommonObject, getCommonObject, clearCommonObject } = useCommonStore();
+  const { setNotificationMessageObject, clearNotificationMessageObject } = useNotificationMessageStore();
+  const { setApplicationTypeObject, clearApplicationTypeObject } = useApplicationTypeStore();
+  const { setUserNameList, clearUserNameList } = useUserNameListStore();
   const [isCompleteLoad, setIsCompleteLoad] = useState(false);
+  // モーダル表示 カスタムフック
+  const confirm = useConfirm();
 
   const isSp = useMediaQuery({
     query: '(max-width: 1023px)'
   })
 
-  const routePageList = ['/dashboard', '/application/list', '/application/edit/new', '/approval/list', '/admin/application/list', '/user/list', '/setting/system', '/setting/user'];
+  const routePageList = [
+    pageCommonConst.path.dashboard,
+    pageCommonConst.path.application,
+    pageCommonConst.path.applicationNew,
+    pageCommonConst.path.approval,
+    pageCommonConst.path.adminApplication,
+    pageCommonConst.path.user,
+    pageCommonConst.path.settingSystem,
+    pageCommonConst.path.settingUser,
+  ] as string[];
 
   useEffect(() =>{
     (async() => {
+      // Store情報をあらかじめ初期化
+      // ログイン時に必ず本処理が呼び出される
+      // ※ログイン画面はLayoutコンポーネントが異なるため、本コンポーネントがログイン後にマウントされることによる
+      clearCommonObject();
+      clearNotificationMessageObject();
+      clearApplicationTypeObject();
+      clearUserNameList();
+      clearUserInfo();
+
+      const res: GetApplicationTypeListResponse = await getApplicationTypeList();
+      if(res.responseResult) {
+        setApplicationTypeObject(res.result);
+      }
+
+      const userNameList: GetUserNameListResponse = await getUserNameList();
+      if(userNameList.responseResult) {
+        setUserNameList(userNameList.userNameList);
+      }
+
       await getLoginUserInfo().then(async(res: getLoginUserInfoResponse) => {
         if(res.responseResult) {
           setUserInfo(res);
@@ -48,7 +88,7 @@ export default function RootLayout({
             }
           })
         } else {
-          router.replace('/', {scroll: true});
+          router.replace(pageCommonConst.path.login, {scroll: true});
         }
       })
     })
@@ -57,11 +97,9 @@ export default function RootLayout({
 
   useEffect(() =>{
     if(routePageList.includes(pathname)) {
-      setIsDisabledBackBtn(true);
       setNavItems(pathname);
       utils.setSessionStorage('currentRoutePage', pathname);
     } else {
-      setIsDisabledBackBtn(false);
       setNavItems(utils.getSessionStorage('currentRoutePage'));
     }
 
@@ -78,7 +116,7 @@ export default function RootLayout({
 
     window.scroll({
       top: 0,
-      behavior: "smooth",
+      behavior: "instant",
     });
 
     setIsCompleteLoad(true)
@@ -102,9 +140,9 @@ export default function RootLayout({
       }
     }
 
-    if(isSp && pathName === '/admin/application/list') {
+    if(isSp && pathName === pageCommonConst.path.adminApplication) {
       for (let index = 0; index < navItems.length; index++) {
-        if(navItems[index].getAttribute('data-url') === '/application/list') {
+        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.application) {
           navItems[index].classList.add(currentClassName);
         }
       }
@@ -123,26 +161,32 @@ export default function RootLayout({
     router.replace(nextPath, {scroll: true});
   };
 
-  const back = () => {
-    if(!routePageList.includes(pathname)) {
-      router.back();
-    }
-  };
-
   const onLogout = async() => {
-    const res = await logout();
-    router.replace('/', {scroll: true});
+    const cancel = await confirm({
+      description: confirmModalConst.message.logout,
+    }).then(async() => {
+      const res = await logout();
+      router.replace(pageCommonConst.path.login, {scroll: true});
+    }).catch(() => {
+      return true
+    })
+    if (cancel) {
+    }
   };
 
   if (isCompleteLoad && !isSp) {
     return (
       // PCサイズ専用メニュー
-      <NavMenuPcView children={children} push={push} back={back} isDisabledBackBtn={isDisabledBackBtn} onLogout={onLogout}></NavMenuPcView>
+      <SubHeaderProvider>
+        <NavMenuPcView children={children} push={push} onLogout={onLogout}></NavMenuPcView>
+      </SubHeaderProvider>
     )
   } else if(isCompleteLoad && isSp) {
     return (
       // SPサイズ専用メニュー
-      <NavMenuSpView children={children} push={push} next={next} back={back} isDisabledBackBtn={isDisabledBackBtn} onLogout={onLogout}></NavMenuSpView>
+      <SubHeaderProvider>
+        <NavMenuSpView children={children} push={push} next={next}></NavMenuSpView>
+      </SubHeaderProvider>
     )
   } else {
     return(

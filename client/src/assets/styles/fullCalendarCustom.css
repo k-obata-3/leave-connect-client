@@ -1,0 +1,91 @@
+/** --- Full Calendar スタイル --- */
+
+/* イベントコンテンツ */
+.calendar-event-content.pc-only {
+  text-align: center;
+  align-content: center;
+  font-size: 1rem;
+  height: 100%;
+  i {
+    font-size: 80%;
+  }
+}
+.calendar-event-content.sp-only {
+  text-align: center;
+  align-content: center;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  font-size: 0.6rem;
+}
+
+/* カレンダー　イベント カーソル */
+.fc-event-main {
+  cursor: pointer;
+}
+
+/* カレンダー　日付リンク無効化　 */
+.fc-daygrid-day-number,
+.fc-col-header-cell-cushion {
+  pointer-events: none;
+  text-decoration: none;
+}
+
+/* 日付を跨ぐ場合、このスタイルがないと日付を跨いだ表示にならない */
+.fc-day.fc-daygrid-day:has(.calendar-event-content) {
+  display: contents;
+}
+
+.fc-day {
+  cursor: pointer;
+  /* display: contents; */
+}
+
+.fc .fc-bg-event {
+  opacity: 1;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: 0;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.5rem;
+}
+
+.fc .fc-button-primary {
+  font-size: 1rem;
+  background-color: #ffffff00;
+  color: #acaba9;
+  border: none;
+  outline: none;
+}
+
+.fc .fc-button-primary:focus, .fc .fc-button-primary:hover {
+  background-color: #ffffff00;
+  color: #acaba9;
+  outline: none;
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: #ffffff00;
+  color: #acaba9;
+  box-shadow: none;
+}
+
+.fc .fc-button-primary:not(:disabled):focus,
+.fc .fc-button-primary:not(:disabled).fc-button-focus {
+  background-color: #ffffff00;
+  color: #acaba9;
+  box-shadow: none;
+}
+
+/** --- SP専用スタイル STR --- */
+@media screen and (max-width: 1023px) {
+  .fc .fc-toolbar-title {
+    font-size: 1rem;
+  }
+}
+/** --- SP専用スタイル END --- */

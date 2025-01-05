@@ -1,19 +1,22 @@
 "use client"
 
 import React from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
+
+import { useUserNameListStore } from '@/store/userNameListStore';
+import { pageCommonConst } from '@/consts/pageCommonConst';
 import { Application } from '@/api/getApplicationList';
-import { UserNameObject } from '@/api/getUserNameList';
 
 type Props = {
   applicationList: Application[] | undefined,
-  userNameList: UserNameObject[],
+  rowBtnHandler: (applicationId: string) => void
 }
 
-export default function ApplicationListView({ applicationList, userNameList }: Props) {
-  const router = useRouter();
+export default function ApplicationListView({ applicationList, rowBtnHandler }: Props) {
   const pathname = usePathname();
-  const isApplicationList = pathname === '/application/list';
+  const { getUserNameList } = useUserNameListStore();
+
+  const isApplicationList = pathname === pageCommonConst.path.application;
   const TABLE_HEADER = [
     { label: '申請日', key: 'application_date', width: '110px' },
     { label: '種類', key: 's_type', width: '130px' },
@@ -39,18 +42,9 @@ export default function ApplicationListView({ applicationList, userNameList }: P
    * @returns 
    */
   const getUserName = (id: number) => {
-    const user = userNameList.find(user => user.id === id);
+    const user = getUserNameList().find(user => user.id === id);
     return user ? user.fullName : '';
   }
-
-  /**
-   * 編集ボタン押下
-   * @param id 
-   */
-  const onEdit = (id: number) => {
-    const nextPath = isApplicationList ? `/application/edit/${id}` : `/admin/application/edit/${id}`
-    router.push(nextPath, {scroll: true});
-  };
 
   /**
    * テーブルヘッダー生成
@@ -100,11 +94,10 @@ export default function ApplicationListView({ applicationList, userNameList }: P
   const createApplicationListForSp = (applicationList: Application[]) => {
     return (
       applicationList?.map((item, index) => (
-        <div className="list-row" key={index + 1} onClick={() => router.push(`/application/edit/${item.id}`, {scroll: true})}>
+        <div className="list-row" key={index + 1} onClick={() => rowBtnHandler(item.id.toString())}>
           <p className="row mb-2">
-            <span className="col-auto ms-2 classification-label">{item.sClassification}</span>
+            <span className={`col-3 col-md-2 align-self-center badge status-color ${getStatusColrClassName(item)}`}>{item.sAction}</span>
             <span className="col-auto ms-1 me-auto fw-bold">{item.sType}</span>
-            <span className={`col-3 col-md-2 align-self-end badge status-color ${getStatusColrClassName(item)}`}>{item.sAction}</span>
           </p>
           <p className="row mb-1">
             <span className="col-3">申請日</span>
@@ -147,7 +140,7 @@ export default function ApplicationListView({ applicationList, userNameList }: P
             <p className="text-nowrap">{item.sAction}</p>
           </td>
           <td className="text-center">
-            <button className="btn btn-outline-primary btn-sm" onClick={() => onEdit(item.id)}>確認</button>
+            <button className="btn btn-outline-secondary btn-sm" onClick={() => rowBtnHandler(item.id.toString())}>詳細</button>
           </td>
         </tr>
       ))
@@ -157,11 +150,10 @@ export default function ApplicationListView({ applicationList, userNameList }: P
   const createAdmnApplicationListForSp = (applicationList: Application[]) => {
     return (
       applicationList?.map((item, index) => (
-        <div className="list-row" key={index + 1} onClick={() => router.push(`/admin/application/edit/${item.id}`, {scroll: true})}>
+        <div className="list-row" key={index + 1} onClick={() => rowBtnHandler(item.id.toString())}>
           <p className="row mb-2">
-            <span className="col-auto ms-2 classification-label">{item.sClassification}</span>
+            <span className={`col-3 col-md-2 align-self-center badge status-color ${getStatusColrClassName(item)}`}>{item.sAction}</span>
             <span className="col-auto ms-1 me-auto fw-bold">{item.sType}</span>
-            <span className={`col-3 col-md-2 align-self-end badge status-color ${getStatusColrClassName(item)}`}>{item.sAction}</span>
           </p>
           <p className="row mb-1">
             <span className="col-3">申請者</span>
@@ -213,12 +205,12 @@ export default function ApplicationListView({ applicationList, userNameList }: P
   const editBtn = (item: any) => {
     if(isApplicationList && (item.action === 0 || item.action ===4)) {
       return (
-        <button className="btn btn-outline-warning btn-sm" value={item.id} onClick={() => onEdit(item.id)}>編集</button>
+        <button className="btn btn-outline-primary btn-sm" value={item.id} onClick={() => rowBtnHandler(item.id)}>編集</button>
       )
     }
 
     return (
-      <button className="btn btn-outline-primary btn-sm" value={item.id} onClick={() => onEdit(item.id)}>確認</button>
+      <button className="btn btn-outline-secondary btn-sm" value={item.id} onClick={() => rowBtnHandler(item.id)}>詳細</button>
     )
   }
 

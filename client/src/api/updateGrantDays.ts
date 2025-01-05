@@ -1,7 +1,11 @@
 import { axiosPost, ApiResponse } from "@/axiosClient";
 
 export interface UpdateGrantDaysRequest {
-  id: number | undefined,
+  userId: string | null,
+  totalDeleteDays: string,
+  totalRemainingDays: string,
+  totalCarryoverDays: string,
+  totalAddDays: string,
 }
 
 export interface UpdateGrantDaysResponse extends ApiResponse {

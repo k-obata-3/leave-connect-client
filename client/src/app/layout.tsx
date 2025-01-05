@@ -1,13 +1,14 @@
 "use client"
 
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+// import type { Metadata } from 'next'
+// import { Inter } from 'next/font/google'
 
-import './globals.css';
+// import './globals.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import "bootstrap-icons/font/bootstrap-icons.css"
 
 import '@/assets/styles/index.css';
+import { ConfirmProvider } from '@/contexts/confirmProvider';
 import Header from '@/components/header';
 
 // const inter = Inter({ subsets: ['latin'] })
@@ -25,11 +26,14 @@ export default function RootLayout({
   return (
     <html>
       <head />
+      {/* <body className={inter.className}> */}
       <body>
         <Header />
-        <div className='content-body'>
-          {children}
-        </div>
+        <ConfirmProvider>
+          <div className="content-body">
+            {children}
+          </div>
+        </ConfirmProvider>
       </body>
     </html>
   )

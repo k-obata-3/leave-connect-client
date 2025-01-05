@@ -35,6 +35,7 @@ export interface Application {
   approvalGroupName: string,
   approvers: Approver[],
   comment: string,
+  remarks: string,
 }
 
 export interface ApprovalTtask {
@@ -80,35 +81,6 @@ export async function getApplication(req: getApplicationRequest) {
       application: res.result?.application,
       approvalTtasks: res.result?.approvalTtasks,
       availableOperation: res.result?.availableOperation,
-      // application: {
-      //   id: res.result?.id,
-      //   applicationUserId: res.result?.applicationUserId,
-      //   applicationUserName: res.result?.applicationUserName,
-      //   applicationDate: res.result?.applicationDate,
-      //   sApplicationDate: res.result?.sApplicationDate,
-      //   action: res.result?.action,
-      //   sAction: res.result?.sAction,
-      //   sType: res.result?.sType,
-      //   type: res.result?.type,
-      //   classification: res.result?.classification,
-      //   sClassification: res.result?.sClassification,
-      //   startDate: res.result?.startDate,
-      //   sStartDate: res.result?.sStartDate,
-      //   sStartTime: res.result?.sStartTime,
-      //   endDate: res.result?.endDate,
-      //   sEndDate: res.result?.sEndDate,
-      //   sEndTime: res.result?.sEndTime,
-      //   totalTime: res.result?.totalTime,
-      //   approvalGroupId: res.result?.approvalGroupId,
-      //   comment: res.result?.comment,
-      // },
-      // approvalTtasks: res.result?.approvalTtasks,
-      // availableOperation: {
-      //   isEdit: res.result?.application,
-      //   isApproval: boolean,
-      //   isDelete: boolean,
-      //   isCancel: boolean,
-      // }
     } as getApplicationResponse;
   })
 }

@@ -1,15 +1,13 @@
 "use client"
 
-import React, { useEffect } from 'react';
-import { useUserInfoStore } from '@/app/store/UserInfoStore';
-import { useCommonStore } from '@/app/store/CommonStore';
+import React from 'react';
+
+import { useCommonStore } from '@/store/commonStore';
+import { useUserInfoStore } from '@/store/userInfoStore';
 
 export default function DashboardCardView() {
   const { getUserInfo } = useUserInfoStore();
   const { getCommonObject } = useCommonStore();
-  useEffect(() =>{
-
-  }, [])
 
   return (
     <>
@@ -38,19 +36,20 @@ export default function DashboardCardView() {
         <div className="card-header">有給残日数</div>
           <div className="card-body">
             <blockquote className="blockquote mb-0">
-              <p>{getUserInfo().autoCalcRemainingDays}日</p>
+              <p>{getUserInfo().totalRemainingDays}日</p>
             </blockquote>
           </div>
         </div>
       </div>
       <div className="dashboard-card">
         <div className="card text-center">
-        <div className="card-header">付与/繰越日数</div>
+        <div className="card-header"><span>付与</span><span className="ms-1 me-1">/</span><span>繰越日数</span></div>
           <div className="card-body">
             <blockquote className="blockquote mb-0">
               <p>
                 <span>{getUserInfo().totalAddDays}日</span>
-                <span>/{getUserInfo().totalCarryoverDays}日</span>
+                <span className="ms-1 me-1">/</span>
+                <span>{getUserInfo().totalCarryoverDays}日</span>
               </p>
             </blockquote>
           </div>

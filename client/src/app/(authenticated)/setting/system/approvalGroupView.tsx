@@ -1,14 +1,18 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
-import { getUserNameList, GetUserNameListResponse, UserNameObject } from '@/api/getUserNameList';
+
+import { useUserNameListStore } from '@/store/userNameListStore';
+import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import useConfirm from '@/hooks/useConfirm';
+import { confirmModalConst } from '@/consts/confirmModalConst';
+import { UserNameObject } from '@/api/getUserNameList';
+import { ApprovalGroupObject } from '@/api/getApprovalGroupList';
 import { saveApprovalGroup, SaveApprovalGroupRequest, SaveApprovalGroupResponse } from '@/api/saveApprovalGroup';
 import { deleteSystemConfig, DeleteSystemConfigRequest, DeleteSystemConfigResponse } from '@/api/deleteSystemConfig';
-import { ApprovalGroupObject } from '@/api/getApprovalGroupList';
-import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
 
 type Props = {
-  approvalGroupList: ApprovalGroupObject[] | undefined,
+  approvalGroupList: ApprovalGroupObject[],
   updateSystemConfigList: () => Promise<void>,
 }
 
@@ -25,31 +29,41 @@ interface Approver {
   }
 }
 
-export default function ApprovalGroupView({approvalGroupList, updateSystemConfigList}: Props) {
+interface SelectUser {
+  id: number,
+  fullName: string,
+  selected: boolean,
+}
+
+export default function ApprovalGroupView({ approvalGroupList, updateSystemConfigList }: Props) {
   const APPROVER_COL = ['approver1', 'approver2', 'approver3', 'approver4', 'approver5'];
 
-  // 共通Sore
+  // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
+  const { getUserNameList } = useUserNameListStore();
+  // モーダル表示 カスタムフック
+  const confirm = useConfirm();
 
-  const [userNameList, setUserNameList] = useState<UserNameObject[]>([]);
-  const [userSelectList, setUserSelectList] = useState<UserNameObject[]>([]);
+  const [userSelectList, setUserSelectList] = useState<SelectUser[]>([]);
   const [inputValues, setInputValues] = useState<ApprovalGroup[]>([]);
-  const [inputError, setInputError] = useState<string[]>([]);
   const [edittingId, setEdittingId] = useState<string | null>(null);
   const [isNewCreate, setIsNewCreate] = useState(false);
 
   useEffect(() =>{
-    (async() => {
-      const userNameList: GetUserNameListResponse = await getUserNameList();
-      setUserNameList(userNameList.userNameList);
-      resetApprovalGroupList();
-    })()
+    resetApprovalGroupList();
   }, [approvalGroupList])
 
   /**
    * 一覧初期化
    */
   const resetApprovalGroupList = () => {
+    setEdittingId(null);
+    setIsNewCreate(false);
+    setNotificationMessageObject({
+      errorMessageList: [],
+      inputErrorMessageList: [],
+    })
+
     const list: ApprovalGroup[] = [];
     approvalGroupList?.forEach((res: ApprovalGroupObject) => {
       const group: ApprovalGroup = {
@@ -66,7 +80,17 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
       list.push(group);
     });
     setInputValues(list);
-    setInputError([]);
+
+    const userList: SelectUser[] = [];
+    getUserNameList()?.forEach((res: UserNameObject) => {
+      const user: SelectUser = {
+        id: res.id,
+        fullName: res.fullName,
+        selected: false,
+      }
+      userList.push(user);
+    });
+    setUserSelectList(userList)
   }
 
   /**
@@ -89,7 +113,7 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
     const editItem = getSelectedApprovalGroup();
     if(editItem) {
       const selectedValue = e.target.value ? (e.target.value).toString() : "";
-      const userName = selectedValue ? userNameList.find((user: UserNameObject) => (user.id).toString() === selectedValue)?.fullName : '';
+      const userName = selectedValue ? userSelectList.find((user: UserNameObject) => (user.id).toString() === selectedValue)?.fullName : '';
       editItem.approver[e.target.name].id = selectedValue;
       editItem.approver[e.target.name].name = userName;
       setInputValues(inputValues.map((item, index) => (item.groupId === editItem.groupId ? editItem : item)));
@@ -130,14 +154,14 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
     const editItem = getSelectedApprovalGroup();
     if(editItem){
       const selectedUserIds = Object.values(editItem.approver).map((v: any) => v.id);
-      userNameList.forEach((user: any) => {
+      userSelectList?.forEach((user: any) => {
         if(selectedUserIds.includes((user.id).toString())) {
           user.selected = true;
         } else {
           user.selected = false;
         }
       });
-      setUserSelectList(userNameList);
+      setUserSelectList(userSelectList);
     }
   }
 
@@ -170,12 +194,10 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
       }
     ]);
 
-    if(userNameList){
-      userNameList.forEach((user: any) => {
-        user.selected = false;
-      });
-      setUserSelectList(userNameList);
-    }
+    userSelectList?.forEach((user: any) => {
+      user.selected = false;
+    });
+    setUserSelectList(userSelectList);
 
     setIsNewCreate(true);
   }
@@ -193,17 +215,15 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
    * @param item 
    */
   const onEdit = (item: ApprovalGroup) => {
-    if(userNameList){
-      const selectedUserIds = Object.values(item.approver).map((v: any) => v.id);
-      userNameList.forEach((user: any) => {
-        if(selectedUserIds.includes((user.id).toString())) {
-          user.selected = true;
-        } else {
-          user.selected = false;
-        }
-      });
-      setUserSelectList(userNameList);
-    }
+    const selectedUserIds = Object.values(item.approver).map((v: any) => v.id);
+    userSelectList?.forEach((user: any) => {
+      if(selectedUserIds.includes((user.id).toString())) {
+        user.selected = true;
+      } else {
+        user.selected = false;
+      }
+    });
+    setUserSelectList(userSelectList);
 
     setEdittingId(item.groupId);
   }
@@ -228,31 +248,44 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
     }
 
     if(errors.length) {
-      setInputError(errors);
+      setNotificationMessageObject({
+        errorMessageList: errors,
+        inputErrorMessageList: [],
+      })
       return;
     }
 
-    const req: SaveApprovalGroupRequest = {
-      id: edittingId,
-      groupName: editItem?.groupName,
-      approval: selectedUserIds.filter(id => id !== null),
-    }
-
-    await saveApprovalGroup(req).then(async(res: SaveApprovalGroupResponse) => {
-      if(res.responseResult) {
-        updateSystemConfigList();
-        resetState();
-      } else {
-        setNotificationMessageObject({
-          errorMessageList: res.message ? [res.message] : [],
-          inputErrorMessageList: [],
-        })
+    const cancel = await confirm({
+      description: confirmModalConst.message.saveApprovalGroup,
+    }).then(async() => {
+      const req: SaveApprovalGroupRequest = {
+        id: edittingId,
+        groupName: editItem?.groupName,
+        approval: selectedUserIds.filter(id => id !== null),
       }
-    });
+  
+      await saveApprovalGroup(req).then(async(res: SaveApprovalGroupResponse) => {
+        if(res.responseResult) {
+          updateSystemConfigList();
+          resetState();
+        } else {
+          setNotificationMessageObject({
+            errorMessageList: res.message ? [res.message] : [],
+            inputErrorMessageList: [],
+          })
+        }
+      });
+    }).catch(() => {
+      return true
+    })
+
+    if (cancel) {
+    }
   };
 
   /**
    * 削除
+   * @param item 
    * @returns 
    */
   const onDelete = async(item: ApprovalGroup) => {
@@ -260,21 +293,34 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
       return;
     }
 
-    const req: DeleteSystemConfigRequest = {
-      id: item.groupId,
-    }
-
-    await deleteSystemConfig(req).then(async(res: DeleteSystemConfigResponse) => {
-      if(res.responseResult) {
-        updateSystemConfigList();
-        resetState();
-      } else {
-        setNotificationMessageObject({
-          errorMessageList: res.message ? [res.message] : [],
-          inputErrorMessageList: [],
-        })
+    const cancel = await confirm({
+      title: confirmModalConst.label.delete,
+      icon: 'warn',
+      confirmationBtnColor: 'danger',
+      confirmationText: confirmModalConst.button.delete,
+      description: confirmModalConst.message.deleteApprovalGroup,
+    }).then(async() => {
+      const req: DeleteSystemConfigRequest = {
+        id: item.groupId!,
       }
-    });
+  
+      await deleteSystemConfig(req).then(async(res: DeleteSystemConfigResponse) => {
+        if(res.responseResult) {
+          updateSystemConfigList();
+          resetState();
+        } else {
+          setNotificationMessageObject({
+            errorMessageList: res.message ? [res.message] : [],
+            inputErrorMessageList: [],
+          })
+        }
+      });
+    }).catch(() => {
+      return true
+    })
+
+    if (cancel) {
+    }
   };
 
   return (
@@ -330,7 +376,7 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
         <div className="col-10 mt-5" hidden={!edittingId && !isNewCreate}>
           {
             inputValues.map((item: ApprovalGroup, index: number) => (
-              <div hidden={item.groupId !== edittingId}>
+              <div key={index} hidden={item.groupId !== edittingId}>
                 <p className="col-12 ps-2">
                   <label className="col-auto col-form-label" htmlFor={`${index}-groupName`}>グループ名</label>
                   <span className="col-12 d-block">
@@ -360,13 +406,6 @@ export default function ApprovalGroupView({approvalGroupList, updateSystemConfig
             ))
           }
         </div>
-        <p className="ps-2 mt-2">
-          {
-            inputError.map((value: string, index: number) => {
-              return <span className="input_error d-block" key={index}>{value}</span>
-            })
-          }
-        </p>
       </div>
     </>
   )

@@ -1,21 +1,22 @@
 "use client"
 
 import React from 'react'
-import { useRouter } from 'next/navigation'
+
+import { commonConst } from '@/consts/commonConst';
 import { Approval } from '@/api/getApprovalTaskList';
 
 type Props = {
   approvalList: Approval[] | undefined,
+  rowBtnHandler: (taskId: string, applicationId: string) => void
 }
 
-export default function ApprovalListView({ approvalList }: Props) {
-  const router = useRouter();
+export default function ApprovalListView({ approvalList, rowBtnHandler }: Props) {
   const TABLE_HEADER = [
     { label: '種類', key: 'type_str', width: '130px' },
     { label: '取得日時', key: 'start_end_date', width: '150px' },
     { label: '申請者', key: 'application_user_name', width: '200px' },
     { label: '承認者コメント', key: 'comment', width: 'auto' },
-    { label: '承認状況', key: 'step_str', width: '100px' },
+    { label: 'アクション', key: 'step_str', width: '100px' },
     { label: '', key: 'action', width: '65px' },
   ];
 
@@ -52,7 +53,7 @@ export default function ApprovalListView({ approvalList }: Props) {
                   <p className="text-nowrap">{item.sAction}</p>
                 </td>
                 <td className="text-center">
-                  <button className="btn btn-outline-warning btn-sm" value={item.id} onClick={() => router.push(`/approval/edit/${item.id}?applicationId=${item.applicationId}`, {scroll: true})}>詳細</button>
+                  <button className="btn btn-outline-secondary btn-sm" value={item.id} onClick={() => rowBtnHandler(item.id.toString(), item.applicationId.toString())}>詳細</button>
                 </td>
               </tr>
             ))
@@ -65,11 +66,10 @@ export default function ApprovalListView({ approvalList }: Props) {
   const createApprovalListForSp = () => {
     return (
       approvalList?.map((item, index) => (
-        <div className="list-row" key={index + 1} onClick={() => router.push(`/approval/edit/${item.id}?applicationId=${item.applicationId}`, {scroll: true})}>
+        <div className="list-row" key={index + 1} onClick={() =>rowBtnHandler(item.id.toString(), item.applicationId.toString())}>
           <p className="row mb-2">
-            <span className="col-auto ms-2 classification-label">{item.sClassification}</span>
+            <span className={`col-3 col-md-2 align-self-center badge status-color ${getActionColrClassName(item)}`}>{item.sAction}</span>
             <span className="col-auto ms-1 me-auto fw-bold">{item.sType}</span>
-            <span className={`col-3 col-md-2 align-self-end badge status-color ${getStatusColrClassName(item)}`}>{item.sAction}</span>
           </p>
           <p className="row mb-1">
             <span className="col-3">申請者</span>
@@ -92,14 +92,14 @@ export default function ApprovalListView({ approvalList }: Props) {
     )
   }
 
-  const getStatusColrClassName = (item: Approval) => {
-    if(item.action === 1) {
+  const getActionColrClassName = (item: Approval) => {
+    if(item.action === commonConst.actionValue.panding) {
       // 承認待ち
       return 'pending';
-    } else if(item.action === 2) {
+    } else if(item.action === commonConst.actionValue.approval) {
       // 承認
       return 'approval';
-    } else if(item.action === 4) {
+    } else if(item.action === commonConst.actionValue.reject) {
       // 差戻
       return 'reject';
     } else {

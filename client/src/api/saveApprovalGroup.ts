@@ -11,7 +11,7 @@ export interface SaveApprovalGroupResponse extends ApiResponse {
 }
 
 export async function saveApprovalGroup(req: SaveApprovalGroupRequest) {
-  return await axiosPost(`/systemConfig/save/approvalGroup`, req).then((res: ApiResponse) => {
+  return await axiosPost(`/systemConfig/approvalGroup/save`, req).then((res: ApiResponse) => {
     return {
       responseResult: res.responseResult,
       message: res.responseResult ? "" : res.message,

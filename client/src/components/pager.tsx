@@ -3,10 +3,12 @@
 import React from 'react'
 import { useEffect, useState } from 'react';
 
+import { pagerConst } from '@/consts/pagerConst';
+
 export default function Pager(params: any) {
   const [currentPage, setCurrentPage] = useState(0);
   const [pager, setPager] = useState([{
-    page: 0,
+    page: pagerConst.initialCurrentPage,
     active: false,
   }]);
 
@@ -30,10 +32,16 @@ export default function Pager(params: any) {
     if(currentPage !== page) {
       params.params.pageClickFnc(page);
       setPageList(page);
-
+      const contentParent = document.getElementsByClassName('content-parent');
+      if(contentParent.length){
+        contentParent[0].scroll({
+          top: 0,
+          behavior: "instant",
+        })
+      }
       window.scroll({
         top: 0,
-        behavior: "smooth",
+        behavior: "instant",
       });
     }
   }
@@ -41,11 +49,11 @@ export default function Pager(params: any) {
   return (
     <nav className="pager" hidden={!pager.length}>
       <ul className="pagination">
-        <li className={currentPage !== 1 ? 'page-item' : 'page-item disabled'} onClick={() => {
+        <li className={currentPage !== pagerConst.initialCurrentPage ? 'page-item' : 'page-item disabled'} onClick={() => {
           if(currentPage !== 1) {
             onPageClick(currentPage - 1)
           }}}>
-          <a className="page-link">前</a>
+          <a className="page-link">{pagerConst.button.prev}</a>
         </li>
         {
           pager.map((page, index) => (
@@ -58,7 +66,7 @@ export default function Pager(params: any) {
           if(currentPage !== pager.length) {
             onPageClick(currentPage + 1);
           }}}>
-          <a className="page-link">次</a>
+          <a className="page-link">{pagerConst.button.next}</a>
         </li>
       </ul>
     </nav>

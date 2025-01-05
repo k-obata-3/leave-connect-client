@@ -1,18 +1,11 @@
 "use client"
 
-import React, { useEffect } from 'react';
+import React from 'react';
+
 import DashboardCardView from './dashboardCardView';
 import DashboardCalendarView from './dashboardCalendarView';
-// import { GetGrantRuleResponse, getGrantRule } from '@/api/getGrantRule';
 
 export default function Dashboard() {
-  useEffect(() =>{
-    (async() => {
-      // const res: GetGrantRuleResponse = await getGrantRule();
-      // console.log(res)
-    })();
-  },[])
-
   return (
     <div className="dashboard">
       <div className="row row-dashboard">

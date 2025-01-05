@@ -1,9 +1,24 @@
 import { axiosPost, ApiResponse } from "@/axiosClient";
 
 export interface SaveUserRequest {
-  id: number | undefined,
+  id: string | null,
   lastName: string,
   firstName: string,
+  referenceDate: string,
+  workingDays: string,
+  totalDeleteDays?: string,
+  totalAddDays?: string,
+  totalRemainingDays?: string,
+  totalCarryoverDays?: string,
+}
+
+export interface SaveUserResponse extends ApiResponse {
+  id: string,
+  userId: string
+  companyId: string,
+  firstName: string,
+  lastName: string,
+  auth: string,
   referenceDate: string,
   workingDays: string,
   totalDeleteDays: string,
@@ -12,16 +27,23 @@ export interface SaveUserRequest {
   totalCarryoverDays: string,
 }
 
-export interface SaveUserResponse extends ApiResponse {
-
-}
-
 export async function saveUser(req: SaveUserRequest) {
   return await axiosPost(`/user/save`, req).then((res: ApiResponse) => {
     return {
       responseResult: res.responseResult,
       message: res.responseResult ? "" : res.message,
-      result: res.result,
+      id: res.result?.id,
+      userId: res.result?.userId,
+      companyId: res.result?.companyId,
+      firstName: res.result?.firstName,
+      lastName: res.result?.lastName,
+      auth: res.result?.auth,
+      referenceDate: res.result?.referenceDate,
+      workingDays: res.result?.workingDays,
+      totalDeleteDays: res.result?.totalDeleteDays,
+      totalAddDays: res.result?.totalAddDays,
+      totalRemainingDays: res.result?.totalRemainingDays,
+      totalCarryoverDays: res.result?.totalCarryoverDays,
     } as SaveUserResponse;
   })
 }

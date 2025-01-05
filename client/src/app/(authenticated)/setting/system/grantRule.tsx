@@ -1,28 +1,24 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { GetSystemConfigsResponse, SystemConfigObject } from '@/api/getSystemConfigs';
 
 type Props = {
-  systemConfigs: SystemConfigObject[],
+  value: string | null,
 }
 
-export default function GrantRule({ systemConfigs }: Props) {
-  const [grantRule, setGrantRule] = useState("");
+export default function GrantRule({ value }: Props) {
   const [yearsOfService, setYearsOfService] = useState([]);
   const [workingDays, setWorkingDays] = useState([]);
 
   useEffect(() =>{
-    if(systemConfigs?.length && systemConfigs[0].key === "grantRule") {
-      const value = JSON.parse(systemConfigs[0].value);
-      // console.log(value)
-      // setGrantRule(JSON.stringify(value));
-      setYearsOfService(value['sectionMonth']);
-      setWorkingDays(value['workingDays'])
+    if(value) {
+      const grantRule = JSON.parse(value);
+      setYearsOfService(grantRule['sectionMonth']);
+      setWorkingDays(grantRule['workingDays'])
     }
-  },[systemConfigs])
+  },[value])
 
-  if(systemConfigs.length) {
+  if(value) {
     return (
       <>
         <table className="table">
@@ -38,6 +34,7 @@ export default function GrantRule({ systemConfigs }: Props) {
                     <span hidden={Math.floor(sectionMonth / 12) === 0}>{Math.floor(sectionMonth / 12)}年</span>
                     <span>{sectionMonth % 12}ヶ月</span>
                     <span hidden={index !== yearsOfService.length - 1}>以上</span>
+                    <span hidden={Math.floor(sectionMonth / 12) === 0}>（{sectionMonth}）</span>
                   </th>
                 ))
               }

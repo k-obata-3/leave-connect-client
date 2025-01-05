@@ -4,13 +4,15 @@ export interface SaveApplicationRequest {
   id: number | undefined,
   type: string,
   classification: string,
-  startEndDate: string,
+  startDate: string,
+  endDate: string,
   startTime: string,
   endTime: string,
   totalTime: string,
   comment: string,
   approvalGroupId: number,
   action: string,
+  remarks: string,
 }
 
 export interface SaveApplicationResponse extends ApiResponse {

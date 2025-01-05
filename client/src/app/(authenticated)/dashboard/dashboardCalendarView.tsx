@@ -3,24 +3,28 @@
 import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+import '@/assets/styles/fullCalendarCustom.css';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction';
 import jaLocale from '@fullcalendar/core/locales/ja';
 import { EventClickArg, EventContentArg, EventInput } from '@fullcalendar/core/index.js';
-import utils from '@/assets/js/utils';
 
+import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import { commonConst } from '@/consts/commonConst';
+import { pageCommonConst } from '@/consts/pageCommonConst';
+import utils from '@/assets/js/utils';
 import { GetApplicationListByMonthRequest, GetApplicationListByMonthResponse, getApplicationListByMonth } from '@/api/getApplicationListByMonth';
-import { useCommonStore } from '@/app/store/CommonStore';
 
 export default function DashboardCalendarView() {
   const router = useRouter();
+
+  // 共通Store
+  const { setNotificationMessageObject } = useNotificationMessageStore();
   const [calendarInitialDate, setCalendarInitialDate] = useState();
   const calendarRef = useRef<FullCalendar>(null!);
-
-  // 共通Sore
-  const { setCommonObject, getCommonObject } = useCommonStore();
+  const [eventContent, setEventContent] = useState<EventInput[]>([]);
 
   useEffect(() =>{
     if(!utils.getSessionStorage('calendarInitialDate')) {
@@ -30,58 +34,67 @@ export default function DashboardCalendarView() {
     setCalendarInitialDate(utils.getSessionStorage('calendarInitialDate'))
   }, [])
 
-  /**
-   * 申請情報取得
-   * @param info 
-   * @param successCallback 
-   */
-  const getMonthApplications = async(info: any, successCallback: any, failureCallback:any) => {
-    // console.log(info)
-    // var sHh = ("00" + (info.start.getHours())).slice(-2);
-    // var sMm = ("00" + (info.start.getMinutes())).slice(-2);
-    // var sSs = ("00" + (info.start.getSeconds())).slice(-2);
-    // var sSss = ("000" + (info.start.getTime())).slice(-3);
-    // var eHh = ("00" + (info.end.getHours())).slice(-2);
-    // var eMm = ("00" + (info.end.getMinutes())).slice(-2);
-    // var eSs = ("00" + (info.end.getSeconds())).slice(-2);
-    // var eSss = ("000" + (info.end.getTime())).slice(-3);
-    const req: GetApplicationListByMonthRequest = {
-      // startStr: `${sDate} ${sHh}:${sMm}:${sSs}.${sSss}`,
-      // endStr: `${eDate} ${eHh}:${eMm}:${eSs}.${eSss}`,
-      startStr: `${info.start.toLocaleDateString('sv-SE')} 00:00:00.000`,
-      endStr: `${info.end.toLocaleDateString('sv-SE')} 23:59:59.999`,
-    }
+  useEffect(() =>{
+    (async() => {
+      setCalendarEvents();
+    })()
+  }, [calendarInitialDate])
 
-    let eventInputs: EventInput[] = [];
-    const res: GetApplicationListByMonthResponse = await getApplicationListByMonth(req);
-    if(!res.responseResult) {
-      failureCallback();
+  /**
+   * イベント取得およびセット
+   * @returns 
+   */
+  const setCalendarEvents = async() => {
+    if(!calendarRef.current) {
       return;
     }
 
+    const req: GetApplicationListByMonthRequest = {
+      startStr: `${calendarRef.current.getApi().view.activeStart.toLocaleDateString('sv-SE')} 00:00:00.000`,
+      endStr: `${calendarRef.current.getApi().view.activeEnd.toLocaleDateString('sv-SE')} 23:59:59.999`,
+    }
+
+    const res: GetApplicationListByMonthResponse = await getApplicationListByMonth(req);
+    if(res.responseResult) {
+      setEventContent(getEventContent(res));
+    } else {
+      setNotificationMessageObject({
+        errorMessageList: res.message ? [res.message] : [],
+        inputErrorMessageList: [],
+      })
+    }
+  }
+
+  /**
+   * イベント表示のためのオブジェクト取得
+   * @param res 
+   * @returns 
+   */
+  const getEventContent = (res: GetApplicationListByMonthResponse) => {
+    let eventInputs: EventInput[] = [];
     for (let index = 0; index < res.applicationListByMonth.length; index++) {
       const item = res.applicationListByMonth[index];
       let color = 'rgba(0,0,0,0)';
-      if(item.action === 0) {
+      if(item.action === commonConst.actionValue.draft) {
         // 下書き
-        color = '#99ccff';
-      } else if(item.action === 1) {
+        color = commonConst.statusColorCode.draft;
+      } else if(item.action === commonConst.actionValue.panding) {
         // 承認待ち
-        color = '#ffcc66';
-      } else if(item.action === 3) {
+        color = commonConst.statusColorCode.panding;
+      } else if(item.action === commonConst.actionValue.complete) {
         // 完了
-        color = '#99cc99';
-      } else if(item.action === 4) {
+        color = commonConst.statusColorCode.complete;
+      } else if(item.action === commonConst.actionValue.reject) {
         // 差戻
-        color = '#ff9999';
+        color = commonConst.statusColorCode.reject;
       }
 
       const event: EventInput = {
         title: "",
         // start: `${item.sStartDate} ${item.sStartTime}`,
         // end: `${item.sEndDate} ${item.sEndTime}`,
-        start: `${item.sStartDate}`,
-        end: `${item.sEndDate}`,
+        start: `${item.startDate}`,
+        end: `${item.endDate}`,
         extendedProps: {
           'id': item.id,
           'sClassification': item.sClassification,
@@ -99,7 +112,7 @@ export default function DashboardCalendarView() {
       eventInputs.push(event);
     }
 
-    successCallback(eventInputs);
+    return eventInputs;
   }
 
   /**
@@ -125,7 +138,7 @@ export default function DashboardCalendarView() {
    * @param id 
    */
   const onEdit = (eventArg: EventClickArg) => {
-    router.push(`/application/edit/${eventArg.event.extendedProps.id}`, {scroll: true});
+    router.push(`${pageCommonConst.path.application}?${pageCommonConst.param.applicationId}=${eventArg.event.extendedProps.id}&${pageCommonConst.param.ref}=${pageCommonConst.path.dashboard}`, {scroll: true});
   };
 
   /**
@@ -137,7 +150,7 @@ export default function DashboardCalendarView() {
       return;
     }
 
-    router.push(`/application/edit?selectDate=${eventArg.dateStr}`, {scroll: true});
+    router.push(`${pageCommonConst.path.applicationNew}?${pageCommonConst.param.selectDate}=${eventArg.dateStr}`, {scroll: true});
   };
 
   /**
@@ -149,6 +162,8 @@ export default function DashboardCalendarView() {
     currentDate.setMonth(currentDate.getMonth() - 1);
     calendarApi.gotoDate(currentDate);
     utils.setSessionStorage('calendarInitialDate', currentDate);
+
+    setCalendarEvents();
   }, []);
 
   /**
@@ -160,6 +175,8 @@ export default function DashboardCalendarView() {
     currentDate.setMonth(currentDate.getMonth() + 1);
     calendarApi.gotoDate(currentDate);
     utils.setSessionStorage('calendarInitialDate', currentDate);
+
+    setCalendarEvents();
   }, []);
 
   /**
@@ -170,6 +187,8 @@ export default function DashboardCalendarView() {
     const currentDate = new Date();
     calendarApi.gotoDate(currentDate);
     utils.setSessionStorage('calendarInitialDate', currentDate);
+
+    setCalendarEvents();
   }, []);
 
   const createCalendar = () => {
@@ -180,19 +199,19 @@ export default function DashboardCalendarView() {
             ref={calendarRef}
             plugins={[ dayGridPlugin, timeGridPlugin, interactionPlugin ]}
             locale={jaLocale}
-            timeZone='UTC'
+            timeZone='Asia/Tokyo'
             aspectRatio={1.5}
             contentHeight='auto'
             businessHours={{ daysOfWeek: [1, 2, 3, 4, 5] }}
             customButtons={{
               prevButton: {
-                  text: '前月',
+                  text: '＜',
                   click: () => {
                     gotoPrevMonth();
                   },
               },
               nextButton: {
-                text: '翌月',
+                text: '＞',
                 click: () => {
                   gotoNextMonth();
                 },
@@ -206,18 +225,18 @@ export default function DashboardCalendarView() {
             }}
             // headerToolbar={{ start: 'prev,next,today', center: 'title', end: 'dayGridMonth,dayGridWeek,timeGridDay'}}
             // headerToolbar={{ start: 'prevButton,nextButton todayButton', center: 'title', end: 'dayGridMonth,dayGridWeek,timeGridDay'}}
-            headerToolbar={{ start: 'todayButton', center: 'title', end: 'prevButton,nextButton'}}
+            headerToolbar={{ start: 'title', center: '', end: 'prevButton,todayButton,nextButton'}}
             // dayHeaderFormat={{weekday: 'short'}}
             navLinks={false}
             initialView="dayGridMonth"
             initialDate={calendarInitialDate}
             dayCellContent={(e) => e.dayNumberText = e.dayNumberText.replace('日', '')}
             eventDisplay={'block'}
-            events={(fetchInfo, successCallback, failureCallback) => getMonthApplications(fetchInfo, successCallback, failureCallback)}
+            events={ eventContent }
             eventContent={renderEventContent}
             eventClick={(e) => onEdit(e)}
             dateClick={(e) => onDateClick(e)}
-            rerenderDelay={50}
+            rerenderDelay={200}
             // eventTimeFormat={{
               // hour: '2-digit',
               // minute: '2-digit',

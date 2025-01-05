@@ -3,6 +3,7 @@ body {
   min-height: 100vh;
   --bg_base_color: #eeeff1;
   background: var(--bg_base_color);
+  overflow: initial !important;
 }
 
 .row,
@@ -58,6 +59,16 @@ body {
 }
 /** --- ステータスバッジ 表示スタイル END --- */
 
+:root {
+  --navbar-height: 60px;
+  --navbar-color: #e7e7e7;
+  --nav-menu-width: 90px;
+  --sub-navbar-height: 2.75rem;
+  --sp-navbar-height: 3.75rem;
+  --sp-nav-menu-height: 3.5rem;
+  --sp-menu-tab-height: 2.5rem;
+}
+
 .classification-label {
   width: 5rem;
   height: 100%;
@@ -73,50 +84,61 @@ body {
 /** --- navbar STR --- */
 .navbar {
   position: fixed !important;
-  height: 60px;
+  height: var(--navbar-height);
   width: 100%;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 2;
-  --navbar-height: 60px;
   background: #164a84;
+}
+.navbar-brand:hover {
+  color: var(--navbar-color);
+}
+.navbar span {
+  color: var(--navbar-color);
+}
+.navbar .version {
+  font-size: 1rem;
+}
+
+.navbar.sp-only {
+  height: var(--sp-navbar-height);
+}
+.navbar.sp-only span {
+  font-size: 1rem;
+}
+.navbar.sp-only .version span {
+  font-size: 0.75rem;
 }
 
 .sub-navbar {
-  position: fixed;
-  background-color: var(--bg_base_color);
-  width: calc(100% - 90px);
-  --sub-navbar-height: 50px;
+  background: var(--bg_base_color);
   height: var(--sub-navbar-height);
-  margin-left: 90px;
-  z-index: 2;
-  /* border-bottom: 1px solid #e7e7e7; */
+  margin-left: var(--nav-menu-width);
+  width: calc(100% - 90px);
+  line-height: 2.5rem;
+  z-index: 3;
   box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: var(--navbar-height);
 }
 /** --- navbar END --- */
 
 /** --- nav-menu STR --- */
 .nav-menu {
   position: fixed;
-  --nav-menu-width: 90px;
   max-width: var(--nav-menu-width) !important;
   min-width: var(--nav-menu-width) !important;
-  top: 60px;
+  top: var(--navbar-height);
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 2;
   text-align: center;
-  /* background-color: #e7e7eb; */
   background-color: #c2cbd2;
-  /* background-color: #f8f8f8; */
   border-right: 1px solid #e7e7e7;
-}
-
-.nav {
-  margin-top: 1rem;
 }
 
 .nav-item {
@@ -223,26 +245,28 @@ body {
 /** --- nav-menu END --- */
 
 /** --- コンテンツ表示領域 STR --- */
+.loading-view {
+  margin-top: 50vh;
+}
+
 .content-body {
-  margin-top: 60px;
+  /* position: relative; */
+  /* height: 100vh; */
 }
 
 .content-parent {
-  margin-left: 90px;
-  padding: 1rem 1rem 1rem 1rem;
+  margin-left: var(--nav-menu-width);
   overflow: auto;
   z-index: 0;
-  min-height: calc(100vh - 60px);
   background: var(--bg_base_color);
 }
 
 .content {
   width: 100%;
   min-width: 768px;
-  min-height: 100%;
-  margin-top: 50px;
-  z-index: 1;
-  position: relative;
+  min-height: calc(100vh - var(--navbar-height) - var(--sub-navbar-height));
+  margin-top: calc(var(--navbar-height) + var(--sub-navbar-height));
+  padding: 1rem;
 }
 
 .page-title {
@@ -258,9 +282,10 @@ body {
 .login-content {
   z-index: 0;
   padding: 1rem;
-  position: fixed;
+  position: relative;
+  top: 50%;
+  transform: translate(0, 50%);
   width: 100%;
-  margin-top: 4rem;
 }
 /** --- ログイン画面 END --- */
 
@@ -288,54 +313,11 @@ body {
 }
 
 .dashboard-card .card {
-  border-radius: 0;
+  /* border-radius: 0; */
 }
 
 .row-dashboard-calendar {
   width: calc(100% - (230px)) !important;
-}
-
-.fc {
-  position: sticky;
-}
-
-/* カレンダー　イベント カーソル */
-.fc-event-main {
-  cursor: pointer;
-}
-
-/* カレンダー　日付リンク無効化　 */
-.fc-daygrid-day-number,
-.fc-col-header-cell-cushion {
-  pointer-events: none;
-  text-decoration: none;
-}
-
-.fc-day {
-  cursor: pointer;
-}
-.event-contents {
-
-}
-.fc .fc-bg-event {
-  opacity: 1;
-}
-.calendar-event-content.pc-only {
-  text-align: center;
-  align-content: center;
-  font-size: 1rem;
-  height: 100%;
-  i {
-    font-size: 80%;
-  }
-}
-.calendar-event-content.sp-only {
-  text-align: center;
-  align-content: center;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  font-size: 0.6rem;
-  /* height: 100%; */
 }
 
 @media screen and (max-width: 1112px) {
@@ -452,12 +434,14 @@ select {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.15);
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: -999;
   opacity: 0;
-  transition: opacity 0.5s;
+  transition: opacity 1s;
 }
 
 .modal-overview.modal-show {
@@ -465,67 +449,64 @@ select {
   opacity: 1;
 }
 
-.modal-body {
-  position: fixed;
-  top: calc(10% + 30PX);
-  left: 10%;
-  width: 80%;
-  height: 80vh;
-  padding: 2rem;
-  background-color: #fff;
-  border: solid 1px #333333;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
-  overflow: auto;
-  z-index: 5;
-}
-
 .modal-content {
   display: flex;
   justify-content: center;
+  overflow: auto;
 }
 /** --- modal END --- */
 
+/* 一覧検索条件 */
+.search_select_label_width {
+  width: inherit;
+}
+.search_select_year_width {
+  width: 12rem;
+}
+.search_select_status_width {
+  width: 15rem;
+}
+.search_select_user_width {
+  width: 25rem;
+}
+/*  */
+
 /** --- SP専用スタイル STR --- */
 .content-parent-sp {
-  padding: 1rem 1rem 1rem 1rem;
-  overflow: auto;
   z-index: 0;
-  min-height: calc(100vh - 50px);
   background: var(--bg_base_color);
+  min-height: calc(100vh - var(--navbar-height));
 }
 
 .content-sp {
-  width: 100%;
-  height: auto;
-  margin-top: 50px;
-  margin-bottom: 60px;
-  z-index: 1;
+  padding: 0.5rem;
   position: relative;
+  top: calc(var(--sub-navbar-height) + var(--sp-menu-tab-height) + 1.5rem);
+  margin-bottom: calc(var(--sub-navbar-height) + var(--sp-menu-tab-height) + var(--sp-nav-menu-height) + 1.5rem);
 }
 
 .sub-navbar-sp {
-  margin-left: 0;
   width: 100%;
+  margin-left: 0;
+  top: var(--sp-navbar-height);
 }
 .nav-menu-sp {
   bottom: 0;
   width: 100%;
   position: fixed;
   width: 100%;
-  z-index: 2;
+  z-index: 3;
   background: var(--bg_base_color);
   grid-auto-flow: column;
 }
-
-.menu-tab-application {
-  /* width: 100%; */
-  /* z-index: 2; */
+.nav-menu-sp .nav {
+  height: var(--sp-nav-menu-height);
 }
 
 .nav-menu-sp .nav-item {
   width: 20%;
   text-align: center;
-  height: 3.5rem;
+  height: var(--sp-nav-menu-height);
 }
 .nav-menu-sp .nav-item span {
   font-size: 0.6rem;
@@ -542,6 +523,7 @@ select {
 .list-row {
   background: #fcfcfcc2;
   border: 1px solid #e9e9e9d7;
+  border-radius: var(--bs-border-radius);
   box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
   margin-bottom: 0.5rem;
   padding: 0.5rem;
@@ -550,6 +532,7 @@ select {
 .approval-status-list-row {
   background: #fcfcfcc2;
   border: 1px solid #e9e9e9d7;
+  border-radius: var(--bs-border-radius);
   padding: 0.2rem 0.5rem 0.2rem 0.5rem;
   height: 3.5rem;
 }
@@ -575,8 +558,13 @@ select {
 }
 
 .menu-tab {
+  position: sticky;
+  width: 100%;
+  height: var(--sp-menu-tab-height);
+  top: calc(var(--sp-navbar-height) + var(--sub-navbar-height));
+  background: var(--bg_base_color);
   cursor: pointer;
-  margin-top: -1.5rem;
+  z-index: 2;
 }
 
 .menu-tab .nav-link.active {
@@ -603,6 +591,23 @@ select {
   .row-dashboard-calendar {
     width: 100%;
   }
+
+  .search_select_label_width {
+    width: 35%;
+  }
+  .search_select_year_width {
+    width: inherit;
+  }
+  .search_select_status_width {
+    width: inherit;
+  }
+  .search_select_user_width {
+    width: inherit;
+  }
+  .application-edit,
+  .approval-edit {
+    padding-bottom: 3.5rem;
+  }
 }
 /** --- SP専用スタイル END --- */
 
@@ -618,9 +623,10 @@ select {
 
 .operation-btn-view-sp {
   position: fixed;
+  /* position: sticky; */
   display: flex;
   width: 100%;
-  bottom: 60px;
+  bottom: calc(var(--sp-nav-menu-height) + 0.5rem);
   left: 0;
   z-index: 1;
 }
@@ -645,7 +651,6 @@ select {
     white-space: nowrap;
   }
 }
-
 
 /** --- 他スタイルに上書きされることを避けるために必ずスタイルシートの最下部に記載すること --- */
 @media screen and (min-width: 1024px) {

@@ -1,54 +1,78 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import GrantRule from './grantRule';
-import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse, SystemConfigObject } from '@/api/getSystemConfigs';
-import { ApprovalGroupObject, getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
-import ApprovalGroupView from './approvalGroupView';
 import { useSearchParams } from 'next/navigation';
-import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
+
+import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import usePageBack from '@/hooks/usePageBack';
+import { pageCommonConst } from '@/consts/pageCommonConst';
+import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse } from '@/api/getSystemConfigs';
+import { ApprovalGroupObject, getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
+import GrantRule from './grantRule';
+import ApprovalGroupView from './approvalGroupView';
 
 export default function SettingSystem() {
+  const searchParams = useSearchParams();
+
   const ITEM = [
-    { contentName: "付与日数設定", keyword: "grantRule" },
-    { contentName: "承認グループ設定", keyword: "approvalGroup" }
+    { contentName: pageCommonConst.pageName.settingSystemGrantRule, keyword: pageCommonConst.tabName.grantRule },
+    { contentName: pageCommonConst.pageName.settingSystemApprovalGroup, keyword: pageCommonConst.tabName.approvalGroup }
   ]
 
-  // 共通Sore
+  // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
-  const searchParams = useSearchParams();
+  // 戻るボタン カスタムフック
+  const pageBack = usePageBack();
+
   const [currentMenu, setCurrentMenu] = useState({
     contentName: "",
     keyword: "",
   });
-  const [systemConfigsResponse, setSystemConfigsResponse] = useState<SystemConfigObject[]>([]);
+  const [grantRule, setGrantRule] = useState<string | null>(null);
   const [approvalGroupResponse, setApprovalGroupResponse] = useState<ApprovalGroupObject[]>([]);
 
   useEffect(() =>{
-    const tab = searchParams?.get("tab") ?? '';
+    const tab = searchParams?.get(pageCommonConst.param.tab) ?? '';
     const item = ITEM.find((item: any) => item.keyword === tab);
+    setGrantRule(null);
+    setApprovalGroupResponse([]);
     if(item) {
-      setCurrentMenu(item)
+      setCurrentMenu(item);
       getSystemConfig(tab);
     }
-    // (async() => {
-    //   await getSystemConfig(currentMenu);
-    // })()
+
+    setNotificationMessageObject({
+      errorMessageList: [],
+      inputErrorMessageList: [],
+    })
+
+    pageBack(false);
   },[searchParams])
 
-  const handleOnChange = async(e: any) => {
-    const selectMenu = ITEM.find((item: any) => item.keyword === e.target.value);
-    if(selectMenu && selectMenu.keyword !== currentMenu.keyword) {
-      setCurrentMenu(selectMenu);
-      await getSystemConfig(selectMenu.keyword);
+  const getGrantRule = async(req: GetSystemConfigsRequest) => {
+    const res: GetSystemConfigsResponse = await getSystemConfigs(req);
+    if(res.responseResult) {
+      if(res.systemConfigs.length) {
+        setGrantRule(res.systemConfigs[0].value);
+      }
+    } else {
+      setNotificationMessageObject({
+        errorMessageList: res.message ? [res.message] : [],
+        inputErrorMessageList: [],
+      })
     }
   }
 
-  const handleOnMenuClick = async(e: any, keyword: string) => {
-    const selectMenu = ITEM.find((item: any) => item.keyword === keyword);
-    if(selectMenu && selectMenu.keyword !== currentMenu.keyword) {
-      setCurrentMenu(selectMenu);
-      await getSystemConfig(selectMenu.keyword);
+  const getApprovalGroup = async(req: GetSystemConfigsRequest) => {
+    const res: GetApprovalGroupListResponse = await getApprovalGroupList();
+    if(res.responseResult) {
+      setApprovalGroupResponse(res.approvalGroupList);
+    } else {
+      setNotificationMessageObject({
+        errorMessageList: res.message ? [res.message] : [],
+        inputErrorMessageList: [],
+      })
+      return;
     }
   }
 
@@ -57,26 +81,10 @@ export default function SettingSystem() {
       key: keyword,
     }
 
-    if(keyword === "grantRule") {
-      const res: GetSystemConfigsResponse = await getSystemConfigs(req);
-      if(res.responseResult) {
-        setSystemConfigsResponse(res.systemConfigs);
-      } else {
-        setNotificationMessageObject({
-          errorMessageList: res.message ? [res.message] : [],
-          inputErrorMessageList: [],
-        })
-      }
-    } else if(keyword === "approvalGroup") {
-      const res: GetApprovalGroupListResponse = await getApprovalGroupList();
-      if(res.responseResult) {
-        setApprovalGroupResponse(res.approvalGroupList);
-      } else {
-        setNotificationMessageObject({
-          errorMessageList: res.message ? [res.message] : [],
-          inputErrorMessageList: [],
-        })
-      }
+    if(keyword === pageCommonConst.tabName.grantRule) {
+      getGrantRule(req);
+    } else if(keyword === pageCommonConst.tabName.approvalGroup) {
+      getApprovalGroup(req);
     }
   }
 
@@ -89,12 +97,12 @@ export default function SettingSystem() {
       <div className="page-title pc-only">
         <h3 className="">{currentMenu.contentName}</h3>
       </div>
-      <div className="sp-only text-center">Not supported</div>
+      <div className="sp-only text-center">{pageCommonConst.notSupportMessage}</div>
       <div className="pc-only">
-        <div hidden={currentMenu.keyword !== 'grantRule'}>
-          <GrantRule systemConfigs={systemConfigsResponse}></GrantRule>
+        <div hidden={currentMenu.keyword !== pageCommonConst.tabName.grantRule}>
+          <GrantRule value={grantRule}></GrantRule>
         </div>
-        <div hidden={currentMenu.keyword !== 'approvalGroup'}>
+        <div hidden={currentMenu.keyword !== pageCommonConst.tabName.approvalGroup}>
           <ApprovalGroupView approvalGroupList={approvalGroupResponse} updateSystemConfigList={updateSystemConfigList}></ApprovalGroupView>
         </div>
       </div>

@@ -1,55 +1,77 @@
 "use client"
 
-import React, { useState } from 'react'
-import { useCommonStore } from '@/app/store/CommonStore';
-import { useUserInfoStore } from '@/app/store/UserInfoStore';
-import { usePathname } from 'next/navigation';
-import { useNotificationMessageStore } from '@/app/store/NotificationMessageStore';
+import React, { useEffect } from 'react'
+import { usePathname, useSearchParams } from 'next/navigation';
+
+import { useCommonStore } from '@/store/commonStore';
+import { useUserInfoStore } from '@/store/userInfoStore';
+import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import useSetSubHeaderUserName from '@/hooks/useSetSubHeaderUserName';
+import { pageCommonConst } from '@/consts/pageCommonConst';
 
 type Props = {
   children: React.ReactNode,
   push: (e: React.MouseEvent<HTMLLIElement>) => void,
   next: (path: string) => void,
-  back: () => void,
-  isDisabledBackBtn: boolean | undefined,
-  onLogout: () => void,
 }
 
-export default function NavMenuSpView({ children, push, next, back, isDisabledBackBtn, onLogout }: Props) {
+export default function NavMenuSpView({ children, push, next }: Props) {
   const pathname = usePathname();
-  // 共通Sore
+  const searchParams = useSearchParams();
+  // 共通Store
   const { getCommonObject } = useCommonStore();
   const { getUserInfo, isAdmin } = useUserInfoStore();
-  const { getNotificationMessageObject } = useNotificationMessageStore();
+  const { getNotificationMessageObject, setNotificationMessageObject } = useNotificationMessageStore();
+  //  カスタムフック
+  const setSubHeaderUserName = useSetSubHeaderUserName();
+
+  useEffect(() =>{
+    const contentParent = document.getElementsByClassName('content-parent');
+    if(contentParent.length){
+      contentParent[0].scroll({
+        top: 0,
+        behavior: "instant",
+      })
+    }
+
+    window.scroll({
+      top: 0,
+      behavior: "instant",
+    });
+
+    setNotificationMessageObject({
+      errorMessageList: [],
+      inputErrorMessageList: [],
+    })
+  },[pathname, searchParams])
+
+  useEffect(() =>{
+    setSubHeaderUserName(getUserInfo().firstName, getUserInfo().lastName);
+  },[getUserInfo().id])
 
   return (
     <>
-      <div className="sub-navbar sub-navbar-sp row col-12 pt-2 me-2">
-        <div className="col-1 text-start ms-2">
-          <button type="button" className="btn btn-outline-secondary btn-sm" onClick={back} hidden={isDisabledBackBtn}>
-            <i className="bi bi-chevron-left"><span className=""></span></i>
-          </button>
-        </div>
-        <div className="col text-end me-4">
-          <p className="mb-2 mt-1">
-            <i className="bi bi-person-circle"></i>
-            <span className="ms-2 me-3">{getUserInfo().lastName + ' ' + getUserInfo().firstName}</span>
-            <button type="button" className="btn btn-outline-secondary btn-sm" onClick={onLogout}>
-              <span className="">ログアウト</span>
-            </button>
-          </p>
-        </div>
-      </div>
       <div className="content-parent-sp">
+        {/* 申請一覧メニュータブ */}
+        <nav className="nav menu-tab menu-tab-application mt-1 mb-2 nav-underline nav-justified" hidden={!isAdmin() || !((pathname === pageCommonConst.path.application || pathname === pageCommonConst.path.adminApplication) && !searchParams?.get(pageCommonConst.param.applicationId))}>
+          <div className={pathname === pageCommonConst.path.application ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.application)}>
+            <span>{pageCommonConst.pageName.application}</span>
+          </div>
+          <div className={pathname === pageCommonConst.path.adminApplication ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.adminApplication)}>
+            <span>{pageCommonConst.pageName.adminApplication}</span>
+          </div>
+        </nav>
+        {/* 個人設定メニュータブ */}
+        <nav className="nav menu-tab menu-tab-application mt-1 mb-2 nav-underline nav-justified" hidden={pathname !== pageCommonConst.path.settingUser}>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.editPersonal ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.settingUserEditPersonal)}>
+            <span>{pageCommonConst.pageName.settingUserEditPersonal}</span>
+          </div>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.editPassword ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.settingUserEditPassword)}>
+            <span>{pageCommonConst.pageName.settingUserEditPassword}</span>
+          </div>
+        </nav>
+        {/* コンテンツ表示エリア */}
         <div className="content-sp">
-          <nav className="nav menu-tab menu-tab-application mt-1 mb-2 nav-underline nav-justified" hidden={!isAdmin() || !(pathname === '/application/list' || pathname === '/admin/application/list')}>
-            <div className={pathname === '/application/list' ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next('/application/list')}>
-              <span>申請一覧</span>
-            </div>
-            <div className={pathname === '/admin/application/list' ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next('/admin/application/list')}>
-              <span>申請管理</span>
-            </div>
-          </nav>
           {/* その他のエラーメッセージ */}
           <div className="alert alert-danger p-3" role="alert" hidden={!getNotificationMessageObject().errorMessageList.length}>
             {
@@ -68,42 +90,43 @@ export default function NavMenuSpView({ children, push, next, back, isDisabledBa
           </div>
           {children}
         </div>
-      </div>
-      <div className="nav-menu-sp">
-        <ul className="nav">
-          <li className="nav-item" data-url="/dashboard" onClick={e=> push(e)}>
-            <p className="nav-link">
-              <i className="bi bi-columns-gap"></i>
-              <span>ダッシュボード</span>
-            </p>
-          </li>
-          <li className="nav-item" data-url="/application/list" onClick={e => push(e)}>
-            <p className="nav-link">
-              <span className="position-absolute translate-bottom badge rounded-pill bg-danger ms-2 mt-1" hidden={getCommonObject().actionRequiredApplicationCount == '0'}>{getCommonObject().actionRequiredApplicationCount}</span>
-              <i className="bi bi-card-list"></i>
-              <span>申請一覧</span>
-            </p>
-          </li>
-          <li className="nav-item" data-url="/application/edit/new" onClick={() => next('/application/edit/new')}>
-            <p className="nav-link">
-              <i className="bi bi-plus-circle"></i>
-              <span>新規申請</span>
-            </p>
-          </li>
-          <li className="nav-item" data-url="/approval/list" onClick={e => push(e)}>
-            <p className="nav-link">
-              <span className="position-absolute translate-bottom badge rounded-pill bg-danger ms-2 mt-1" hidden={getCommonObject().approvalTaskCount == '0'}>{getCommonObject().approvalTaskCount}</span>
-              <i className="bi bi-card-checklist"></i>
-              <span>承認一覧</span>
-            </p>
-          </li>
-          <li className="nav-item" data-url="/setting/user" onClick={() => next('/setting/user?tab=editPersonal')}>
-            <p className="nav-link mb-0">
-              <i className="bi bi-person-gear"></i>
-              <span>個人設定</span>
-            </p>
-          </li>
-        </ul>
+        {/* メインメニュー */}
+        <div className="nav-menu-sp">
+          <ul className="nav">
+            <li className="nav-item" data-url={pageCommonConst.path.dashboard} onClick={e=> push(e)}>
+              <p className="nav-link">
+                <i className="bi bi-columns-gap"></i>
+                <span>{pageCommonConst.pageName.dashboard}</span>
+              </p>
+            </li>
+            <li className="nav-item" data-url={pageCommonConst.path.application} onClick={e => push(e)}>
+              <p className="nav-link">
+                <span className="position-absolute translate-bottom badge rounded-pill bg-danger ms-2 mt-1" hidden={getCommonObject().actionRequiredApplicationCount == '0'}>{getCommonObject().actionRequiredApplicationCount}</span>
+                <i className="bi bi-card-list"></i>
+                <span>{pageCommonConst.pageName.application}</span>
+              </p>
+            </li>
+            <li className="nav-item" data-url={pageCommonConst.path.applicationNew} onClick={e => push(e)}>
+              <p className="nav-link">
+                <i className="bi bi-plus-circle"></i>
+                <span>{pageCommonConst.pageName.applicationNew}</span>
+              </p>
+            </li>
+            <li className="nav-item" data-url={pageCommonConst.path.approval} onClick={e => push(e)}>
+              <p className="nav-link">
+                <span className="position-absolute translate-bottom badge rounded-pill bg-danger ms-2 mt-1" hidden={getCommonObject().approvalTaskCount == '0'}>{getCommonObject().approvalTaskCount}</span>
+                <i className="bi bi-card-checklist"></i>
+                <span>{pageCommonConst.pageName.approval}</span>
+              </p>
+            </li>
+            <li className="nav-item" data-url={pageCommonConst.path.settingUser} onClick={() => next(pageCommonConst.path.settingUserEditPersonal)}>
+              <p className="nav-link mb-0">
+                <i className="bi bi-person-gear"></i>
+                <span>{pageCommonConst.pageName.settingUser}</span>
+              </p>
+            </li>
+          </ul>
+        </div>
       </div>
     </>
   )

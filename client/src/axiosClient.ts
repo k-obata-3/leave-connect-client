@@ -34,13 +34,22 @@ export const axiosGet = async(url: string) => {
       total: res?.data?.total,
     } as ApiResponse;
   }).catch((err) => {
-    console.log(err.response?.data?.message)
-    return {
-      responseResult: false,
-      message: err.response?.data?.message,
-      result: err.response?.data?.result,
-      total: err?.data?.total,
-    } as ApiResponse;
+    if (err?.response && (err?.response?.status === 400)) {
+      console.log(err?.response?.data?.message)
+      return {
+        responseResult: false,
+        message: err.response?.data?.message,
+        result: err.response?.data?.result,
+        total: err.response?.data?.total,
+      } as ApiResponse;
+    } else {
+      return {
+        responseResult: false,
+        message: err?.message ? err?.message : '予期せぬエラーが発生しました。',
+        result: [],
+        total: 0,
+      } as ApiResponse;
+    }
   })
 }
 
@@ -51,12 +60,20 @@ export const axiosPost = async(url: string, req: any) => {
       result: res?.data?.result,
     } as ApiResponse;
   }).catch((err) => {
-    console.log(err.response?.data?.message)
-    return {
-      responseResult: false,
-      message: err.response?.data?.message,
-      result: err.response?.data?.result,
-    } as ApiResponse;
+    if (err?.response && (err?.response?.status === 400)) {
+      console.log(err?.response?.data?.message)
+      return {
+        responseResult: false,
+        message: err.response?.data?.message,
+        result: err.response?.data?.result,
+      } as ApiResponse;
+    } else {
+      return {
+        responseResult: false,
+        message: err.message ? err.message : '予期せぬエラーが発生しました。',
+        result: [],
+      } as ApiResponse;
+    }
   })
 }
 
@@ -67,12 +84,20 @@ export const axiosDelete = async(url: string) => {
       result: res?.data?.result,
     } as ApiResponse;
   }).catch((err) => {
-    console.log(err.response?.data?.message)
-    return {
-      responseResult: false,
-      message: err.response?.data?.message,
-      result: err.response?.data?.result,
-    } as ApiResponse;
+    if (err?.response && (err?.response?.status === 400)) {
+      console.log(err?.response?.data?.message)
+      return {
+        responseResult: false,
+        message: err.response?.data?.message,
+        result: err.response?.data?.result,
+      } as ApiResponse;
+    } else {
+      return {
+        responseResult: false,
+        message: err.message ? err.message : '予期せぬエラーが発生しました。',
+        result: [],
+      } as ApiResponse;
+    }
   })
 }
 
@@ -101,30 +126,39 @@ axiosClient.interceptors.response.use(
     switch (error.response?.status) {
       case 400:
         // Bad Request
+        error.message = 'Bad Request'
         break;
       case 401:
         // Unauthorized
+        error.message = 'Unauthorized'
         break
       case 403:
         // Forbidden
+        error.message = 'Authentication failed'
         break;
       case 404:
         // Not Found
+        error.message = 'Not Found'
         break
       case 405:
         // Method Not Allowed
+        error.message = 'Method Not Allowed'
         break;
       case 500:
         // Internal Server Error
+        error.message = 'Internal Server Error'
         break;
       case 502:
         // Bad Gateway
+        error.message = 'Bad Gateway'
         break;
       case 503:
         // Service Unavailable
+        error.message = 'Service Unavailable'
         break;
       case 504:
         // Gateway Timeout
+        error.message = 'Gateway Timeout'
         break
       default:
         break
