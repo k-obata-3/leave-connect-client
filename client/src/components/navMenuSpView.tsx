@@ -93,12 +93,14 @@ export default function NavMenuSpView({ children, push, next }: Props) {
         {/* メインメニュー */}
         <div className="nav-menu-sp">
           <ul className="nav">
+            {/* ダッシュボード */}
             <li className="nav-item" data-url={pageCommonConst.path.dashboard} onClick={e=> push(e)}>
               <p className="nav-link">
                 <i className="bi bi-columns-gap"></i>
                 <span>{pageCommonConst.pageName.dashboard}</span>
               </p>
             </li>
+            {/* 申請一覧 */}
             <li className="nav-item" data-url={pageCommonConst.path.application} onClick={e => push(e)}>
               <p className="nav-link">
                 <span className="position-absolute translate-bottom badge rounded-pill bg-danger ms-2 mt-1" hidden={getCommonObject().actionRequiredApplicationCount == '0'}>{getCommonObject().actionRequiredApplicationCount}</span>
@@ -106,12 +108,14 @@ export default function NavMenuSpView({ children, push, next }: Props) {
                 <span>{pageCommonConst.pageName.application}</span>
               </p>
             </li>
+            {/* 新規申請 */}
             <li className="nav-item" data-url={pageCommonConst.path.applicationNew} onClick={e => push(e)}>
               <p className="nav-link">
                 <i className="bi bi-plus-circle"></i>
                 <span>{pageCommonConst.pageName.applicationNew}</span>
               </p>
             </li>
+            {/* 承認一覧 */}
             <li className="nav-item" data-url={pageCommonConst.path.approval} onClick={e => push(e)}>
               <p className="nav-link">
                 <span className="position-absolute translate-bottom badge rounded-pill bg-danger ms-2 mt-1" hidden={getCommonObject().approvalTaskCount == '0'}>{getCommonObject().approvalTaskCount}</span>
@@ -119,12 +123,22 @@ export default function NavMenuSpView({ children, push, next }: Props) {
                 <span>{pageCommonConst.pageName.approval}</span>
               </p>
             </li>
+            {/* スキル管理 */}
+            <li className="nav-item" data-url={pageCommonConst.path.career} onClick={() => next(pageCommonConst.path.career)}>
+              <p className="nav-link mb-0">
+                <i className="bi bi-person-workspace"></i>
+                <span>{pageCommonConst.pageName.career}</span>
+              </p>
+            </li>
+            {/* 個人設定 */}
+            {/*
             <li className="nav-item" data-url={pageCommonConst.path.settingUser} onClick={() => next(pageCommonConst.path.settingUserEditPersonal)}>
               <p className="nav-link mb-0">
                 <i className="bi bi-person-gear"></i>
                 <span>{pageCommonConst.pageName.settingUser}</span>
               </p>
             </li>
+            */}
           </ul>
         </div>
       </div>

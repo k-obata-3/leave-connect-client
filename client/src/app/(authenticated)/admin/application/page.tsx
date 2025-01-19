@@ -14,6 +14,7 @@ import ApplicationEditView from '@/components/applicationEditView';
 import SearchSelectUserView from '@/components/searchSelectUserView';
 import SearchSelectYearView from '@/components/searchSelectYearView';
 import SearchSelectStatusView from '@/components/searchSelectStatusView';
+import SearchSelectTypeView from '@/components/searchSelectTypeView';
 
 export default function AdminApplicationPage() {
   const router = useRouter();
@@ -29,21 +30,26 @@ export default function AdminApplicationPage() {
   const [currentSearchParams, setCurrentSearchParams] = useState({
     currentSearchYear: new Date().getFullYear().toString(),
     currentSearchUser: '',
-    currentSearchStatus: ''
+    currentSearchStatus: '',
+    currentSearchType: '',
   });
 
   const [searchHandler, setSearchHandler] = useState({
     changeSearchYear: (val: string) => {
       currentSearchParams.currentSearchYear = val;
-      getApplications(val, currentSearchParams.currentSearchUser, currentSearchParams.currentSearchStatus, pagerParams.limit, pagerConst.initialCurrentPage);
+      getApplications(val, currentSearchParams.currentSearchUser, currentSearchParams.currentSearchStatus, currentSearchParams.currentSearchType, pagerParams.limit, pagerConst.initialCurrentPage);
     },
     changeSearchUser: (val: string) => {
       currentSearchParams.currentSearchUser = val;
-      getApplications(currentSearchParams.currentSearchYear, val, currentSearchParams.currentSearchStatus, pagerParams.limit, pagerConst.initialCurrentPage);
+      getApplications(currentSearchParams.currentSearchYear, val, currentSearchParams.currentSearchStatus, currentSearchParams.currentSearchType, pagerParams.limit, pagerConst.initialCurrentPage);
     },
     changeSearchStatus: (val: string) => {
       currentSearchParams.currentSearchStatus = val;
-      getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchUser, val, pagerParams.limit, pagerConst.initialCurrentPage);
+      getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchUser, val, currentSearchParams.currentSearchType, pagerParams.limit, pagerConst.initialCurrentPage);
+    },
+    changeSearchType: (val: string) => {
+      currentSearchParams.currentSearchType = val;
+      getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchUser, currentSearchParams.currentSearchStatus, val, pagerParams.limit, pagerConst.initialCurrentPage);
     },
   });
 
@@ -55,7 +61,7 @@ export default function AdminApplicationPage() {
 
   useEffect(() =>{
     (async() => {
-      await getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchUser, currentSearchParams.currentSearchStatus, pagerParams.limit, pagerParams.currentPage);
+      await getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchUser, currentSearchParams.currentSearchStatus, currentSearchParams.currentSearchType, pagerParams.limit, pagerParams.currentPage);
     })()
   },[])
 
@@ -86,11 +92,12 @@ export default function AdminApplicationPage() {
    * 
    * @returns 
    */
-  const getApplications = async(searchYear: string, searchUserId: string, searchAction: string, limit: number, currentPage: number) => {
+  const getApplications = async(searchYear: string, searchUserId: string, searchAction: string, searchType: string, limit: number, currentPage: number) => {
     const req: GetApplicationListRequest = {
       searchUserId: searchUserId,
       searchAction: searchAction,
       searchYear: searchYear,
+      searchType: searchType,
       limit: limit,
       offset: (currentPage - 1) * limit,
       isAdmin: true,
@@ -118,7 +125,7 @@ export default function AdminApplicationPage() {
    */
   const getPageList = (page : any) => {
     setApplicationList([]);
-    getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchUser, currentSearchParams.currentSearchStatus, pagerParams.limit, page);
+    getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchUser, currentSearchParams.currentSearchStatus, currentSearchParams.currentSearchType, pagerParams.limit, page);
   }
 
   /**
@@ -148,6 +155,9 @@ export default function AdminApplicationPage() {
             </div>
             <div className="col-12 search_select_status_width">
               <SearchSelectStatusView callback={searchHandler.changeSearchStatus} currentValue={currentSearchParams.currentSearchStatus}></SearchSelectStatusView>
+            </div>
+            <div className="col-12 search_select_type_width">
+              <SearchSelectTypeView callback={searchHandler.changeSearchType} currentValue={currentSearchParams.currentSearchType}></SearchSelectTypeView>
             </div>
             <div className="col-12 search_select_user_width">
               <SearchSelectUserView callback={searchHandler.changeSearchUser} currentValue={currentSearchParams.currentSearchUser}></SearchSelectUserView>

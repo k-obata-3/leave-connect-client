@@ -30,6 +30,7 @@ export const searchSelectConst = {
     status: "ステータス",
     user: "申請者",
     year: "取得年",
+    type: "種類",
   },
   button: {
   },

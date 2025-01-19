@@ -51,88 +51,152 @@ export default function NavMenuPcView({ children, push, onLogout }: Props) {
     setSubHeaderUserName(getUserInfo().firstName, getUserInfo().lastName);
   },[getUserInfo().id])
 
+  const onMenuClick = (e: React.MouseEvent<HTMLLIElement | HTMLDivElement>) => {
+    showSlideMenu(false);
+    push(e);
+  }
+
+  // スライドメニュー 表示/非表示
+  const showSlideMenu = (containsSubItem: boolean, name: string | null = null) => {
+    const slideMenu: any = document.getElementsByClassName('slide-menu');
+    if(!containsSubItem) {
+      // スライドメニューが一瞬表示されることを回避するための処理
+      if(slideMenu[0].classList.contains('slide-in')) {
+        slideMenu[0].classList.remove('slide-in');
+        slideMenu[0].classList.add('slide-out');
+      }
+
+      return;
+    }
+
+    for (let index = 0; index < slideMenu[0]?.children.length; index++) {
+      const classList = slideMenu[0]?.children[index].classList;
+      if(classList.contains(name)) {
+        classList.remove('d-none');
+      } else {
+        classList.add('d-none');
+      }
+    }
+
+    if(!(slideMenu[0].classList.contains('slide-in') || slideMenu[0].classList.contains('slide-out'))) {
+      slideMenu[0].classList.add('slide-in');
+    } else if(slideMenu[0].classList.contains('slide-out')) {
+      slideMenu[0].classList.remove('slide-out');
+      slideMenu[0].classList.add('slide-in');
+    } else {
+      slideMenu[0].classList.remove('slide-in');
+      slideMenu[0].classList.add('slide-out');
+    }
+  }
+
   return (
     <>
       {/* メインメニュー */}
       <div className="nav-menu">
-        <ul className="nav flex-column mb-3">
-          <li className="nav-item" data-url={pageCommonConst.path.dashboard} onClick={e => push(e)}>
+        <ul className="nav flex-column mb-1">
+          {/* ダッシュボード */}
+          <li className="nav-item" data-url={pageCommonConst.path.dashboard} onClick={e => onMenuClick(e)}>
             <p className="nav-link">
               <i className="bi bi-columns-gap"></i>
               <span>{pageCommonConst.pageName.dashboard}</span>
             </p>
           </li>
-          <li className="nav-item" data-url={pageCommonConst.path.application} onClick={e => push(e)}>
+          {/* 申請一覧 */}
+          <li className="nav-item" data-url={pageCommonConst.path.application} onClick={e => onMenuClick(e)}>
             <p className="nav-link">
               <span className="position-absolute ms-2 mt-1 translate-bottom badge rounded-pill bg-danger" hidden={getCommonObject().actionRequiredApplicationCount == '0'}>{getCommonObject().actionRequiredApplicationCount}</span>
               <i className="bi bi-card-list"></i>
               <span>{pageCommonConst.pageName.application}</span>
             </p>
           </li>
-          <li className="nav-item" data-url={pageCommonConst.path.approval} onClick={e => push(e)}>
+          {/* 承認一覧 */}
+          <li className="nav-item" data-url={pageCommonConst.path.approval} onClick={e => onMenuClick(e)}>
             <p className="nav-link">
               <span className="position-absolute ms-2 mt-1 translate-bottom badge rounded-pill bg-danger" hidden={getCommonObject().approvalTaskCount == '0'}>{getCommonObject().approvalTaskCount}</span>
               <i className="bi bi-card-checklist"></i>
               <span>{pageCommonConst.pageName.approval}</span>
             </p>
           </li>
-          <li className="nav-item nav-item-contains-sub">
-            <p className="nav-link" data-url={pageCommonConst.path.settingUser}>
+          {/* 個人設定 */}
+          <li className="nav-item">
+            <p className="nav-link">
               <i className="bi bi-person-gear"></i>
               <span>{pageCommonConst.pageName.settingUser}</span>
             </p>
-              <div className="nav-item-sub">
-                <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPersonal} onClick={e => push(e)}>
+            {/* 個人設定 サブメニュー */}
+            <div className="nav-item-sub">
+                <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPersonal} onClick={e => onMenuClick(e)}>
                   <p className="nav-link">{pageCommonConst.pageName.settingUserEditPersonal}</p>
                 </div>
-                <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPassword} onClick={e => push(e)}>
+                <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPassword} onClick={e => onMenuClick(e)}>
                   <p className="nav-link">{pageCommonConst.pageName.settingUserEditPassword}</p>
                 </div>
               </div>
           </li>
         </ul>
-        <div className="border-top border-dark-subtle mt-3 mb-3" hidden={!isAdmin()}>
-          <ul className="nav flex-column mt-3 mb-3">
-            <li className="nav-item" data-url={pageCommonConst.path.adminApplication} onClick={e => push(e)}>
+        <div className="border-top border-dark-subtle" hidden={!isAdmin()}>
+          <ul className="nav flex-column mt-1 mb-1">
+            {/* 申請管理 */}
+            <li className="nav-item" data-url={pageCommonConst.path.adminApplication} onClick={e => onMenuClick(e)}>
               <p className="nav-link">
                 <i className="bi bi-list-check"></i>
                 <span>{pageCommonConst.pageName.adminApplication}</span>
               </p>
             </li>
-            <li className="nav-item" data-url={pageCommonConst.path.user} onClick={e => push(e)}>
+            {/* ユーザ管理 */}
+            <li className="nav-item" data-url={pageCommonConst.path.user} onClick={e => onMenuClick(e)}>
               <p className="nav-link">
                 <i className="bi bi-people"></i>
                 <span>{pageCommonConst.pageName.user}</span>
               </p>
             </li>
-            <li className="nav-item nav-item-contains-sub">
-              <p className="nav-link" data-url={pageCommonConst.path.settingSystem}>
+            {/* システム管理 */}
+            <li className="nav-item">
+              <p className="nav-link">
                 <i className="bi bi-gear"></i>
                 <span>{pageCommonConst.pageName.settingSystem}</span>
               </p>
+              {/* システム管理 サブメニュー */}
               <div className="nav-item-sub">
-                <div className="sub-item" data-url={pageCommonConst.path.settingSystemGrantRule} onClick={e => push(e)}>
+                <div className="sub-item" data-url={pageCommonConst.path.settingSystemGrantRule} onClick={e => onMenuClick(e)}>
                   <p className="nav-link">{pageCommonConst.pageName.settingSystemGrantRule}</p>
                 </div>
-                <div className="sub-item" data-url={pageCommonConst.path.settingSystemApprovalGroup} onClick={e => push(e)}>
+                <div className="sub-item" data-url={pageCommonConst.path.settingSystemApprovalGroup} onClick={e => onMenuClick(e)}>
                   <p className="nav-link">{pageCommonConst.pageName.settingSystemApprovalGroup}</p>
                 </div>
               </div>
             </li>
           </ul>
         </div>
-        <div className="border-top border-dark-subtle mt-3 mb-3">
-          <ul className="nav flex-column mt-3 mb-3">
+        <div className="border-top border-dark-subtle">
+          <ul className="nav flex-column mt-1 mb-1">
+            {/* スキル管理 */}
+            <li className="nav-item" data-url={pageCommonConst.path.career} onClick={e => onMenuClick(e)}>
+              <p className="nav-link">
+                <i className="bi bi-person-workspace"></i>
+                <span>{pageCommonConst.pageName.career}</span>
+              </p>
+            </li>
+          </ul>
+        </div>
+
+        <div className="border-top border-dark-subtle">
+          <ul className="nav flex-column mt-1 mb-1">
+            {/* ログアウト */}
             <li className="nav-item" onClick={onLogout}>
               <p className="nav-link">
                 <i className="bi bi-box-arrow-right"></i>
-                <span>ログアウト</span>
+                <span>{pageCommonConst.pageName.logout}</span>
               </p>
             </li>
           </ul>
         </div>
       </div>
       <div className="content-parent">
+        {/* スライドメニュー */}
+        <div className="slide-menu">
+
+        </div>
         {/* コンテンツ表示エリア */}
         <div className="content">
           {/* その他のエラーメッセージ */}

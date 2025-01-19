@@ -13,9 +13,9 @@
 .calendar-event-content.sp-only {
   text-align: center;
   align-content: center;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
   font-size: 0.6rem;
+  height: 1.5rem;
+  line-height: 1.5rem;
 }
 
 /* カレンダー　イベント カーソル */
@@ -32,12 +32,11 @@
 
 /* 日付を跨ぐ場合、このスタイルがないと日付を跨いだ表示にならない */
 .fc-day.fc-daygrid-day:has(.calendar-event-content) {
-  display: contents;
+  overflow: initial;
 }
 
 .fc-day {
   cursor: pointer;
-  /* display: contents; */
 }
 
 .fc .fc-bg-event {

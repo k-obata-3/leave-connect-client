@@ -54,7 +54,7 @@ export const SubHeaderProvider = ({
       description: confirmModalConst.message.logout,
     }).then(async() => {
       const res = await logout();
-      router.replace(pageCommonConst.path.login, {scroll: true});
+      router.replace(pageCommonConst.path.login, {scroll: false});
     }).catch(() => {
       return true
     })
@@ -74,7 +74,7 @@ export const SubHeaderProvider = ({
             )}
           </div>
           <div className="col text-end ms-2 me-2 text-truncate">
-            <i className="bi bi-person-circle me-2"></i>
+            <i className="bi bi-person-circle me-2" onClick={() => router.push(pageCommonConst.path.settingUserEditPersonal)}></i>
             <span className="">{user.lastName + ' ' + user.firstName}</span>
           </div>
           <div className="col-auto text-end me-2 sp-only">

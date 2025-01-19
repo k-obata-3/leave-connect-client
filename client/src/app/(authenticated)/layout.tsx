@@ -7,8 +7,9 @@ import { useMediaQuery } from 'react-responsive'
 import { useCommonStore } from '@/store/commonStore';
 import { useUserInfoStore } from '@/store/userInfoStore';
 import { useUserNameListStore } from '@/store/userNameListStore';
-import { useApplicationTypeStore } from '@/store/applicationTypeStore';
+import { useApplicationSettingStore } from '@/store/applicationSettingStore';
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import { useCareerSettingStore } from '@/store/careerSettingStore';
 import { SubHeaderProvider } from '@/contexts/subHeaderProvider';
 import useConfirm from '@/hooks/useConfirm';
 import utils from '@/assets/js/utils';
@@ -19,6 +20,7 @@ import { getNotification, GetNotificationResponse } from '@/api/getNotification'
 import { getUserNameList, GetUserNameListResponse } from '@/api/getUserNameList';
 import { getLoginUserInfo, getLoginUserInfoResponse } from '@/api/getLoginUserInfo';
 import { getApplicationTypeList, GetApplicationTypeListResponse } from '@/api/getApplicationTypeList';
+import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse } from '@/api/getSystemConfigs';
 import NavMenuPcView from '@/components/navMenuPcView';
 import NavMenuSpView from '@/components/navMenuSpView';
 
@@ -32,8 +34,9 @@ export default function RootLayout({
   const { setUserInfo, clearUserInfo } = useUserInfoStore();
   const { setCommonObject, getCommonObject, clearCommonObject } = useCommonStore();
   const { setNotificationMessageObject, clearNotificationMessageObject } = useNotificationMessageStore();
-  const { setApplicationTypeObject, clearApplicationTypeObject } = useApplicationTypeStore();
+  const { setApplicationTypeObject, clearApplicationTypeObject } = useApplicationSettingStore();
   const { setUserNameList, clearUserNameList } = useUserNameListStore();
+  const { setInchargeObjectList, setRoleObjectList, clearCareerSettingObject } = useCareerSettingStore();
   const [isCompleteLoad, setIsCompleteLoad] = useState(false);
   // モーダル表示 カスタムフック
   const confirm = useConfirm();
@@ -63,34 +66,45 @@ export default function RootLayout({
       clearApplicationTypeObject();
       clearUserNameList();
       clearUserInfo();
+      clearCareerSettingObject();
+
+      const loginUserInfoRes: getLoginUserInfoResponse = await getLoginUserInfo()
+      if(loginUserInfoRes.responseResult) {
+        setUserInfo(loginUserInfoRes);
+
+        await getNotification().then((res: GetNotificationResponse) => {
+          if(res.responseResult) {
+            setCommonObject({
+              actionRequiredApplicationCount: res?.actionRequiredApplicationCount,
+              approvalTaskCount: res.approvalTaskCount,
+              activeApplicationCount: res.activeApplicationCount,
+            });
+          }
+        })
+      } else {
+        router.replace(pageCommonConst.path.login, {scroll: false});
+        return;
+      }
 
       const res: GetApplicationTypeListResponse = await getApplicationTypeList();
       if(res.responseResult) {
         setApplicationTypeObject(res.result);
       }
 
+      const careerSettingReq: GetSystemConfigsRequest = {
+        key: "careerSetting"
+      }
+      const careerSettingRes: GetSystemConfigsResponse = await getSystemConfigs(careerSettingReq);
+      if(careerSettingRes.responseResult) {
+        const careerSettingVal = JSON.parse(careerSettingRes.systemConfigs[0].value);
+        setInchargeObjectList(careerSettingVal.incharge);
+        setRoleObjectList(careerSettingVal.role);
+      }
+
       const userNameList: GetUserNameListResponse = await getUserNameList();
       if(userNameList.responseResult) {
         setUserNameList(userNameList.userNameList);
       }
-
-      await getLoginUserInfo().then(async(res: getLoginUserInfoResponse) => {
-        if(res.responseResult) {
-          setUserInfo(res);
-
-          await getNotification().then((res: GetNotificationResponse) => {
-            if(res.responseResult) {
-              setCommonObject({
-                actionRequiredApplicationCount: res?.actionRequiredApplicationCount,
-                approvalTaskCount: res.approvalTaskCount,
-                activeApplicationCount: res.activeApplicationCount,
-              });
-            }
-          })
-        } else {
-          router.replace(pageCommonConst.path.login, {scroll: true});
-        }
-      })
     })
     ();
   }, [])
@@ -126,24 +140,22 @@ export default function RootLayout({
     const currentClassName = 'current-nav-item';
     const navItems: HTMLCollectionOf<Element> = document.getElementsByClassName('nav-item');
     for (let index = 0; index < navItems.length; index++) {
-      const subItems: HTMLCollectionOf<Element> = navItems[index].getElementsByClassName('nav-item-sub');
-      let isSubItem = false;
-      if(subItems.length) {
-        const subItemUri: string | undefined = subItems[0].children[0].getAttribute('data-url')?.substring(0, subItems[0].children[0].getAttribute('data-url')?.indexOf('?'));
-        isSubItem = subItemUri !== undefined && pathName?.includes(subItemUri);
+      if(!navItems[index].getAttribute('data-url')) {
+        continue;
       }
 
-      if(pathName === navItems[index].getAttribute('data-url') || isSubItem) {
+      if(pathname === navItems[index].getAttribute('data-url')) {
         navItems[index].classList.add(currentClassName);
       } else {
         navItems[index].classList.remove(currentClassName);
       }
     }
 
-    if(isSp && pathName === pageCommonConst.path.adminApplication) {
+    if(isSp && (pathname === pageCommonConst.path.adminApplication || pathname === pageCommonConst.path.applicationNew)) {
       for (let index = 0; index < navItems.length; index++) {
         if(navItems[index].getAttribute('data-url') === pageCommonConst.path.application) {
           navItems[index].classList.add(currentClassName);
+          break;
         }
       }
     }
@@ -166,7 +178,7 @@ export default function RootLayout({
       description: confirmModalConst.message.logout,
     }).then(async() => {
       const res = await logout();
-      router.replace(pageCommonConst.path.login, {scroll: true});
+      router.replace(pageCommonConst.path.login, {scroll: false});
     }).catch(() => {
       return true
     })

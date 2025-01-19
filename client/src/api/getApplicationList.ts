@@ -4,6 +4,7 @@ export interface GetApplicationListRequest {
   searchUserId: string | null,
   searchAction: string | null,
   searchYear: string | null,
+  searchType: string | null,
   limit: number,
   offset: number,
   isAdmin: boolean,
@@ -43,7 +44,7 @@ export async function getApplicationList(req: GetApplicationListRequest) {
     req.searchYear = '';
   }
 
-  return await axiosGet(`/application/list?userId=${req.searchUserId}&searchAction=${req.searchAction}&searchYear=${req.searchYear}&limit=${req.limit}&offset=${req.offset}&isAdmin=${req.isAdmin}`).then((res: ApiResponse) => {
+  return await axiosGet(`/application/list?userId=${req.searchUserId}&searchAction=${req.searchAction}&searchYear=${req.searchYear}&searchType=${req.searchType}&limit=${req.limit}&offset=${req.offset}&isAdmin=${req.isAdmin}`).then((res: ApiResponse) => {
     return {
       responseResult: res.responseResult,
       message: res.responseResult ? "" : res.message,

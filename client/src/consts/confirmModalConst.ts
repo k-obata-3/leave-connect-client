@@ -27,5 +27,7 @@ export const confirmModalConst = {
     approvalApplication: "承認します。よろしいですか?",
     rejectApplication: "差戻します。よろしいですか?",
     updateGrantDays: "付与日数を更新します。よろしいですか?",
+    saveCareer: "保存します。よろしいですか?",
+    deleteCareer: "削除します。よろしいですか?",
   }
 } as const

@@ -9,6 +9,7 @@ import utils from '@/assets/js/utils';
 import { confirmModalConst } from '@/consts/confirmModalConst';
 import { logout } from '@/api/logout';
 import { changePassword, ChangePasswordRequest, ChangePasswordResponse } from '@/api/changePassword';
+import { pageCommonConst } from '@/consts/pageCommonConst';
 
 export default function EditPassword() {
   const router = useRouter();
@@ -81,7 +82,7 @@ export default function EditPassword() {
       await changePassword(req).then(async(res: ChangePasswordResponse) => {
         if(res.responseResult) {
           const res = await logout();
-          router.replace('/', {scroll: true});
+          router.replace(pageCommonConst.path.login, {scroll: false});
         } else {
           setNotificationMessageObject({
             errorMessageList: res.message ? [res.message] : [],

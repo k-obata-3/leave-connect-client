@@ -124,7 +124,7 @@ export default function ApprovalEditView({ taskId, applicationId, onReload }: Pr
           // 通知情報の更新
           updateNotificationObject();
           onReload();
-          router.push(pageCommonConst.path.approval, {scroll: true});
+          router.replace(pageCommonConst.path.approval, {scroll: true});
         } else {
           setErrorMessage(approveRes.message);
         }

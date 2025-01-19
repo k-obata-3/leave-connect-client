@@ -133,7 +133,7 @@ export default function ApprovalPage() {
   return (
     <div className="approval-list">
       <div className="page-title pc-only">
-      <h3>{showEditView ? pageCommonConst.pageName.approvalEdit : pageCommonConst.pageName.approval}</h3>
+        <h3>{showEditView ? pageCommonConst.pageName.approvalEdit : pageCommonConst.pageName.approval}</h3>
       </div>
       <div className="" hidden={!!showEditView}>
         <div className="row mb-2">

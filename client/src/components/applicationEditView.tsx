@@ -14,7 +14,7 @@ import useConfirm from '@/hooks/useConfirm';
 import { commonConst } from '@/consts/commonConst';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { confirmModalConst } from '@/consts/confirmModalConst';
-import { ApplicationClassificationObject, ApplicationTypeFormat, ApplicationTypeObject, useApplicationTypeStore } from '@/store/applicationTypeStore';
+import { ApplicationClassificationObject, ApplicationTypeFormat, ApplicationTypeObject, useApplicationSettingStore } from '@/store/applicationSettingStore';
 import { Application, ApprovalTtask, AvailableOperation, getApplication, getApplicationRequest, getApplicationResponse } from '@/api/getApplication';
 import { SaveApplicationRequest, SaveApplicationResponse, saveApplication } from '@/api/saveApplication';
 import { DeleteApplicationRequest, deleteApplication } from '@/api/deleteApplication';
@@ -54,7 +54,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
   // 共通Store
   const { setCommonObject } = useCommonStore();
   const { setNotificationMessageObject } = useNotificationMessageStore();
-  const { getApplicationTypeObject } = useApplicationTypeStore();
+  const { getApplicationTypeObject } = useApplicationSettingStore();
   const [application, setApplication] = useState<Application | null>(null);
   const [approvalTtasks, setApprovalTtasks] = useState<ApprovalTtask[]>([]);
   const [availableOperation, setAvailableOperation] = useState<AvailableOperation | null>(null);
@@ -69,8 +69,8 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     // currentDate: today,
     currentStartDate: today,
     currentEndDate: today,
-    startDateObj: '',
-    endDateObj: '',
+    startDate: '',
+    endDate: '',
     startTime: '',
     endTime: '',
     totalTime: '',
@@ -127,8 +127,8 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
         await setApplicationInput();
       } else if(isNew && !applicationId) {
         const initialDate = selectDate ? new Date(selectDate) : today;
-        inputValues.startDateObj = initialDate.toLocaleDateString('ja-JP');
-        inputValues.endDateObj = initialDate.toLocaleDateString('ja-JP');
+        inputValues.startDate = initialDate.toLocaleDateString('ja-JP');
+        inputValues.endDate = initialDate.toLocaleDateString('ja-JP');
         inputValues.currentStartDate = initialDate;
         inputValues.currentEndDate = initialDate;
         inputValues.comment = "";
@@ -160,19 +160,19 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     await getApplication(req).then(async(res: getApplicationResponse) => {
       if(res.responseResult) {
         // console.log(res.availableOperation)
-        const startDate = new Date(res.application.startDate);
-        const endDate = new Date(res.application.endDate);
+        const startDateObj = new Date(res.application.startDate);
+        const endDateObj = new Date(res.application.endDate);
         setApplication(res.application);
         setApprovalTtasks(res.approvalTtasks);
         setAvailableOperation(res.availableOperation);
         setEditEnabled(!!res.availableOperation?.isEdit);
         setInputValues({ ...inputValues,
-          currentStartDate: startDate,
-          currentEndDate: endDate,
-          startDateObj: startDate.toLocaleDateString('jp'),
-          endDateObj: endDate.toLocaleDateString('jp'),
-          startTime: `${startDate.getHours()}:${startDate.getMinutes()}:00`,
-          endTime: `${endDate.getHours()}:${endDate.getMinutes()}:00`,
+          currentStartDate: startDateObj,
+          currentEndDate: endDateObj,
+          startDate: startDateObj.toLocaleDateString('jp'),
+          endDate: endDateObj.toLocaleDateString('jp'),
+          startTime: `${startDateObj.getHours()}:${startDateObj.getMinutes()}:00`,
+          endTime: `${endDateObj.getHours()}:${endDateObj.getMinutes()}:00`,
           totalTime: res.application.totalTime,
           classification: res.application.classification,
           type: res.application.type,
@@ -276,8 +276,11 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     if(isPeriodFormat) {
       setInputValues({ ...inputValues, [name]: date ? date.toLocaleDateString('ja-JP') : null});
     } else {
-      setInputValues({ ...inputValues, ['startDateObj']: date ? date.toLocaleDateString('ja-JP') : ''});
-      setInputValues({ ...inputValues, ['endDateObj']: date ? date.toLocaleDateString('ja-JP') : ''});
+      setInputValues({
+        ...inputValues,
+        ['startDate']: date ? date.toLocaleDateString('ja-JP') : '',
+        ['endDate']: date ? date.toLocaleDateString('ja-JP') : '',
+      });
     }
   }
 
@@ -297,7 +300,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
   const onSave = async(action: string) => {
     const requiredErrors = {
       ...inputError,
-      ['startEndDateObj']: inputValues.startDateObj && inputValues.endDateObj ? '' : '取得日は必須入力です。',
+      ['startEndDateObj']: inputValues.startDate && inputValues.endDate ? '' : '取得日は必須入力です。',
       ['startEndTime']: inputValues.startTime && inputValues.endTime ? '' : '取得時間は必須入力です。',
       ['comment']: inputValues.comment.trim() ? '' : '申請コメントは必須入力です。',
       ['approvalGroup']: currentSelectApprovalGroup.id ? '' : '承認グループを選択してください。',
@@ -317,12 +320,13 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     const cancel = await confirm({
       description: `${action == commonConst.actionValue.draft.toString() ? confirmModalConst.message.saveApplication : confirmModalConst.message.submitApplication}`,
     }).then(async() => {
+      console.log(inputValues)
       const request: SaveApplicationRequest = {
         id: application?.id,
         type: inputValues.type,
         classification: inputValues.classification,
-        startDate: inputValues.startDateObj,
-        endDate: inputValues.endDateObj,
+        startDate: inputValues.startDate,
+        endDate: isPeriodFormat ? inputValues.endDate : inputValues.startDate,
         startTime: inputValues.startTime,
         endTime: inputValues.endTime,
         totalTime: inputValues.totalTime,
@@ -340,7 +344,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
         // 通知情報の更新
         await updateNotificationObject();
         onReload();
-        router.push(pageCommonConst.path.application, {scroll: true});
+        router.replace(pageCommonConst.path.application, {scroll: true});
       } else {
         setErrorMessage(saveApplicationRes.message);
       }
@@ -372,7 +376,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
         // 通知情報の更新
         await updateNotificationObject();
         onReload();
-        router.push(isAdminFlow ? pageCommonConst.path.adminApplication : pageCommonConst.path.application, {scroll: true});
+        router.replace(isAdminFlow ? pageCommonConst.path.adminApplication : pageCommonConst.path.application, {scroll: true});
       } else {
         setErrorMessage(res.message);
       }
@@ -421,7 +425,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
           // 通知情報の更新
           await updateNotificationObject();
           onReload();
-          router.push(pageCommonConst.path.adminApplication, {scroll: true});
+          router.replace(pageCommonConst.path.adminApplication, {scroll: true});
         } else {
           setErrorMessage(cancelRes.message);
         }
@@ -552,7 +556,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
             </div>
             <div className="col-8 col-md-5" hidden={!editEnabled}>
               <Flatpickr className="form-select" id="startDateObj" options={dateOption}
-                value={inputValues.currentStartDate} name="startDateObj" onChange={([date]: any) => handleOnDateChange(date, "startDateObj")}/>
+                value={inputValues.currentStartDate} name="startDate" onChange={([date]: any) => handleOnDateChange(date, "startDate")}/>
             </div>
             <div className="col ps-3" hidden={editEnabled}>
               <p className="mb-0">{application?.sStartDate}</p>
@@ -565,7 +569,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
             </div>
             <div className="col-8 col-md-5" hidden={!editEnabled}>
               <Flatpickr className="form-select" id="endDateObj" options={dateOption}
-                value={inputValues.currentEndDate} name="endDateObj" onChange={([date]: any) => handleOnDateChange(date, "endDateObj")}/>
+                value={inputValues.currentEndDate} name="endDateObj" onChange={([date]: any) => handleOnDateChange(date, "endDate")}/>
             </div>
             <div className="col ps-3" hidden={editEnabled}>
               <p className="mb-0">{application?.sEndDate}</p>
@@ -577,17 +581,17 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
           {/* 取得時間 */}
           <div className="row align-items-center mb-3 g-3" hidden={!isTimeFormat}>
             <div className="col-md-2 mb-2">
-              <label className="col-form-label fw-medium" htmlFor="startDate">取得時間</label>
+              <label className="col-form-label fw-medium" htmlFor="startTime">取得時間</label>
             </div>
             <div className="col-5 col-md-2 mb-2" hidden={!editEnabled}>
-              <Flatpickr className="form-select" id="startDate" options={timeOption}
+              <Flatpickr className="form-select" id="startTime" options={timeOption}
                 value={inputValues.startTime} name="startTime" onChange={([date]: any) => handleOnStartEndTimeChange(date, "startTime")}/>
             </div>
             <div className="col-1 text-center mb-2" hidden={!editEnabled}>
               <span>～</span>
             </div>
             <div className="col-5 col-md-2 mb-2 me-2" hidden={!editEnabled}>
-              <Flatpickr className="form-select" id="endDate" options={timeOption}
+              <Flatpickr className="form-select" id="endTime" options={timeOption}
                 value={inputValues.endTime} name="endTime" onChange={([date]: any) => handleOnStartEndTimeChange(date, "endTime")}/>
             </div>
             <div className="col-5 col-md-2 mb-2" hidden={!editEnabled}>

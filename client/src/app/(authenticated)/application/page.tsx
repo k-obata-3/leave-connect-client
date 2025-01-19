@@ -13,6 +13,7 @@ import ApplicationListView from '@/components/applicationListView';
 import ApplicationEditView from '@/components/applicationEditView';
 import SearchSelectYearView from '@/components/searchSelectYearView';
 import SearchSelectStatusView from '@/components/searchSelectStatusView';
+import SearchSelectTypeView from '@/components/searchSelectTypeView';
 
 export default function ApplicationPage() {
   const router = useRouter();
@@ -29,17 +30,22 @@ export default function ApplicationPage() {
   const [currentSearchParams, setCurrentSearchParams] = useState({
     currentSearchYear: new Date().getFullYear().toString(),
     currentSearchUser: '',
-    currentSearchStatus: ''
+    currentSearchStatus: '',
+    currentSearchType: '0'
   });
   const [searchHandler, setSearchHandler] = useState({
     changeSearchYear: (val: string) => {
       currentSearchParams.currentSearchYear = val;
-      getApplications(val, currentSearchParams.currentSearchStatus, pagerParams.limit, pagerConst.initialCurrentPage);
+      getApplications(val, currentSearchParams.currentSearchStatus, currentSearchParams.currentSearchType, pagerParams.limit, pagerConst.initialCurrentPage);
     },
     changeSearchUser: (val: string) => {},
     changeSearchStatus: (val: string) => {
       currentSearchParams.currentSearchStatus = val;
-      getApplications(currentSearchParams.currentSearchYear, val, pagerParams.limit, pagerConst.initialCurrentPage);
+      getApplications(currentSearchParams.currentSearchYear, val, currentSearchParams.currentSearchType, pagerParams.limit, pagerConst.initialCurrentPage);
+    },
+    changeSearchType: (val: string) => {
+      currentSearchParams.currentSearchType = val;
+      getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchStatus, val, pagerParams.limit, pagerConst.initialCurrentPage);
     },
   });
 
@@ -51,7 +57,7 @@ export default function ApplicationPage() {
 
   useEffect(() =>{
     (async() => {
-      await getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchStatus, pagerParams.limit, pagerParams.currentPage);
+      await getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchStatus, currentSearchParams.currentSearchType, pagerParams.limit, pagerParams.currentPage);
     })()
   },[])
 
@@ -82,11 +88,12 @@ export default function ApplicationPage() {
    * @param currentPage 
    * @returns 
    */
-  const getApplications = async(searchYear: string, searchAction: string, limit: number, currentPage: number) => {
+  const getApplications = async(searchYear: string, searchAction: string, searchType: string, limit: number, currentPage: number) => {
     const req: GetApplicationListRequest = {
       searchUserId: null,
       searchAction: searchAction,
       searchYear: searchYear,
+      searchType: searchType,
       limit: limit,
       offset: (currentPage - 1) * limit,
       isAdmin: false,
@@ -113,7 +120,7 @@ export default function ApplicationPage() {
    */
   const getPageList = (page : any) => {
     setApplicationList([]);
-    getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchStatus, pagerParams.limit, page);
+    getApplications(currentSearchParams.currentSearchYear, currentSearchParams.currentSearchStatus, currentSearchParams.currentSearchType, pagerParams.limit, page);
   }
 
   /**
@@ -155,10 +162,18 @@ export default function ApplicationPage() {
             <div className="col-12 search_select_status_width">
               <SearchSelectStatusView callback={searchHandler.changeSearchStatus} currentValue={currentSearchParams.currentSearchStatus}></SearchSelectStatusView>
             </div>
+            <div className="col-12 search_select_type_width">
+              <SearchSelectTypeView callback={searchHandler.changeSearchType} currentValue={currentSearchParams.currentSearchType}></SearchSelectTypeView>
+            </div>
           </div>
         </div>
         <ApplicationListView applicationList={applicationList} rowBtnHandler={onEdit}></ApplicationListView>
         <Pager params={{pageClickFnc: getPageList, limit: pagerParams.limit, totalCount: pagerParams.totalCount, page: pagerParams.currentPage}} />
+        {/*
+        <div className="new-application-btn sp-only">
+          <button className="btn btn-primary" onClick={() => router.push(pageCommonConst.path.applicationNew)}><i className="bi bi-plus"></i></button>
+        </div>
+        */}
       </div>
       <div hidden={!showEditView}>
         <ApplicationEditView isAdminFlow={false} isNew={isNew} selectDate={searchParams?.get(pageCommonConst.param.selectDate)} applicationId={applicationId} onReload={() => getPageList(pagerConst.initialCurrentPage)}></ApplicationEditView>

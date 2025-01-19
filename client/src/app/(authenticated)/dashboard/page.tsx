@@ -1,11 +1,19 @@
 "use client"
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
+import usePageBack from '@/hooks/usePageBack';
 import DashboardCardView from './dashboardCardView';
 import DashboardCalendarView from './dashboardCalendarView';
 
 export default function Dashboard() {
+  // 戻るボタン カスタムフック
+  const pageBack = usePageBack();
+
+  useEffect(() =>{
+    pageBack(false);
+  },[])
+
   return (
     <div className="dashboard">
       <div className="row row-dashboard">

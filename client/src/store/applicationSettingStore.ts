@@ -30,14 +30,14 @@ export type ApplicationInitialValueObject = {
   totalTime: number,
 }
 
-type ApplicationTypeStore = {
+type ApplicationSettingStore = {
   applicationTypes: ApplicationTypeObject[],
   setApplicationTypeObject: (obj: ApplicationTypeObject[]) => void;
   clearApplicationTypeObject: () => void;
   getApplicationTypeObject: () => ApplicationTypeObject[];
 };
 
-export const useApplicationTypeStore = create<ApplicationTypeStore>((set, get) => ({
+export const useApplicationSettingStore = create<ApplicationSettingStore>((set, get) => ({
   applicationTypes: [],
   setApplicationTypeObject: (obj) => set((state) => ({
     applicationTypes: obj
