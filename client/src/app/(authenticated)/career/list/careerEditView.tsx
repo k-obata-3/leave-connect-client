@@ -185,11 +185,6 @@ export default function CareerEditView({ careerId, isNew, onReload }: Props) {
     }
   }
 
-  const onClearCareerItem = (inputs: string[], item: string, keyName: string) => {
-    const newArray = inputs.filter(input => input !== item);
-    setInputValues({ ...inputValues, [keyName]: newArray});
-  }
-
   const onChangeCareerItemInput = (inputs: string[], e: any, index: number) => {
     inputs[index] = e.target.value;
     setInputValues({ ...inputValues, [e.target.name]: inputs});

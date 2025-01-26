@@ -118,20 +118,20 @@ export default function NavMenuPcView({ children, push, onLogout }: Props) {
             </p>
           </li>
           {/* 個人設定 */}
-          <li className="nav-item">
+          <li className="nav-item" data-url={pageCommonConst.path.settingUser}>
             <p className="nav-link">
               <i className="bi bi-person-gear"></i>
               <span>{pageCommonConst.pageName.settingUser}</span>
             </p>
             {/* 個人設定 サブメニュー */}
             <div className="nav-item-sub">
-                <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPersonal} onClick={e => onMenuClick(e)}>
-                  <p className="nav-link">{pageCommonConst.pageName.settingUserEditPersonal}</p>
-                </div>
-                <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPassword} onClick={e => onMenuClick(e)}>
-                  <p className="nav-link">{pageCommonConst.pageName.settingUserEditPassword}</p>
-                </div>
+              <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPersonal} onClick={e => onMenuClick(e)}>
+                <p className="nav-link">{pageCommonConst.pageName.settingUserEditPersonal}</p>
               </div>
+              <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPassword} onClick={e => onMenuClick(e)}>
+                <p className="nav-link">{pageCommonConst.pageName.settingUserEditPassword}</p>
+              </div>
+            </div>
           </li>
         </ul>
         <div className="border-top border-dark-subtle" hidden={!isAdmin()}>
@@ -151,18 +151,21 @@ export default function NavMenuPcView({ children, push, onLogout }: Props) {
               </p>
             </li>
             {/* システム管理 */}
-            <li className="nav-item">
+            <li className="nav-item" data-url={pageCommonConst.path.settingSystem}>
               <p className="nav-link">
                 <i className="bi bi-gear"></i>
                 <span>{pageCommonConst.pageName.settingSystem}</span>
               </p>
               {/* システム管理 サブメニュー */}
-              <div className="nav-item-sub">
+              <div className="nav-item-sub-system">
                 <div className="sub-item" data-url={pageCommonConst.path.settingSystemGrantRule} onClick={e => onMenuClick(e)}>
                   <p className="nav-link">{pageCommonConst.pageName.settingSystemGrantRule}</p>
                 </div>
                 <div className="sub-item" data-url={pageCommonConst.path.settingSystemApprovalGroup} onClick={e => onMenuClick(e)}>
                   <p className="nav-link">{pageCommonConst.pageName.settingSystemApprovalGroup}</p>
+                </div>
+                <div className="sub-item" data-url={pageCommonConst.path.settingSystemCareerItem} onClick={e => onMenuClick(e)}>
+                  <p className="nav-link">{pageCommonConst.pageName.settingSystemCareerItem}</p>
                 </div>
               </div>
             </li>
@@ -171,11 +174,20 @@ export default function NavMenuPcView({ children, push, onLogout }: Props) {
         <div className="border-top border-dark-subtle">
           <ul className="nav flex-column mt-1 mb-1">
             {/* スキル管理 */}
-            <li className="nav-item" data-url={pageCommonConst.path.career} onClick={e => onMenuClick(e)}>
+            <li className="nav-item" data-url={pageCommonConst.path.career}>
               <p className="nav-link">
                 <i className="bi bi-person-workspace"></i>
                 <span>{pageCommonConst.pageName.career}</span>
               </p>
+              {/* 個人設定 サブメニュー */}
+              <div className="nav-item-sub">
+                <div className="sub-item" data-url={pageCommonConst.path.careerList} onClick={e => onMenuClick(e)}>
+                  <p className="nav-link">{pageCommonConst.pageName.careerList}</p>
+                </div>
+                <div className="sub-item" data-url={pageCommonConst.path.careerMemberList} onClick={e => onMenuClick(e)}>
+                  <p className="nav-link">{pageCommonConst.pageName.careerMemberList}</p>
+                </div>
+              </div>
             </li>
           </ul>
         </div>

@@ -101,6 +101,54 @@ export const axiosDelete = async(url: string) => {
   })
 }
 
+export const axiosFileDownload = async(url: string) => {
+  return await axiosClient.get(url, { responseType:'arraybuffer' }).then((res: AxiosResponse) => {
+    if(res.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+      let blob = new Blob([res.data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"});
+      let link = document.createElement('a');
+      let url = window.URL.createObjectURL(blob);
+      let disposition = res.headers['content-disposition'];
+      let fileName = null;
+
+      // 正規表現でfilenameを抜き出す
+      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+      const matches = filenameRegex.exec(disposition);
+      if (matches != null && matches[1]) {
+          const fName = matches[1].replace(/['"]/g, '');
+          fileName = decodeURI(fName);
+      }
+
+      if(fileName) {
+        link.href = url;
+        link.download = fileName;
+        link.click()
+      }
+   }
+
+    return {
+      responseResult: true,
+      result: res?.data?.result,
+      total: res?.data?.total,
+    } as ApiResponse;
+  }).catch((err) => {
+    if (err?.response && (err?.response?.status === 400)) {
+      return {
+        responseResult: false,
+        message: "ファイルのダウンロード処理中にエラーが発生しました。",
+        result: err.response?.data?.result,
+        total: err.response?.data?.total,
+      } as ApiResponse;
+    } else {
+      return {
+        responseResult: false,
+        message: err?.message ? err?.message : '予期せぬエラーが発生しました。',
+        result: [],
+        total: 0,
+      } as ApiResponse;
+    }
+  })
+}
+
 /**
  * リクエスト インターセプター
  */

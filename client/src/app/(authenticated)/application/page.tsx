@@ -14,6 +14,7 @@ import ApplicationEditView from '@/components/applicationEditView';
 import SearchSelectYearView from '@/components/searchSelectYearView';
 import SearchSelectStatusView from '@/components/searchSelectStatusView';
 import SearchSelectTypeView from '@/components/searchSelectTypeView';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
 
 export default function ApplicationPage() {
   const router = useRouter();
@@ -21,8 +22,10 @@ export default function ApplicationPage() {
 
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
-  // 戻るボタン カスタムフック
+  // カスタムフック
   const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
+
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [showEditView, setShowEditView] = useState(false);
@@ -67,7 +70,9 @@ export default function ApplicationPage() {
   },[searchParams])
 
   useEffect(() =>{
-    setShowEditView(!!(applicationId || isNew));
+    const isEdit = applicationId || isNew;
+    setShowEditView(!!isEdit);
+    pageTitle(!!isEdit ? pageCommonConst.pageName.applicationEdit : pageCommonConst.pageName.application);
     if(applicationId) {
       pageBack(true).then(() => {
         const ref = searchParams.get(pageCommonConst.param.ref);
@@ -146,9 +151,6 @@ export default function ApplicationPage() {
 
   return (
     <div className="application-page">
-      <div className="page-title pc-only">
-        <h3>{showEditView ? pageCommonConst.pageName.applicationEdit : pageCommonConst.pageName.application}</h3>
-      </div>
       <div className="" hidden={showEditView}>
         <div className="row mb-2">
           <div className="col-4 col-md-2 text-start pc-only">

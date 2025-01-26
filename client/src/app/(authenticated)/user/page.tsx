@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { pagerConst } from '@/consts/pagerConst';
 import { GetUserListRequest, GetUserListResponse, User, getUserList } from '@/api/getUserList';
@@ -18,8 +19,9 @@ export default function UserPage() {
 
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
-  // 戻るボタン カスタムフック
+  // カスタムフック
   const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
 
   const [userId, setUserId] = useState<string | null>(null);
   const [showEditView, setShowEditView] = useState(false);
@@ -42,6 +44,7 @@ export default function UserPage() {
 
   useEffect(() =>{
     setShowEditView(!!userId);
+    pageTitle(!!userId ? pageCommonConst.pageName.userEdit : pageCommonConst.pageName.user);
     if(userId) {
       pageBack(true).then(() => {
         router.replace(pageCommonConst.path.user, {scroll: true});
@@ -106,11 +109,8 @@ export default function UserPage() {
 
   return (
     <div className="user-list">
-      <div className="page-title pc-only">
-      <h3>{showEditView ? pageCommonConst.pageName.userEdit : pageCommonConst.pageName.user}</h3>
-      </div>
-      {/* <div className="sp-only text-center">{pageCommonConst.notSupportMessage}</div> */}
-      <div className="apc-only">
+      <div className="sp-only text-center">{pageCommonConst.notSupportMessage}</div>
+      <div className="pc-only">
         <div className="" hidden={!!showEditView}>
           <UserListView userList={userList} rowBtnHandler={onEdit}></UserListView>
           <Pager params={{pageClickFnc: getPageList, limit: pagerParams.limit, totalCount: pagerParams.totalCount, page: pagerParams.currentPage}} />

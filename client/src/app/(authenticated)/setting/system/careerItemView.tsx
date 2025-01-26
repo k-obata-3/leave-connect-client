@@ -4,11 +4,15 @@ import React, { useEffect, useState } from 'react';
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { getCareerItemMaster, GetCareerItemMasterRequest, GetCareerItemMasterResponse, CareerItemMaster } from '@/api/getCareerItemMaster';
 import { saveCareerItemMaster, SaveCareerItemMasterRequest } from '@/api/saveCareerItemMaster';
 import { deleteCareerItemMaster, DeleteCareerItemMasterRequest } from '@/api/deleteCareerItemMaster';
 
+type Props = {
+  isShow: boolean,
+}
 
 interface CareerItemSet {
   key: string,
@@ -16,11 +20,13 @@ interface CareerItemSet {
   values: CareerItemMaster[],
 }
 
-export default function CareerSetting() {
+export default function CareerItemView({ isShow }: Props) {
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
-  // 戻るボタン カスタムフック
+  // カスタムフック
   const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
+
   const [editingItem, setEditingItem] = useState({
     editItemKey: '',
     editItemId: '',
@@ -46,10 +52,14 @@ export default function CareerSetting() {
 
   useEffect(() =>{
     (async() => {
+      if(!isShow) {
+        return;
+      }
+
       resetEditingItem();
       await getCareerItem(null);
     })()
-  },[])
+  },[isShow])
 
   const getCareerItem = async(key: string | null) => {
     const req: GetCareerItemMasterRequest = {
@@ -142,9 +152,6 @@ export default function CareerSetting() {
 
   return (
     <div className="career-list-page">
-      <div className="page-title pc-only">
-        <h3>{pageCommonConst.pageName.careerSetting}</h3>
-      </div>
       <div className="row">
         <div className="col-auto">
           <select className="form-select" id="editItemKey" value={editingItem.editItemKey} name="editItemKey" onChange={(e) => handleEditItemOnChange(e)} disabled ={!!editingItem.editItemId}>

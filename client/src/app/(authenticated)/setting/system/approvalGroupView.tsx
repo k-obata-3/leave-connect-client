@@ -5,15 +5,16 @@ import React, { useEffect, useState } from 'react'
 import { useUserNameListStore } from '@/store/userNameListStore';
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import useConfirm from '@/hooks/useConfirm';
+import { pageCommonConst } from '@/consts/pageCommonConst';
 import { confirmModalConst } from '@/consts/confirmModalConst';
 import { UserNameObject } from '@/api/getUserNameList';
-import { ApprovalGroupObject } from '@/api/getApprovalGroupList';
+import { GetSystemConfigsRequest } from '@/api/getSystemConfigs';
+import { ApprovalGroupObject, getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
 import { saveApprovalGroup, SaveApprovalGroupRequest, SaveApprovalGroupResponse } from '@/api/saveApprovalGroup';
 import { deleteSystemConfig, DeleteSystemConfigRequest, DeleteSystemConfigResponse } from '@/api/deleteSystemConfig';
 
 type Props = {
-  approvalGroupList: ApprovalGroupObject[],
-  updateSystemConfigList: () => Promise<void>,
+  isShow: boolean,
 }
 
 interface ApprovalGroup {
@@ -35,7 +36,7 @@ interface SelectUser {
   selected: boolean,
 }
 
-export default function ApprovalGroupView({ approvalGroupList, updateSystemConfigList }: Props) {
+export default function ApprovalGroupView({ isShow }: Props) {
   const APPROVER_COL = ['approver1', 'approver2', 'approver3', 'approver4', 'approver5'];
 
   // 共通Store
@@ -44,19 +45,45 @@ export default function ApprovalGroupView({ approvalGroupList, updateSystemConfi
   // モーダル表示 カスタムフック
   const confirm = useConfirm();
 
+  const [approvalGroupList, setApprovalGroupList] = useState<ApprovalGroupObject[]>([]);
   const [userSelectList, setUserSelectList] = useState<SelectUser[]>([]);
   const [inputValues, setInputValues] = useState<ApprovalGroup[]>([]);
   const [edittingId, setEdittingId] = useState<string | null>(null);
   const [isNewCreate, setIsNewCreate] = useState(false);
 
   useEffect(() =>{
-    resetApprovalGroupList();
-  }, [approvalGroupList])
+    (async() => {
+      if(!isShow) {
+        return;
+      }
+
+      await getApprovalGroup();
+    })()
+  },[isShow])
+
+  const getApprovalGroup = async() => {
+    const req: GetSystemConfigsRequest = {
+      key: pageCommonConst.tabName.approvalGroup,
+    }
+
+    const res: GetApprovalGroupListResponse = await getApprovalGroupList();
+    if(res.responseResult) {
+      console.log(res.approvalGroupList)
+      setApprovalGroupList(res.approvalGroupList);
+      resetApprovalGroupList(res.approvalGroupList);
+    } else {
+      setNotificationMessageObject({
+        errorMessageList: res.message ? [res.message] : [],
+        inputErrorMessageList: [],
+      })
+      return;
+    }
+  }
 
   /**
    * 一覧初期化
    */
-  const resetApprovalGroupList = () => {
+  const resetApprovalGroupList = (approvalGroupList: ApprovalGroupObject[]) => {
     setEdittingId(null);
     setIsNewCreate(false);
     setNotificationMessageObject({
@@ -206,7 +233,7 @@ export default function ApprovalGroupView({ approvalGroupList, updateSystemConfi
    * キャンセル
    */
   const onCancel = () => {
-    resetApprovalGroupList();
+    resetApprovalGroupList(approvalGroupList);
     resetState();
   }
 
@@ -266,7 +293,7 @@ export default function ApprovalGroupView({ approvalGroupList, updateSystemConfi
   
       await saveApprovalGroup(req).then(async(res: SaveApprovalGroupResponse) => {
         if(res.responseResult) {
-          updateSystemConfigList();
+          getApprovalGroup();
           resetState();
         } else {
           setNotificationMessageObject({
@@ -306,7 +333,7 @@ export default function ApprovalGroupView({ approvalGroupList, updateSystemConfi
   
       await deleteSystemConfig(req).then(async(res: DeleteSystemConfigResponse) => {
         if(res.responseResult) {
-          updateSystemConfigList();
+          getApprovalGroup();
           resetState();
         } else {
           setNotificationMessageObject({

@@ -3,15 +3,19 @@
 import React, { useEffect } from 'react';
 
 import usePageBack from '@/hooks/usePageBack';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
+import { pageCommonConst } from '@/consts/pageCommonConst';
 import DashboardCardView from './dashboardCardView';
 import DashboardCalendarView from './dashboardCalendarView';
 
 export default function Dashboard() {
-  // 戻るボタン カスタムフック
+  // カスタムフック
   const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
 
   useEffect(() =>{
     pageBack(false);
+    pageTitle(pageCommonConst.pageName.dashboard);
   },[])
 
   return (

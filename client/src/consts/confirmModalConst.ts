@@ -9,6 +9,7 @@ export const confirmModalConst = {
   button: {
     ok: "OK",
     cancel: "キャンセル",
+    close: "閉じる",
     save: "保存",
     update: "更新",
     delete: "削除",

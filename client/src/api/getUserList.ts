@@ -19,6 +19,7 @@ export type User = {
   lastName: string,
   status: number,
   auth: number,
+  joiningDate: string,
   referenceDate: string,
   workingDays: number,
   totalDeleteDays: number,

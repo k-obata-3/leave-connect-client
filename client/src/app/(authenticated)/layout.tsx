@@ -96,9 +96,11 @@ export default function RootLayout({
       }
       const careerSettingRes: GetSystemConfigsResponse = await getSystemConfigs(careerSettingReq);
       if(careerSettingRes.responseResult) {
-        const careerSettingVal = JSON.parse(careerSettingRes.systemConfigs[0].value);
-        setInchargeObjectList(careerSettingVal.incharge);
-        setRoleObjectList(careerSettingVal.role);
+        if(careerSettingRes.systemConfigs.length) {
+          const careerSettingVal = JSON.parse(careerSettingRes.systemConfigs[0]?.value);
+          setInchargeObjectList(careerSettingVal.incharge);
+          setRoleObjectList(careerSettingVal.role);
+        }
       }
 
       const userNameList: GetUserNameListResponse = await getUserNameList();
@@ -150,10 +152,18 @@ export default function RootLayout({
         navItems[index].classList.remove(currentClassName);
       }
     }
-
-    if(isSp && (pathname === pageCommonConst.path.adminApplication || pathname === pageCommonConst.path.applicationNew)) {
+    if(isSp && (pathname === pageCommonConst.path.careerMemberList)) {
       for (let index = 0; index < navItems.length; index++) {
-        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.application) {
+        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.careerList) {
+          navItems[index].classList.add(currentClassName);
+          break;
+        }
+      }
+    }
+
+    if(!isSp && (pathname === pageCommonConst.path.careerList || pathname === pageCommonConst.path.careerMemberList)) {
+      for (let index = 0; index < navItems.length; index++) {
+        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.career) {
           navItems[index].classList.add(currentClassName);
           break;
         }

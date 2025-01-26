@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useUserInfoStore } from '@/store/userInfoStore';
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { searchSelectConst } from '@/consts/searchSelectConst';
 import { pagerConst } from '@/consts/pagerConst';
@@ -21,10 +22,11 @@ export default function ApprovalPage() {
   const searchParams = useSearchParams();
 
   // 共通Store
-  const { getUserInfo } = useUserInfoStore();
   const { setNotificationMessageObject } = useNotificationMessageStore();
-  // 戻るボタン カスタムフック
+  // カスタムフック
   const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
+
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [showEditView, setShowEditView] = useState(false);
@@ -64,6 +66,7 @@ export default function ApprovalPage() {
 
   useEffect(() =>{
     setShowEditView(!!taskId);
+    pageTitle(!!taskId ? pageCommonConst.pageName.approvalEdit : pageCommonConst.pageName.approval);
     if(taskId) {
       pageBack(true).then(() => {
         router.replace(`${pageCommonConst.path.approval}`, {scroll: true});
@@ -132,9 +135,6 @@ export default function ApprovalPage() {
 
   return (
     <div className="approval-list">
-      <div className="page-title pc-only">
-        <h3>{showEditView ? pageCommonConst.pageName.approvalEdit : pageCommonConst.pageName.approval}</h3>
-      </div>
       <div className="" hidden={!!showEditView}>
         <div className="row mb-2">
           {/* 検索条件 */}

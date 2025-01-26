@@ -64,7 +64,7 @@ body {
   --navbar-color: #e7e7e7;
   --nav-menu-width: 90px;
   --nav-item-height: 4rem;
-  --sub-navbar-height: 2.75rem;
+  --sub-header-height: 2.75rem;
   --sp-navbar-height: 3.75rem;
   --sp-nav-menu-height: 3.5rem;
   --sp-menu-tab-height: 2.5rem;
@@ -114,9 +114,9 @@ body {
   font-size: 0.75rem;
 }
 
-.sub-navbar {
+.sub-header {
   background: var(--bg_base_color);
-  height: var(--sub-navbar-height);
+  height: var(--sub-header-height);
   margin-left: var(--nav-menu-width);
   width: calc(100% - 90px);
   line-height: 2.5rem;
@@ -206,7 +206,8 @@ body {
 
 }
 
-.nav-item-sub {
+.nav-item-sub,
+.nav-item-sub-system {
   position: absolute;
   top: 0;
   height: 0;
@@ -226,6 +227,11 @@ body {
 }
 .nav-item:hover .nav-item-sub {
   height: 6rem;
+  left: 100%;
+  transform: translateX(0);
+}
+.nav-item:hover .nav-item-sub-system {
+  height: 9rem;
   left: 100%;
   transform: translateX(0);
 }
@@ -254,14 +260,14 @@ body {
   right: 0;
   left: 0;
   width: 100%;
-  min-height: calc(100vh - var(--navbar-height) - var(--sub-navbar-height));
-  margin-top: calc(var(--navbar-height) + var(--sub-navbar-height));
+  min-height: calc(100vh - var(--navbar-height) - var(--sub-header-height));
+  margin-top: calc(var(--navbar-height) + var(--sub-header-height));
   padding: 1rem;
 }
 
 .slide-menu {
   position: fixed;
-  min-height: calc(100vh - var(--navbar-height) - var(--sub-navbar-height));
+  min-height: calc(100vh - var(--navbar-height) - var(--sub-header-height));
   width: 0;
   left: var(--nav-menu-width);
   height: 100vh;
@@ -270,7 +276,7 @@ body {
   overflow: hidden;
 }
 .slide-menu > {
-  margin-top: calc(var(--navbar-height) + var(--sub-navbar-height));
+  margin-top: calc(var(--navbar-height) + var(--sub-header-height));
 }
 
 /*====== 左に消えるアニメーション ======*/
@@ -306,11 +312,9 @@ body {
 }
 
 .page-title {
-  display: inline-block;
-  width: 100%;
-  padding: 0rem 1rem 0.5rem 1rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #e7e7e7;
+  line-height: var(--sub-header-height);
+  font-weight: bold;
+  font-size: large;
 }
 /** --- コンテンツ表示領域 END --- */
 
@@ -506,16 +510,40 @@ select {
   z-index: -999;
   opacity: 0;
   transition: opacity 1s;
+  overflow-y: scroll;
 }
-
 .modal-overview.modal-show {
   z-index: 4;
   opacity: 1;
 }
-
 .modal-content {
   display: flex;
   justify-content: center;
+}
+
+.custom-modal-overview {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: -999;
+  opacity: 0;
+  transition: opacity 1s;
+  padding: 0.5rem;
+}
+
+.custom-modal-overview.modal-show {
+  z-index: 4;
+  opacity: 1;
+  height: 100%;
+}
+.custom-modal-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .custom-modal-content {
   margin: auto;
@@ -524,14 +552,15 @@ select {
   border: var(--bs-border-width) solid var(--bs-border-color);
   border-radius: var(--bs-border-radius);
   padding: 1rem;
-}
-.custom-modal-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  overflow-y: auto;
+  max-height: 100%;
 }
 .custom-modal-content-body {
-  width: 100%;;
+  width: 100%
+}
+.custom-modal-footer {
+  margin-top: 2rem;
+  text-align: center;
 }
 /** --- modal END --- */
 
@@ -553,6 +582,28 @@ select {
 }
 /* 一覧検索条件 END */
 
+.career-member-card-body {
+  display: grid;
+  align-items: center;
+  text-align: center;
+  height: 6rem;
+  padding: 0.5rem;
+}
+
+.career-item-badge {
+  display: inline-block;
+  border-radius: var(--bs-border-radius);
+  text-align: center;
+  max-width: 6rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding: 0.3rem;
+  margin: 0 0.2rem;
+  font-size: 0.9rem;
+  line-height: 0.9rem;
+}
+
 /** --- SP専用スタイル STR --- */
 .content-parent-sp {
   z-index: 0;
@@ -563,11 +614,11 @@ select {
 .content-sp {
   padding: 0.5rem;
   position: relative;
-  top: calc(var(--sub-navbar-height) + var(--sp-menu-tab-height) + 1.5rem);
-  margin-bottom: calc(var(--sub-navbar-height) + var(--sp-menu-tab-height) + var(--sp-nav-menu-height) + 1.5rem);
+  top: calc(var(--sub-header-height) + var(--sp-menu-tab-height) + 1.5rem);
+  margin-bottom: calc(var(--sub-header-height) + var(--sp-menu-tab-height) + var(--sp-nav-menu-height) + 1.5rem);
 }
 
-.sub-navbar-sp {
+.sub-header-sp {
   width: 100%;
   margin-left: 0;
   top: var(--sp-navbar-height);
@@ -642,7 +693,7 @@ select {
   position: sticky;
   width: 100%;
   height: var(--sp-menu-tab-height);
-  top: calc(var(--sp-navbar-height) + var(--sub-navbar-height));
+  top: calc(var(--sp-navbar-height) + var(--sub-header-height));
   background: var(--bg_base_color);
   cursor: pointer;
   z-index: 2;
@@ -758,7 +809,6 @@ select {
     white-space: nowrap;
   }
 }
-
 
 
 

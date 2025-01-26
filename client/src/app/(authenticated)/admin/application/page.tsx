@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { pagerConst } from '@/consts/pagerConst';
 import { Application, GetApplicationListRequest, GetApplicationListResponse, getApplicationList } from '@/api/getApplicationList';
@@ -22,8 +23,10 @@ export default function AdminApplicationPage() {
 
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
-  // 戻るボタン カスタムフック
+  // カスタムフック
   const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
+
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [showEditView, setShowEditView] = useState(false);
   const [applicationList, setApplicationList] = useState<Application[]>([]);
@@ -71,6 +74,7 @@ export default function AdminApplicationPage() {
 
   useEffect(() =>{
     setShowEditView(!!applicationId);
+    pageTitle(!!applicationId ? pageCommonConst.pageName.applicationConfirm : pageCommonConst.pageName.adminApplication);
     if(applicationId) {
       pageBack(true).then(() => {
         router.replace(pageCommonConst.path.adminApplication, {scroll: true});
@@ -143,9 +147,6 @@ export default function AdminApplicationPage() {
 
   return (
     <div className="application-list">
-      <div className="page-title pc-only">
-        <h3>{showEditView ? pageCommonConst.pageName.applicationConfirm : pageCommonConst.pageName.adminApplication}</h3>
-      </div>
       <div className="" hidden={showEditView}>
         <div className="row mb-2">
           {/* 検索条件 */}

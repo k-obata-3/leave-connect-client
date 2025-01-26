@@ -25,6 +25,7 @@ export const SubHeaderProvider = ({
     firstName: '',
     lastName: '',
   });
+  const [title, setTitle] = useState('');
 
   const pageBack = useCallback((isBack?: boolean): Promise<void> => {
     return new Promise((resolve: never | any, reject: never | any) => {
@@ -38,6 +39,10 @@ export const SubHeaderProvider = ({
       firstName: firstName,
       lastName: lastName,
     })
+  }, [])
+
+  const setPageTitle = useCallback((title: string) => {
+    setTitle(title);
   }, [])
 
   const handleClose = useCallback(() => {
@@ -66,12 +71,15 @@ export const SubHeaderProvider = ({
     return (
       <>
         <div className="row">
-          <div className="col-1 text-start ms-2">
+          <div className="col-1 text-start ms-2" style={{width: '2.5rem'}}>
             {enabledBack && resolveReject.length === 2 && (
               <button type="button" className="btn btn-outline-secondary btn-sm" onClick={handleBack}>
                 <i className="bi bi-chevron-left"><span className=""></span></i>
               </button>
             )}
+          </div>
+          <div className="col-4 col-md-3 text-start page-title pc-only">
+            <span>{title}</span>
           </div>
           <div className="col text-end ms-2 me-2 text-truncate">
             <i className="bi bi-person-circle me-2" onClick={() => router.push(pageCommonConst.path.settingUserEditPersonal)}></i>
@@ -89,14 +97,14 @@ export const SubHeaderProvider = ({
 
   return (
     <>
-      <div className="sub-navbar pc-only">
+      <div className="sub-header pc-only">
         {createSubHeader()}
       </div>
-      <div className="sub-navbar sub-navbar-sp sp-only">
+      <div className="sub-header sub-header-sp sp-only">
         {createSubHeader()}
       </div>
       {/* <!-- プロバイダーでラップ --> */}
-      <SubHeaderContext.Provider value={{ pageBack, setSubHeaderUserName }}>
+      <SubHeaderContext.Provider value={{ pageBack, setSubHeaderUserName, setPageTitle }}>
         {children}
       </SubHeaderContext.Provider>
     </>

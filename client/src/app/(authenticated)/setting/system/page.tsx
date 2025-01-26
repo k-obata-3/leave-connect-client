@@ -5,40 +5,38 @@ import { useSearchParams } from 'next/navigation';
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
-import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse } from '@/api/getSystemConfigs';
-import { ApprovalGroupObject, getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
 import GrantRule from './grantRule';
 import ApprovalGroupView from './approvalGroupView';
+import CareerItemView from './careerItemView';
 
 export default function SettingSystem() {
   const searchParams = useSearchParams();
 
   const ITEM = [
     { contentName: pageCommonConst.pageName.settingSystemGrantRule, keyword: pageCommonConst.tabName.grantRule },
-    { contentName: pageCommonConst.pageName.settingSystemApprovalGroup, keyword: pageCommonConst.tabName.approvalGroup }
+    { contentName: pageCommonConst.pageName.settingSystemApprovalGroup, keyword: pageCommonConst.tabName.approvalGroup },
+    { contentName: pageCommonConst.pageName.settingSystemCareerItem, keyword: pageCommonConst.tabName.career }
   ]
 
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
-  // 戻るボタン カスタムフック
+  // カスタムフック
   const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
 
   const [currentMenu, setCurrentMenu] = useState({
     contentName: "",
     keyword: "",
   });
-  const [grantRule, setGrantRule] = useState<string | null>(null);
-  const [approvalGroupResponse, setApprovalGroupResponse] = useState<ApprovalGroupObject[]>([]);
 
   useEffect(() =>{
     const tab = searchParams?.get(pageCommonConst.param.tab) ?? '';
     const item = ITEM.find((item: any) => item.keyword === tab);
-    setGrantRule(null);
-    setApprovalGroupResponse([]);
     if(item) {
       setCurrentMenu(item);
-      getSystemConfig(tab);
+      pageTitle(item.contentName);
     }
 
     setNotificationMessageObject({
@@ -49,61 +47,18 @@ export default function SettingSystem() {
     pageBack(false);
   },[searchParams])
 
-  const getGrantRule = async(req: GetSystemConfigsRequest) => {
-    const res: GetSystemConfigsResponse = await getSystemConfigs(req);
-    if(res.responseResult) {
-      if(res.systemConfigs.length) {
-        setGrantRule(res.systemConfigs[0].value);
-      }
-    } else {
-      setNotificationMessageObject({
-        errorMessageList: res.message ? [res.message] : [],
-        inputErrorMessageList: [],
-      })
-    }
-  }
-
-  const getApprovalGroup = async(req: GetSystemConfigsRequest) => {
-    const res: GetApprovalGroupListResponse = await getApprovalGroupList();
-    if(res.responseResult) {
-      setApprovalGroupResponse(res.approvalGroupList);
-    } else {
-      setNotificationMessageObject({
-        errorMessageList: res.message ? [res.message] : [],
-        inputErrorMessageList: [],
-      })
-      return;
-    }
-  }
-
-  const getSystemConfig = async(keyword: string) => {
-    const req: GetSystemConfigsRequest = {
-      key: keyword,
-    }
-
-    if(keyword === pageCommonConst.tabName.grantRule) {
-      getGrantRule(req);
-    } else if(keyword === pageCommonConst.tabName.approvalGroup) {
-      getApprovalGroup(req);
-    }
-  }
-
-  const updateSystemConfigList = async() => {
-    getSystemConfig(currentMenu.keyword);
-  }
-
   return (
     <div className="config-system">
-      <div className="page-title pc-only">
-        <h3 className="">{currentMenu.contentName}</h3>
-      </div>
       <div className="sp-only text-center">{pageCommonConst.notSupportMessage}</div>
       <div className="pc-only">
         <div hidden={currentMenu.keyword !== pageCommonConst.tabName.grantRule}>
-          <GrantRule value={grantRule}></GrantRule>
+          <GrantRule isShow={currentMenu.keyword === pageCommonConst.tabName.grantRule}></GrantRule>
         </div>
         <div hidden={currentMenu.keyword !== pageCommonConst.tabName.approvalGroup}>
-          <ApprovalGroupView approvalGroupList={approvalGroupResponse} updateSystemConfigList={updateSystemConfigList}></ApprovalGroupView>
+          <ApprovalGroupView isShow={currentMenu.keyword === pageCommonConst.tabName.approvalGroup}></ApprovalGroupView>
+        </div>
+        <div hidden={currentMenu.keyword !== pageCommonConst.tabName.career}>
+          <CareerItemView isShow={currentMenu.keyword === pageCommonConst.tabName.career}></CareerItemView>
         </div>
       </div>
     </div>

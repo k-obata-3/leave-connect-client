@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import EditPersonal from './editPersonal';
 import EditPassword from './editPassword';
@@ -19,8 +20,9 @@ export default function SettingUser() {
 
   // 共通Store
   const { clearNotificationMessageObject } = useNotificationMessageStore();
-  // 戻るボタン カスタムフック
+  // カスタムフック
   const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
 
   const [currentMenu, setCurrentMenu] = useState({
     contentName: "",
@@ -31,7 +33,8 @@ export default function SettingUser() {
     const tab = searchParams?.get(pageCommonConst.param.tab) ?? '';
     const item = ITEM.find((item: any) => item.keyword === tab);
     if(item) {
-      setCurrentMenu(item)
+      setCurrentMenu(item);
+      pageTitle(item.contentName);
     }
 
     clearNotificationMessageObject();
@@ -40,9 +43,6 @@ export default function SettingUser() {
 
   return (
     <div className="config-user">
-      <div className="page-title pc-only">
-        <h3 className="">{currentMenu.contentName}</h3>
-      </div>
       <div hidden={currentMenu.keyword !== pageCommonConst.tabName.editPersonal}>
         <EditPersonal></EditPersonal>
       </div>

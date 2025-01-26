@@ -42,6 +42,10 @@ export default function UserEditView({ userId, onReload }: Props) {
     userId: '',
     firstName: '',
     lastName: '',
+    firstNameKana: '',
+    lastNameKana: '',
+    dateOfBirth: new Date().toLocaleDateString('ja-JP'),
+    joiningDate: new Date().toLocaleDateString('ja-JP'),
     referenceDate: new Date().toLocaleDateString('ja-JP'),
     workingDays: '5',
     totalDeleteDays: '',
@@ -53,6 +57,10 @@ export default function UserEditView({ userId, onReload }: Props) {
   const [inputError, setInputError] = useState({
     firstName: '',
     lastName: '',
+    firstNameKana: '',
+    lastNameKana: '',
+    dateOfBirth: '',
+    joiningDate: '',
     referenceDate: '',
   });
 
@@ -65,6 +73,10 @@ export default function UserEditView({ userId, onReload }: Props) {
       setInputError({ ...inputError,
         firstName: '',
         lastName: '',
+        firstNameKana: '',
+        lastNameKana: '',
+        dateOfBirth: '',
+        joiningDate: '',
         referenceDate: '',
       })
 
@@ -80,12 +92,18 @@ export default function UserEditView({ userId, onReload }: Props) {
 
     const res = await getUserDetails(req);
     if(res.responseResult) {
-      const utcReferenceDate = new Date(res.referenceDate)
+      const utcDateOfBirth = new Date(res.dateOfBirth);
+      const utcJoiningDate = new Date(res.joiningDate);
+      const utcReferenceDate = new Date(res.referenceDate);
       setInputValues({
         ...inputValues,
         userId: res.userId,
         firstName: res.firstName,
         lastName: res.lastName,
+        firstNameKana: res.firstNameKana,
+        lastNameKana: res.lastNameKana,
+        dateOfBirth: new Date(utcDateOfBirth.getUTCFullYear(), utcDateOfBirth.getMonth(), utcDateOfBirth.getDate()).toLocaleDateString('ja-JP'),
+        joiningDate: new Date(utcJoiningDate.getUTCFullYear(), utcJoiningDate.getMonth(), utcJoiningDate.getDate()).toLocaleDateString('ja-JP'),
         referenceDate: new Date(utcReferenceDate.getUTCFullYear(), utcReferenceDate.getMonth(), utcReferenceDate.getDate()).toLocaleDateString('ja-JP'),
         workingDays: res.workingDays,
         totalDeleteDays: res.totalDeleteDays,
@@ -151,6 +169,10 @@ export default function UserEditView({ userId, onReload }: Props) {
       ...inputError,
       ['lastName']: !inputValues.lastName ? '姓は必須入力です。' : '',
       ['firstName']: !inputValues.firstName ? '名は必須入力です。' : '',
+      ['lastNameKana']: !inputValues.lastNameKana ? '姓(カナ)は必須入力です。' : '',
+      ['firstNameKana']: !inputValues.firstNameKana ? '名(カナ)は必須入力です。' : '',
+      ['dateOfBirth']: !inputValues.dateOfBirth ? '生年月日は必須入力です。' : '',
+      ['joiningDate']: !inputValues.joiningDate? '入社日は必須入力です。': '',
       ['referenceDate']: !inputValues.referenceDate ? '基準日は必須入力です。' : '',
       // ['workingDays']: !inputValues.workingDays ? '稼働日数は必須入力です。' : '',
     }
@@ -173,6 +195,10 @@ export default function UserEditView({ userId, onReload }: Props) {
         id: userId,
         lastName: inputValues.lastName,
         firstName: inputValues.firstName,
+        firstNameKana: inputValues.firstNameKana,
+        lastNameKana: inputValues.lastNameKana,
+        dateOfBirth: inputValues.dateOfBirth,
+        joiningDate: inputValues.joiningDate,
         referenceDate: inputValues.referenceDate,
         workingDays: inputValues.workingDays,
       }
@@ -233,6 +259,42 @@ export default function UserEditView({ userId, onReload }: Props) {
           <p className="input_error">{inputError.firstName}</p>
         </div>
       </div>
+      {/* 姓名(カナ) */}
+      <div className="row mb-3 g-3">
+        <div className="col-md-2">
+          <label className="col-form-label fw-medium" htmlFor="lastNameKana">名前(カナ)</label>
+        </div>
+        <div className="col-md-5 col-6 pe-3">
+          <input className="form-control" type="text" placeholder="姓(カナ)" value={inputValues.lastNameKana} name="lastNameKana" id="lastNameKana" onChange={(e) => handleOnChange(e)} />
+          <p className="input_error">{inputError.lastNameKana}</p>
+        </div>
+        <div className="col-md-5 col-6 ps-3">
+          <input className="form-control" type="text" placeholder="名(カナ)" value={inputValues.firstNameKana} name="firstNameKana" id="firstNameKana" onChange={(e) => handleOnChange(e)} />
+          <p className="input_error">{inputError.firstNameKana}</p>
+        </div>
+      </div>
+      {/* 生年月日 */}
+      <div className="row mb-3 g-3">
+        <div className="col-md-2">
+          <label className="col-form-label fw-medium" htmlFor="dateOfBirth">生年月日</label>
+        </div>
+        <div className="col-2">
+          <Flatpickr className="form-select" id="dateOfBirth" options={dateOption}
+            value={inputValues.dateOfBirth} name="dateOfBirth" onChange={([date]) => handleOnDateChange(date, "dateOfBirth")} />
+          <p className="input_error">{inputError.dateOfBirth}</p>
+        </div>
+      </div>
+      {/* 入社日 */}
+      <div className="row mb-3 g-3">
+        <div className="col-md-2">
+          <label className="col-form-label fw-medium" htmlFor="joiningDate">入社日</label>
+        </div>
+        <div className="col-2">
+          <Flatpickr className="form-select" id="joiningDate" options={dateOption}
+            value={inputValues.joiningDate} name="joiningDate" onChange={([date]) => handleOnDateChange(date, "joiningDate")} />
+          <p className="input_error">{inputError.joiningDate}</p>
+        </div>
+      </div>
       {/* 基準日 */}
       <div className="row mb-3 g-3">
         <div className="col-md-2">
@@ -273,8 +335,6 @@ export default function UserEditView({ userId, onReload }: Props) {
               <label className="form-label fw-medium">有給残日数</label>
               <p className="mt-1 ps-3">{inputValues.totalRemainingDays}</p>
             </div>
-          </div>
-          <div className="row mb-3 g-3">
             {/* 繰越日数 */}
             <div className="col-md-2 col-3 me-3">
               <label className="form-label fw-medium">繰越日数</label>
@@ -285,7 +345,6 @@ export default function UserEditView({ userId, onReload }: Props) {
               <label className="form-label fw-medium">付与日数</label>
               <p className="mt-1 ps-3">{inputValues.totalAddDays}</p>
             </div>
-            <div className="col-md-3 col-3"></div>
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { pagerConst } from '@/consts/pagerConst';
 import { Career, getCareerList, GetCareerListRequest, GetCareerListResponse } from '@/api/getCareerList';
@@ -19,8 +20,10 @@ export default function CareerList() {
 
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
-  // 戻るボタン カスタムフック
+  // カスタムフック
   const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
+
   const [careerId, setCareerId] = useState<string | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [showEditView, setShowEditView] = useState(false);
@@ -44,8 +47,10 @@ export default function CareerList() {
   },[searchParams])
 
   useEffect(() =>{
-    setShowEditView(!!(careerId || isNew));
-    if(careerId || isNew) {
+    const isEdit = careerId || isNew;
+    setShowEditView(!!isEdit);
+    pageTitle(!!isEdit ? isNew ? pageCommonConst.pageName.careerNew : pageCommonConst.pageName.careerEdit : pageCommonConst.pageName.careerList);
+    if(isEdit) {
       pageBack(true).then(() => {
         router.replace(`${pageCommonConst.path.careerList}`, {scroll: true});
       }).catch(() => {
@@ -109,9 +114,6 @@ export default function CareerList() {
 
   return (
     <div className="career-list-page">
-      <div className="page-title pc-only">
-        <h3>{showEditView ? isNew ? pageCommonConst.pageName.careerNew : pageCommonConst.pageName.careerEdit : pageCommonConst.pageName.careerList}</h3>
-      </div>
       <div className="" hidden={showEditView}>
         <div className="row mb-2">
           <div className="col-4 col-md-2 text-start pc-only">
@@ -125,8 +127,8 @@ export default function CareerList() {
         <CareerEditView careerId={careerId} isNew={isNew} onReload={() => getPageList(pagerConst.initialCurrentPage)}></CareerEditView>
       </div>
       <div className="new-career-btn sp-only" hidden={showEditView}>
-          <button className="btn btn-primary" onClick={() => router.push(`${pageCommonConst.path.careerList}?${pageCommonConst.param.isNew}=true`)}><i className="bi bi-plus"></i></button>
-        </div>
+        <button className="btn btn-primary" onClick={() => router.push(`${pageCommonConst.path.careerList}?${pageCommonConst.param.isNew}=true`)}><i className="bi bi-plus"></i></button>
+      </div>
     </div>
   );
 };

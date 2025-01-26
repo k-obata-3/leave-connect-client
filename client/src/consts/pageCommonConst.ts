@@ -15,7 +15,8 @@ export const pageCommonConst = {
     settingUserEditPassword: "/setting/user?tab=editPassword",
     career: "/career",
     careerList: "/career/list",
-    careerSetting: "/career/setting",
+    settingSystemCareerItem: "/setting/system?tab=career",
+    careerMemberList: "/career/memberList",
   },
   pageName: {
     login: "ログイン",
@@ -30,8 +31,8 @@ export const pageCommonConst = {
     user: "ユーザ管理",
     userEdit: "ユーザ編集",
     settingSystem: "システム管理",
-    settingSystemGrantRule: "付与日数",
-    settingSystemApprovalGroup: "承認グループ",
+    settingSystemGrantRule: "付与日数設定",
+    settingSystemApprovalGroup: "承認グループ設定",
     settingUser: "個人設定",
     settingUserEditPersonal: "個人情報編集",
     settingUserEditPassword: "パスワード変更",
@@ -39,7 +40,8 @@ export const pageCommonConst = {
     careerList: "経歴情報一覧",
     careerEdit: "経歴情報編集",
     careerNew: "新規登録",
-    careerSetting: "経歴情報項目マスタ",
+    settingSystemCareerItem: "経歴情報項目設定",
+    careerMemberList: "保有スキル一覧",
     logout: "ログアウト",
   },
   tabName: {
@@ -47,6 +49,7 @@ export const pageCommonConst = {
     editPassword: 'editPassword',
     grantRule: "grantRule",
     approvalGroup: 'approvalGroup',
+    career: 'career',
   },
   param: {
     id: "id",

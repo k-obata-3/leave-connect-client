@@ -28,7 +28,30 @@ export default function EditPersonal() {
             <p className="mb-0">{getUserInfo().lastName} {getUserInfo().firstName}</p>
           </div>
         </div>
-
+        <div className="row align-items-center mb-3 g-3">
+          <div className="col-md-2">
+            <label className="col-form-label fw-medium">名前(カナ)</label>
+          </div>
+          <div className="col col-md-5 ps-3">
+          <p className="mb-0">{getUserInfo().lastNameKana} {getUserInfo().firstNameKana}</p>
+          </div>
+        </div>
+        <div className="row align-items-center mb-3 g-3">
+          <div className="col-md-2">
+            <label className="col-form-label fw-medium">生年月日</label>
+          </div>
+          <div className="col col-md-5 ps-3">
+            <p className="mb-0">{getUserInfo().dateOfBirth.substring(0, 10).replaceAll('-', '/')}</p>
+          </div>
+        </div>
+        <div className="row align-items-center mb-3 g-3">
+          <div className="col-md-2">
+            <label className="col-form-label fw-medium">入社日</label>
+          </div>
+          <div className="col col-md-5 ps-3">
+            <p className="mb-0">{getUserInfo().joiningDate.substring(0, 10).replaceAll('-', '/')}</p>
+          </div>
+        </div>
         <div className="row align-items-center mb-3 g-3">
           <div className="col-md-2">
             <label className="col-form-label fw-medium">基準日</label>

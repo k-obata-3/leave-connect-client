@@ -53,7 +53,7 @@ export default function NavMenuSpView({ children, push, next }: Props) {
     <>
       <div className="content-parent-sp">
         {/* 申請一覧メニュータブ */}
-        <nav className="nav menu-tab menu-tab-application mt-1 mb-2 nav-underline nav-justified" hidden={!isAdmin() || !((pathname === pageCommonConst.path.application || pathname === pageCommonConst.path.adminApplication) && !searchParams?.get(pageCommonConst.param.applicationId))}>
+        <nav className="nav menu-tab mt-1 mb-2 nav-underline nav-justified" hidden={!isAdmin() || !((pathname === pageCommonConst.path.application || pathname === pageCommonConst.path.adminApplication) && !searchParams?.get(pageCommonConst.param.applicationId))}>
           <div className={pathname === pageCommonConst.path.application ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.application)}>
             <span>{pageCommonConst.pageName.application}</span>
           </div>
@@ -62,12 +62,21 @@ export default function NavMenuSpView({ children, push, next }: Props) {
           </div>
         </nav>
         {/* 個人設定メニュータブ */}
-        <nav className="nav menu-tab menu-tab-application mt-1 mb-2 nav-underline nav-justified" hidden={pathname !== pageCommonConst.path.settingUser}>
+        <nav className="nav menu-tab mt-1 mb-2 nav-underline nav-justified" hidden={pathname !== pageCommonConst.path.settingUser}>
           <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.editPersonal ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.settingUserEditPersonal)}>
             <span>{pageCommonConst.pageName.settingUserEditPersonal}</span>
           </div>
           <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.editPassword ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.settingUserEditPassword)}>
             <span>{pageCommonConst.pageName.settingUserEditPassword}</span>
+          </div>
+        </nav>
+        {/* スキル管理メニュータブ */}
+        <nav className="nav menu-tab mt-1 mb-2 nav-underline nav-justified" hidden={!((pathname === pageCommonConst.path.careerList || pathname === pageCommonConst.path.careerMemberList) && !searchParams?.get(pageCommonConst.param.careerId) && !searchParams?.get(pageCommonConst.param.isNew))}>
+          <div className={pathname === pageCommonConst.path.careerList ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.careerList)}>
+            <span>{pageCommonConst.pageName.careerList}</span>
+          </div>
+          <div className={pathname === pageCommonConst.path.careerMemberList ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.careerMemberList)}>
+            <span>{pageCommonConst.pageName.careerMemberList}</span>
           </div>
         </nav>
         {/* コンテンツ表示エリア */}
@@ -124,7 +133,7 @@ export default function NavMenuSpView({ children, push, next }: Props) {
               </p>
             </li>
             {/* スキル管理 */}
-            <li className="nav-item" data-url={pageCommonConst.path.career} onClick={() => next(pageCommonConst.path.career)}>
+            <li className="nav-item" data-url={pageCommonConst.path.careerList} onClick={() => next(pageCommonConst.path.careerList)}>
               <p className="nav-link mb-0">
                 <i className="bi bi-person-workspace"></i>
                 <span>{pageCommonConst.pageName.career}</span>

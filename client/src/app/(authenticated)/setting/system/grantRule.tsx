@@ -2,23 +2,52 @@
 
 import React, { useState, useEffect } from 'react';
 
+import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import { pageCommonConst } from '@/consts/pageCommonConst';
+import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse } from '@/api/getSystemConfigs';
+
 type Props = {
-  value: string | null,
+  isShow: boolean,
 }
 
-export default function GrantRule({ value }: Props) {
+export default function GrantRule({ isShow }: Props) {
+  // 共通Store
+  const { setNotificationMessageObject } = useNotificationMessageStore();
+
   const [yearsOfService, setYearsOfService] = useState([]);
   const [workingDays, setWorkingDays] = useState([]);
 
   useEffect(() =>{
-    if(value) {
-      const grantRule = JSON.parse(value);
-      setYearsOfService(grantRule['sectionMonth']);
-      setWorkingDays(grantRule['workingDays'])
-    }
-  },[value])
+    (async() => {
+      if(!isShow) {
+        return;
+      }
 
-  if(value) {
+      await getGrantRule();
+    })()
+  },[isShow])
+
+    const getGrantRule = async() => {
+      const req: GetSystemConfigsRequest = {
+        key: pageCommonConst.tabName.grantRule,
+      }
+  
+      const res: GetSystemConfigsResponse = await getSystemConfigs(req);
+      if(res.responseResult) {
+        if(res.systemConfigs.length) {
+          const grantRule = JSON.parse(res.systemConfigs[0].value);
+          setYearsOfService(grantRule['sectionMonth']);
+          setWorkingDays(grantRule['workingDays'])
+        }
+      } else {
+        setNotificationMessageObject({
+          errorMessageList: res.message ? [res.message] : [],
+          inputErrorMessageList: [],
+        })
+      }
+    }
+
+  if(yearsOfService.length) {
     return (
       <>
         <table className="table">

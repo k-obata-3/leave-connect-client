@@ -95,8 +95,8 @@ export default function GrantDaysModal({ userId, isShow, callback }: Props) {
   };
 
   return (
-    <div className={isShow ? "modal-overview modal-show" : "modal-overview"}>
-      <div className="custom-modal-content col-10 offset-1 col-md-8 offset-md-2" hidden={!isShow}>
+    <div className={isShow ? "custom-modal-overview modal-show" : "custom-modal-overview"}>
+      <div className="custom-modal-content col-12 col-md-8 offset-md-2" hidden={!isShow}>
         <div className="custom-modal-header">
           <div className="me-1"><i className="bi bi-question-circle-fill text-primary fs-4"></i></div>
             <h5 className="flex-grow-1 m-0">{confirmModalConst.label.confirm}</h5>
@@ -183,10 +183,10 @@ export default function GrantDaysModal({ userId, isShow, callback }: Props) {
               }
             </div>
           </div>
-          <div className="text-center pt-3">
-            <button className="btn btn-secondary col-auto col-md-5" onClick={() => callback(false)}>{confirmModalConst.button.cancel}</button>
-            <button className='btn btn-primary col-auto col-md-5 ms-3' onClick={onUpdateGrantDays} disabled={!!grantDays?.validErrors?.length}>{confirmModalConst.button.update}</button>
-          </div>
+        </div>
+        <div className="custom-modal-footer">
+          <button className="btn btn-secondary col-auto col-md-5" onClick={() => callback(false)}>{confirmModalConst.button.cancel}</button>
+          <button className='btn btn-primary col-auto col-md-5 ms-3' onClick={onUpdateGrantDays} disabled={!!grantDays?.validErrors?.length}>{confirmModalConst.button.update}</button>
         </div>
       </div>
     </div>
