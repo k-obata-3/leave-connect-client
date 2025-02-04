@@ -61,10 +61,12 @@ body {
 
 :root {
   --navbar-height: 60px;
-  --navbar-color: #e7e7e7;
+  --navbar-bg-color: #164a84;
+  --navbar-text-color: #e7e7e7;
   --nav-menu-width: 90px;
   --nav-item-height: 4rem;
   --sub-header-height: 2.75rem;
+  --sub-menu-nav-height: 3rem;
   --sp-navbar-height: 3.75rem;
   --sp-nav-menu-height: 3.5rem;
   --sp-menu-tab-height: 2.5rem;
@@ -92,13 +94,14 @@ body {
   left: 0;
   right: 0;
   z-index: 3;
-  background: #164a84;
+  background: var(--navbar-bg-color);
+  padding: 0;
 }
 .navbar-brand:hover {
-  color: var(--navbar-color);
+  color: var(--navbar-text-color);
 }
 .navbar span {
-  color: var(--navbar-color);
+  color: var(--navbar-text-color);
 }
 .navbar .version {
   font-size: 1rem;
@@ -118,8 +121,8 @@ body {
   background: var(--bg_base_color);
   height: var(--sub-header-height);
   margin-left: var(--nav-menu-width);
-  width: calc(100% - 90px);
-  line-height: 2.5rem;
+  width: calc(100% - var(--nav-menu-width));
+  line-height: var(--sub-header-height);
   z-index: 2;
   box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
   position: fixed;
@@ -148,10 +151,10 @@ body {
 }
 .nav-item:hover {
   .bi {
-    color: #164a84;
+    color: var(--navbar-bg-color);
   }
   .bi + span {
-    color: #164a84;
+    color: var(--navbar-bg-color);
   }
 }
 .nav-item .bi {
@@ -188,11 +191,11 @@ body {
 }
 
 .current-nav-item .bi {
-  color: #164a84;
+  color: var(--navbar-bg-color);
   font-weight: bold;
 }
 .current-nav-item .bi + span {
-  color: #164a84;
+  color: var(--navbar-bg-color);
   font-weight: bold;
 }
 
@@ -202,39 +205,45 @@ body {
   margin: 0;
 }
 
-.nav-sub-item {
+.sub-menu-nav {
+  display: flex;
+  position: -webkit-sticky; /* safari対応 */
+  position: sticky;
+  width: calc(100% - var(--nav-menu-width));
+  max-height: var(--sub-menu-nav-height);
+  top: calc(var(--navbar-height) + var(--sub-header-height));
+  left: var(--nav-menu-width);
+  width: calc(100% - var(--nav-menu-width));
+  text-align: center;
+  padding-left: 1rem;
+  background: var(--bg_base_color);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+.sub-menu-nav .nav-link {
+  min-width: 7rem;
+}
+.sub-menu-nav .nav-link.active {
+  color: var(--navbar-bg-color);
+}
+
+.career-dashboard-page,
+.career-member-list-page,
+.career-list-page,
+.config-system,
+.config-user {
+
+}
+.caree-edit-view {
 
 }
 
-.nav-item-sub,
-.nav-item-sub-system {
-  position: absolute;
-  top: 0;
-  height: 0;
-  background-color: #e7e7e7;
-  border: solid 1PX #c2cbd2;
-  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
-  transform: translateX(-100%);
-  transition: height 0.2s 0s ease-in-out;
+@media screen and (max-width: 1023px) {
+  .config-user {
+    margin-top: 0;
+  } 
 }
-.sub-item {
-  border-bottom: solid 1px #c2cbd2;
-  height: 3rem;
-  width: 110px;
-}
-.sub-item p {
-  padding-top: 0.75rem;
-}
-.nav-item:hover .nav-item-sub {
-  height: 6rem;
-  left: 100%;
-  transform: translateX(0);
-}
-.nav-item:hover .nav-item-sub-system {
-  height: 9rem;
-  left: 100%;
-  transform: translateX(0);
-}
+
 /** --- nav-menu END --- */
 
 /** --- コンテンツ表示領域 STR --- */
@@ -248,11 +257,14 @@ body {
 }
 
 .content-parent {
-  display: flex;
   overflow: hidden;
   z-index: 0;
   margin-left: var(--nav-menu-width);
   background: var(--bg_base_color);
+}
+
+.content-flex {
+  display: flex;
 }
 
 .content {
@@ -260,7 +272,7 @@ body {
   right: 0;
   left: 0;
   width: 100%;
-  min-height: calc(100vh - var(--navbar-height) - var(--sub-header-height));
+  min-height: calc(100vh - var(--navbar-height) - var(--sub-header-height) - var(--sub-menu-nav-height));
   margin-top: calc(var(--navbar-height) + var(--sub-header-height));
   padding: 1rem;
 }
@@ -316,6 +328,7 @@ body {
   font-weight: bold;
   font-size: large;
 }
+
 /** --- コンテンツ表示領域 END --- */
 
 /** --- ログイン画面 STR --- */
@@ -341,49 +354,38 @@ body {
 }
 /** --- ログイン画面 END --- */
 
-/** --- dashboard画面 STR --- */
-.row-dashboard {
-  gap: 1.5rem;
+/** --- card コンポーネント STR --- */
+.custom-card {
+  background: #fcfcfcc2;
+  border: 1px solid #e9e9e9d7;
+  border-radius: var(--bs-border-radius);
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
 }
 
-.dashboard-card {
-  padding: 0 0 0.5rem 0;
-  --dashboard-card-width: 200px;
-  min-width: var(--dashboard-card-width);
+.custom-card-header {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--navbar-bg-color);
+  padding-bottom: 0.5rem;
+}
+.custom-card-header h6 {
+  margin: 0;
 }
 
-@media (max-width: 1150px){
-  /* 画面サイズが1150px以下の場合の設定 */
-  .dashboard-card {
-    padding: 0 0.2rem 0 0.2rem;
-    min-width: 25%;
-  }
+.custom-card-body {
+  padding: 0.5rem 0 0 0;
 }
 
-.row-dashboard-card {
-  width: var(--dashboard-card-width);
+/** --- card コンポーネント END --- */
+
+
+.career-detail-title {
+  border-bottom: 1px solid var(--navbar-bg-color);
+  padding-bottom: 0.5rem;
+  padding-left: 0.5rem;
 }
 
-.dashboard-card .card {
-  /* border-radius: 0; */
-}
-
-.row-dashboard-calendar {
-  width: calc(100% - (230px)) !important;
-}
-
-@media screen and (max-width: 1112px) {
-  .dashboard-card {
-    display: inline-block;
-    /* width: calc(50% - 0.2rem); */
-  }
-
-  .row-dashboard-card,
-  .row-dashboard-calendar {
-    width: 100% !important;
-  }
-}
-/** --- dashboard画面 END --- */
 
 /** --- 一覧テーブル STR --- */
 table th,
@@ -504,8 +506,6 @@ select {
   left: 0;
   right: 0;
   bottom: 0;
-  width: 100%;
-  height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: -999;
   opacity: 0;
@@ -517,7 +517,6 @@ select {
   opacity: 1;
 }
 .modal-content {
-  display: flex;
   justify-content: center;
 }
 
@@ -526,7 +525,8 @@ select {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
+  right: 0;
+  bottom: 0;
   height: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: -999;
@@ -586,7 +586,7 @@ select {
   display: grid;
   align-items: center;
   text-align: center;
-  height: 6rem;
+  height: 6.2rem;
   padding: 0.5rem;
 }
 
@@ -606,16 +606,13 @@ select {
 
 /** --- SP専用スタイル STR --- */
 .content-parent-sp {
-  z-index: 0;
   background: var(--bg_base_color);
-  min-height: calc(100vh - var(--navbar-height));
 }
 
 .content-sp {
-  padding: 0.5rem;
-  position: relative;
-  top: calc(var(--sub-header-height) + var(--sp-menu-tab-height) + 1.5rem);
-  margin-bottom: calc(var(--sub-header-height) + var(--sp-menu-tab-height) + var(--sp-nav-menu-height) + 1.5rem);
+  margin-top: calc(var(--navbar-height) + var(--sub-header-height) - 1px);
+  margin-bottom: var(--sp-nav-menu-height);
+  padding: 1rem 0.5rem 1rem 0.5rem;
 }
 
 .sub-header-sp {
@@ -623,6 +620,7 @@ select {
   margin-left: 0;
   top: var(--sp-navbar-height);
 }
+
 .nav-menu-sp {
   bottom: 0;
   width: 100%;
@@ -650,15 +648,6 @@ select {
   justify-content: center;
   box-shadow: 0 -5px 5px rgba(0, 0, 0, 0.2);
   margin-top: 0.5rem;
-}
-
-.list-row {
-  background: #fcfcfcc2;
-  border: 1px solid #e9e9e9d7;
-  border-radius: var(--bs-border-radius);
-  box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
-  margin-bottom: 0.5rem;
-  padding: 0.5rem;
 }
 
 .approval-status-list-row {
@@ -690,40 +679,21 @@ select {
 }
 
 .menu-tab {
+  position: -webkit-sticky; /* safari対応 */
   position: sticky;
   width: 100%;
   height: var(--sp-menu-tab-height);
-  top: calc(var(--sp-navbar-height) + var(--sub-header-height));
+  top: calc(var(--sp-navbar-height) + var(--sub-header-height) - 1px);
   background: var(--bg_base_color);
-  cursor: pointer;
+  border-top: 1px solid var(--bs-border-color);
   z-index: 2;
 }
 
 .menu-tab .nav-link.active {
-  color: #164a84;
+  color: var(--navbar-bg-color);
 }
 
 @media screen and (max-width: 1023px) {
-  .dashboard-card {
-    padding: 0 0.2rem 0 0.2rem;
-    min-width: 50%;
-    margin-bottom: 0.5rem;
-  }
-  .dashboard-card .card-body {
-    height: 2rem;
-    padding: 0;
-  }
-  .dashboard-card .card-body p {
-    font-size: 1rem;
-    padding-top: 0.25rem;
-  }
-  .row-dashboard-card {
-    width: 100%;
-  }
-  .row-dashboard-calendar {
-    width: 100%;
-  }
-
   .search_select_label_width {
     width: 35%;
   }
@@ -741,9 +711,8 @@ select {
   }
   .application-edit,
   .approval-edit,
-  .career-edit,
-  .career-list-page {
-    padding-bottom: 3.5rem;
+  .career-edit {
+    padding-bottom: 3rem;
   }
 
   .new-application-btn,
@@ -781,7 +750,6 @@ select {
 
 .operation-btn-view-sp {
   position: fixed;
-  /* position: sticky; */
   display: flex;
   width: 100%;
   bottom: calc(var(--sp-nav-menu-height) + 0.5rem);
@@ -810,7 +778,9 @@ select {
   }
 }
 
-
+.cursor-pointer {
+  cursor: pointer;
+}
 
 
 

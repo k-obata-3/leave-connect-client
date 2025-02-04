@@ -41,7 +41,8 @@ export default function ApprovalListView({ approvalList, rowBtnHandler }: Props)
                 </td>
                 <td className="text-center">
                   <p className="text-nowrap">{item.sStartDate}</p>
-                  <p className="text-nowrap">{item.sStartEndTime}</p>
+                  <p className="text-nowrap" hidden={item.sStartDate !== item.sEndDate}>{item.sStartTime}～{item.sEndTime}</p>
+                  <p className="text-nowrap" hidden={item.sStartDate === item.sEndDate}>{item.sEndDate}</p>
                 </td>
                 <td>
                   <p className="text-start text-wrap">{item.applicationUserName}</p>
@@ -66,7 +67,7 @@ export default function ApprovalListView({ approvalList, rowBtnHandler }: Props)
   const createApprovalListForSp = () => {
     return (
       approvalList?.map((item, index) => (
-        <div className="list-row" key={index + 1} onClick={() =>rowBtnHandler(item.id.toString(), item.applicationId.toString())}>
+        <div className="custom-card cursor-pointer mb-2" key={index + 1} onClick={() =>rowBtnHandler(item.id.toString(), item.applicationId.toString())}>
           <p className="row mb-2">
             <span className={`col-3 col-md-2 align-self-center badge status-color ${getActionColrClassName(item)}`}>{item.sAction}</span>
             <span className="col-auto ms-1 me-auto fw-bold">{item.sType}</span>
@@ -81,9 +82,9 @@ export default function ApprovalListView({ approvalList, rowBtnHandler }: Props)
           </p>
           <p className="row mb-1">
             <span className="col-3">取得日</span>
-            <span className="col text-end">{item.sStartDate}</span>
+            <span className="col text-end">{item.sStartDate}<span className="col text-end" hidden={item.sStartDate == item.sEndDate}>～{item.sEndDate}</span></span>
           </p>
-          <p className="row">
+          <p className="row" hidden={item.sStartDate != item.sEndDate}>
             <span className="col-3">取得時間</span>
             <span className="col text-end">{item.sStartTime}～{item.sEndTime}</span>
           </p>

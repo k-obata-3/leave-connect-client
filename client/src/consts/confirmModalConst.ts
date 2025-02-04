@@ -30,5 +30,6 @@ export const confirmModalConst = {
     updateGrantDays: "付与日数を更新します。よろしいですか?",
     saveCareer: "保存します。よろしいですか?",
     deleteCareer: "削除します。よろしいですか?",
+    deleteCareerItem: "項目を削除します。よろしいですか?",
   }
 } as const

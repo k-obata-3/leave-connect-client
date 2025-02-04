@@ -105,8 +105,6 @@ export const axiosFileDownload = async(url: string) => {
   return await axiosClient.get(url, { responseType:'arraybuffer' }).then((res: AxiosResponse) => {
     if(res.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
       let blob = new Blob([res.data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"});
-      let link = document.createElement('a');
-      let url = window.URL.createObjectURL(blob);
       let disposition = res.headers['content-disposition'];
       let fileName = null;
 
@@ -118,17 +116,18 @@ export const axiosFileDownload = async(url: string) => {
           fileName = decodeURI(fName);
       }
 
-      if(fileName) {
-        link.href = url;
-        link.download = fileName;
-        link.click()
-      }
-   }
+      return {
+        responseResult: true,
+        result: {
+          'fileName': fileName,
+          'url': window.URL.createObjectURL(blob),
+        },
+      } as ApiResponse;
+    }
 
     return {
-      responseResult: true,
+      responseResult: false,
       result: res?.data?.result,
-      total: res?.data?.total,
     } as ApiResponse;
   }).catch((err) => {
     if (err?.response && (err?.response?.status === 400)) {

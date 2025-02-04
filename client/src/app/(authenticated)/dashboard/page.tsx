@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 
+import '@/assets/styles/dashboard.css';
 import usePageBack from '@/hooks/usePageBack';
 import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
@@ -20,11 +21,11 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
-      <div className="row row-dashboard">
-        <div className="row-dashboard-card">
+      <div className="row">
+        <div className="col dashboard-card">
           <DashboardCardView></DashboardCardView>
         </div>
-        <div className="row-dashboard-calendar justify-content-center">
+        <div className="col-auto dashboard-calendar justify-content-center">
           <DashboardCalendarView></DashboardCalendarView>
         </div>
       </div>

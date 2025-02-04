@@ -108,35 +108,33 @@ export default function CareerEditView({ careerId, isNew, onReload }: Props) {
   },[])
 
   useEffect(() =>{
-    (async() => {
-      setInputValues({ ...inputValues,
-        projectName: '',
-        overview: '',
-        startDate: new Date().toLocaleDateString('ja-JP'),
-        endDate: new Date().toLocaleDateString('ja-JP'),
-        model: new Array(5).fill(''),
-        os: new Array(5).fill(''),
-        database: new Array(5).fill(''),
-        language: new Array(5).fill(''),
-        framework: new Array(5).fill(''),
-        tool: new Array(5).fill(''),
-        incharge: [''],
-        role: [''],
-        other:'',
-      })
+    setInputValues({ ...inputValues,
+      projectName: '',
+      overview: '',
+      startDate: new Date().toLocaleDateString('ja-JP'),
+      endDate: new Date().toLocaleDateString('ja-JP'),
+      model: new Array(5).fill(''),
+      os: new Array(5).fill(''),
+      database: new Array(5).fill(''),
+      language: new Array(5).fill(''),
+      framework: new Array(5).fill(''),
+      tool: new Array(5).fill(''),
+      incharge: [''],
+      role: [''],
+      other:'',
+    })
 
-      setInputError({ ...inputError,
-        projectName: '',
-        startDate: '',
-        endDate: '',
-      })
+    setInputError({ ...inputError,
+      projectName: '',
+      startDate: '',
+      endDate: '',
+    })
 
-      if(isNew) {
-        setIsLoadComplete(true);
-      } else if(careerId) {
-        getCareerInfo();
-      }
-    })()
+    if(isNew) {
+      setIsLoadComplete(true);
+    } else if(careerId) {
+      getCareerInfo();
+    }
   },[careerId, isNew])
 
   const getCareerInfo = async() => {
@@ -235,7 +233,23 @@ export default function CareerEditView({ careerId, isNew, onReload }: Props) {
   }
 
   const onSave = async() => {
+    const requiredErrors = {
+      ...inputError,
+      ['projectName']: !inputValues.projectName.trim() ? '案件名は必須入力です。' : '',
+      ['startDate']: !inputValues.startDate ? '開始日は必須入力です。' : '',
+      ['endDate']: !inputValues.endDate ? '終了日は必須入力です。' : '',
+    }
 
+    for (const value of Object.values(requiredErrors)) {
+      if(value.length) {
+        setInputError(requiredErrors);
+        setNotificationMessageObject({
+          errorMessageList: [],
+          inputErrorMessageList: ['入力内容が不正です。'],
+        })
+        return;
+      }
+    }
 
     const cancel = await confirm({
       description: confirmModalConst.message.saveCareer,
@@ -297,6 +311,7 @@ export default function CareerEditView({ careerId, isNew, onReload }: Props) {
             </div>
             <div className="col-12 col-lg-7">
               <input className="form-control" type="text" value={inputValues.projectName} name="projectName" id="projectName" onChange={(e) => handleOnChange(e)} />
+              <p className="input_error">{inputError.projectName}</p>
             </div>
           </div>
           {/* 概要 */}
@@ -317,6 +332,7 @@ export default function CareerEditView({ careerId, isNew, onReload }: Props) {
             <div className="col-8 col-md-5">
               <Flatpickr className="form-select" id="startDate" options={dateOption}
                 value={inputValues.startDate} name="startDate" onChange={([date]: any) => handleOnDateChange(date, "startDate")}/>
+              <p className="input_error">{inputError.startDate}</p>
             </div>
           </div>
           {/* 終了日 */}
@@ -327,6 +343,7 @@ export default function CareerEditView({ careerId, isNew, onReload }: Props) {
             <div className="col-8 col-md-5">
               <Flatpickr className="form-select" id="endDate" options={dateOption}
                 value={inputValues.endDate} name="endDate" onChange={([date]: any) => handleOnDateChange(date, "endDate")}/>
+              <p className="input_error">{inputError.endDate}</p>
             </div>
           </div>
           {/* 作業担当 */}

@@ -1,0 +1,48 @@
+:root {
+  --dashboard-card-width: 200px;
+}
+
+.dashboard {
+
+}
+
+.dashboard-card {
+  padding-right: 0.5rem;
+  width: var(--dashboard-card-width);
+  max-width: var(--dashboard-card-width);
+}
+
+.dashboard-calendar {
+  width: calc(100% - var(--dashboard-card-width));
+}
+
+.dashboard-card .custom-card-header {
+  flex-flow: column;
+}
+
+.dashboard-card .custom-card-body {
+  height: 2.5rem;
+  line-height: 2rem;
+}
+
+@media screen and (max-width: 1112px) {
+  .dashboard-card,
+  .dashboard-calendar {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  .dashboard-card {
+    padding: 0;
+  }
+
+  .dashboard-card .custom-card {
+    display: inline-block;
+    min-width: calc(50% - 0.5rem);
+  }
+
+  .dashboard-card .custom-card:nth-child(2n-1) {
+    margin-left: 0.25rem;
+    margin-right: 0.5rem;
+  }
+}

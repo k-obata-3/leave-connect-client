@@ -49,7 +49,7 @@ export default function CareerList() {
   useEffect(() =>{
     const isEdit = careerId || isNew;
     setShowEditView(!!isEdit);
-    pageTitle(!!isEdit ? isNew ? pageCommonConst.pageName.careerNew : pageCommonConst.pageName.careerEdit : pageCommonConst.pageName.careerList);
+    pageTitle(!!isEdit ? isNew ? pageCommonConst.pageName.careerNew : pageCommonConst.pageName.careerEdit : pageCommonConst.pageName.career);
     if(isEdit) {
       pageBack(true).then(() => {
         router.replace(`${pageCommonConst.path.careerList}`, {scroll: true});
@@ -123,7 +123,7 @@ export default function CareerList() {
         <CareerListView careerList={careerList} rowBtnHandler={onEdit}></CareerListView>
         <Pager params={{pageClickFnc: getPageList, limit: pagerParams.limit, totalCount: pagerParams.totalCount, page: pagerParams.currentPage}} />
       </div>
-      <div hidden={!showEditView}>
+      <div className="caree-edit-view" hidden={!showEditView}>
         <CareerEditView careerId={careerId} isNew={isNew} onReload={() => getPageList(pagerConst.initialCurrentPage)}></CareerEditView>
       </div>
       <div className="new-career-btn sp-only" hidden={showEditView}>

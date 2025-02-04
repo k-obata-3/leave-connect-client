@@ -3,12 +3,11 @@
 import React, { useEffect, useState } from 'react';
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
-import usePageBack from '@/hooks/usePageBack';
-import useSetPageTitle from '@/hooks/useSetPageTitle';
-import { pageCommonConst } from '@/consts/pageCommonConst';
-import { getCareerItemMaster, GetCareerItemMasterRequest, GetCareerItemMasterResponse, CareerItemMaster } from '@/api/getCareerItemMaster';
+import useConfirm from '@/hooks/useConfirm';
+import { confirmModalConst } from '@/consts/confirmModalConst';
 import { saveCareerItemMaster, SaveCareerItemMasterRequest } from '@/api/saveCareerItemMaster';
 import { deleteCareerItemMaster, DeleteCareerItemMasterRequest } from '@/api/deleteCareerItemMaster';
+import { getCareerItemMaster, GetCareerItemMasterRequest, GetCareerItemMasterResponse, CareerItemMaster } from '@/api/getCareerItemMaster';
 
 type Props = {
   isShow: boolean,
@@ -24,8 +23,7 @@ export default function CareerItemView({ isShow }: Props) {
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
   // カスタムフック
-  const pageBack = usePageBack();
-  const pageTitle = useSetPageTitle();
+  const confirm = useConfirm();
 
   const [editingItem, setEditingItem] = useState({
     editItemKey: '',
@@ -120,19 +118,32 @@ export default function CareerItemView({ isShow }: Props) {
   }
 
   const onDelete = async(item: CareerItemMaster) => {
-    const req: DeleteCareerItemMasterRequest = {
-      id: item.id
-    }
+    const cancel = await confirm({
+      title: confirmModalConst.label.delete,
+      icon: 'warn',
+      confirmationBtnColor: 'danger',
+      confirmationText: confirmModalConst.button.delete,
+      description: confirmModalConst.message.deleteCareerItem,
+    }).then(async() => {
+      const req: DeleteCareerItemMasterRequest = {
+        id: item.id
+      }
+  
+      const res = await deleteCareerItemMaster(req);
+      if(res.responseResult) {
+        resetEditingItem();
+        getCareerItem(item.key);
+      } else {
+        setNotificationMessageObject({
+          errorMessageList: res.message ? [res.message] : [],
+          inputErrorMessageList: [],
+        })
+      }
+    }).catch(() => {
+      return true
+    })
 
-    const res = await deleteCareerItemMaster(req);
-    if(res.responseResult) {
-      resetEditingItem();
-      getCareerItem(item.key);
-    } else {
-      setNotificationMessageObject({
-        errorMessageList: res.message ? [res.message] : [],
-        inputErrorMessageList: [],
-      })
+    if (cancel) {
     }
   }
 
@@ -151,7 +162,7 @@ export default function CareerItemView({ isShow }: Props) {
   }
 
   return (
-    <div className="career-list-page">
+    <div className="career-item-view">
       <div className="row">
         <div className="col-auto">
           <select className="form-select" id="editItemKey" value={editingItem.editItemKey} name="editItemKey" onChange={(e) => handleEditItemOnChange(e)} disabled ={!!editingItem.editItemId}>
@@ -166,8 +177,8 @@ export default function CareerItemView({ isShow }: Props) {
           <input className="form-control" type="text" value={editingItem.editItemText} name="editItemText" id="editItemText" onChange={(e) => handleEditItemOnChange(e)} />
         </div>
         <div className="col-6 offset-6 col-md-auto offset-md-0 pb-2 pe-2 text-end">
-          <button className="btn btn-outline-primary" onClick={onSave}>登録</button>
-          <button className="btn btn-outline-secondary ms-2" onClick={() => resetEditingItem()} disabled={!editingItem.editItemId}>キャンセル</button>
+          <button className="btn btn-outline-primary" onClick={onSave} disabled={!editingItem.editItemText.trim().length}>登録</button>
+          <button className="btn btn-outline-secondary ms-2" onClick={() => resetEditingItem()} disabled={!editingItem.editItemId && !editingItem.editItemText.trim().length}>キャンセル</button>
         </div>
       </div>
       <div className="row">

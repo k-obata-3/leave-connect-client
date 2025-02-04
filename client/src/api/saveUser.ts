@@ -2,6 +2,8 @@ import { axiosPost, ApiResponse } from "@/axiosClient";
 
 export interface SaveUserRequest {
   id: string | null,
+  userId: string,
+  password: string | null,
   lastName: string,
   firstName: string,
   firstNameKana: string,
@@ -10,6 +12,7 @@ export interface SaveUserRequest {
   joiningDate: string,
   referenceDate: string,
   workingDays: string,
+  auth: string,
   totalDeleteDays?: string,
   totalAddDays?: string,
   totalRemainingDays?: string,

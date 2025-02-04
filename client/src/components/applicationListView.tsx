@@ -75,7 +75,8 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
           </td>
           <td className="text-center">
             <p className="text-nowrap">{item.sStartDate}</p>
-            <p className="text-nowrap">{item.startEndTime}</p>
+            <p className="text-nowrap" hidden={item.sStartDate !== item.sEndDate}>{item.sStartTime}～{item.sEndTime}</p>
+            <p className="text-nowrap" hidden={item.sStartDate === item.sEndDate}>{item.sEndDate}</p>
           </td>
           <td>
             <p className="comment_col comment">{item.comment}</p>
@@ -94,7 +95,7 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
   const createApplicationListForSp = (applicationList: Application[]) => {
     return (
       applicationList?.map((item, index) => (
-        <div className="list-row" key={index + 1} onClick={() => rowBtnHandler(item.id.toString())}>
+        <div className="custom-card cursor-pointer mb-2" key={index + 1} onClick={() => rowBtnHandler(item.id.toString())}>
           <p className="row mb-2">
             <span className={`col-3 col-md-2 align-self-center badge status-color ${getStatusColrClassName(item)}`}>{item.sAction}</span>
             <span className="col-auto ms-1 me-auto fw-bold">{item.sType}</span>
@@ -105,9 +106,9 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
           </p>
           <p className="row mb-1">
             <span className="col-3">取得日</span>
-            <span className="col text-end">{item.sStartDate}</span>
+            <span className="col text-end">{item.sStartDate}<span className="col text-end" hidden={item.sStartDate == item.sEndDate}>～{item.sEndDate}</span></span>
           </p>
-          <p className="row">
+          <p className="row" hidden={item.sStartDate != item.sEndDate}>
             <span className="col-3">取得時間</span>
             <span className="col text-end">{item.sStartTime}～{item.sEndTime}</span>
           </p>
@@ -134,7 +135,8 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
           </td>
           <td className="text-center">
             <p className="text-nowrap">{item.sStartDate}</p>
-            <p className="text-nowrap">{item.startEndTime}</p>
+            <p className="text-nowrap" hidden={item.sStartDate !== item.sEndDate}>{item.sStartTime}～{item.sEndTime}</p>
+            <p className="text-nowrap" hidden={item.sStartDate === item.sEndDate}>{item.sEndDate}</p>
           </td>
           <td className="text-center">
             <p className="text-nowrap">{item.sAction}</p>
@@ -150,7 +152,7 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
   const createAdmnApplicationListForSp = (applicationList: Application[]) => {
     return (
       applicationList?.map((item, index) => (
-        <div className="list-row" key={index + 1} onClick={() => rowBtnHandler(item.id.toString())}>
+        <div className="custom-card cursor-pointer mb-2" key={index + 1} onClick={() => rowBtnHandler(item.id.toString())}>
           <p className="row mb-2">
             <span className={`col-3 col-md-2 align-self-center badge status-color ${getStatusColrClassName(item)}`}>{item.sAction}</span>
             <span className="col-auto ms-1 me-auto fw-bold">{item.sType}</span>
@@ -165,9 +167,9 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
           </p>
           <p className="row mb-1">
             <span className="col-3">取得日</span>
-            <span className="col text-end">{item.sStartDate}</span>
+            <span className="col text-end">{item.sStartDate}<span className="col text-end" hidden={item.sStartDate == item.sEndDate}>～{item.sEndDate}</span></span>
           </p>
-          <p className="row">
+          <p className="row" hidden={item.sStartDate != item.sEndDate}>
             <span className="col-3">取得時間</span>
             <span className="col text-end">{item.sStartTime}～{item.sEndTime}</span>
           </p>

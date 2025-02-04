@@ -76,10 +76,10 @@ export default function UserListView({ userList, rowBtnHandler }: Props) {
                   <p className="text-nowrap" hidden={!user.periodStart}><span>{user.periodStart}</span><span className="ms-1 me-1">～</span><span>{user.periodEnd}</span></p>
                   <p className="text-nowrap" hidden={!!user.periodStart}><span>-</span></p>
                 </td>
-                <td className={user.totalDeleteDays < 5 ? "text-center bg-danger bg-gradient" : "text-center"}>
+                <td className={user.totalDeleteDays < 5 ? "text-center text-danger fw-bold" : "text-center"}>
                   <p className="text-nowrap">{user.totalDeleteDays}</p>
                 </td>
-                <td className={user.totalRemainingDays < 40 ? user.totalRemainingDays < 5 ? "text-center bg-warning bg-gradient" : "text-center" : "text-center bg-info bg-gradient"}>
+                <td className={user.totalRemainingDays < 40 ? user.totalRemainingDays < 5 ? "text-center text-warning fw-bold" : "text-center" : "text-center bg-info bg-gradient"}>
                   <p className="text-nowrap">{user.totalRemainingDays}</p>
                 </td>
               </tr>

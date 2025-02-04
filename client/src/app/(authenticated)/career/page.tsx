@@ -1,14 +1,15 @@
 "use client"
 
 import React, { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { useUserInfoStore } from '@/store/userInfoStore';
 import usePageBack from '@/hooks/usePageBack';
 import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
-import { useRouter } from 'next/navigation';
 
 export default function Career() {
+  const pathname = usePathname();
   const router = useRouter();
 
   // 共通ストア
@@ -24,13 +25,8 @@ export default function Career() {
   },[])
 
   return (
-    <div className="career">
-      <div className="row mb-2">
-        <button className="btn btn-primary" onClick={() => router.push(pageCommonConst.path.careerList)}>{pageCommonConst.pageName.careerList}</button>
-      </div>
-      <div className="row mb-2">
-        <button className="btn btn-primary" onClick={() => router.push(pageCommonConst.path.careerMemberList)}>{pageCommonConst.pageName.careerMemberList}</button>
-      </div>
+    <div className="career-dashboard-page">
+
     </div>
   );
 };

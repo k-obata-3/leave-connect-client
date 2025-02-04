@@ -152,9 +152,17 @@ export default function RootLayout({
         navItems[index].classList.remove(currentClassName);
       }
     }
-    if(isSp && (pathname === pageCommonConst.path.careerMemberList)) {
+    if(isSp && (pathname === pageCommonConst.path.careerList)) {
       for (let index = 0; index < navItems.length; index++) {
-        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.careerList) {
+        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.careerMemberList) {
+          navItems[index].classList.add(currentClassName);
+          break;
+        }
+      }
+    }
+    if(isSp && (pathname === pageCommonConst.path.adminApplication)) {
+      for (let index = 0; index < navItems.length; index++) {
+        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.application) {
           navItems[index].classList.add(currentClassName);
           break;
         }
@@ -169,6 +177,22 @@ export default function RootLayout({
         }
       }
     }
+    if(!isSp && (pathname === pageCommonConst.path.settingSystem)) {
+      for (let index = 0; index < navItems.length; index++) {
+        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.settingSystemGrantRule) {
+          navItems[index].classList.add(currentClassName);
+          break;
+        }
+      }
+    }
+    // if(!isSp && (pathname === pageCommonConst.path.settingUser)) {
+    //   for (let index = 0; index < navItems.length; index++) {
+    //     if(navItems[index].getAttribute('data-url') === pageCommonConst.path.settingUserEditPersonal) {
+    //       navItems[index].classList.add(currentClassName);
+    //       break;
+    //     }
+    //   }
+    // }
   }
 
   const push = (e: React.MouseEvent<HTMLLIElement | HTMLDivElement>) => {

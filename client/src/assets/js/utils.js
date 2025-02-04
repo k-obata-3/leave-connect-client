@@ -73,6 +73,16 @@ const utils = {
     }
     return ''
   },
+  clearCookieValue(key) {
+    const cookies = document.cookie.split(';')
+    const foundCookie = cookies.find(
+      (cookie) => cookie.split('=')[0].trim() === key.trim()
+    )
+    if (foundCookie) {
+      document.cookie = `${key}=; max-age=0`;
+    }
+    return ''
+  },
   getHash(text) {
     const salt = "TgX7s3nwYPNq";
     const crypto = require("crypto");

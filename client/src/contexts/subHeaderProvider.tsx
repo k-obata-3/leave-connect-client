@@ -67,41 +67,49 @@ export const SubHeaderProvider = ({
     }
   };
 
-  const createSubHeader = () => {
-    return (
-      <>
+  return (
+    <>
+      <div className="sub-header pc-only">
         <div className="row">
-          <div className="col-1 text-start ms-2" style={{width: '2.5rem'}}>
+          <div className="col-auto text-start ms-2" style={{width: '2.5rem'}}>
             {enabledBack && resolveReject.length === 2 && (
               <button type="button" className="btn btn-outline-secondary btn-sm" onClick={handleBack}>
                 <i className="bi bi-chevron-left"><span className=""></span></i>
               </button>
             )}
           </div>
-          <div className="col-4 col-md-3 text-start page-title pc-only">
+          <div className="col-4 text-start page-title text-truncate">
             <span>{title}</span>
           </div>
-          <div className="col text-end ms-2 me-2 text-truncate">
-            <i className="bi bi-person-circle me-2" onClick={() => router.push(pageCommonConst.path.settingUserEditPersonal)}></i>
+          <div className="col text-end me-2 text-truncate">
+            <button type="button" className="btn btn-sm pt-0 pb-0" onClick={() => router.push(pageCommonConst.path.settingUserEditPersonal)}>
+              <i className="bi bi-person-circle fs-3 text-secondary mb-2"></i>
+            </button>
             <span className="">{user.lastName + ' ' + user.firstName}</span>
           </div>
-          <div className="col-auto text-end me-2 sp-only">
+        </div>
+      </div>
+      <div className="sub-header sub-header-sp sp-only">
+        <div className="row">
+          <div className="col-auto text-start ms-2" style={{width: '2.5rem'}}>
+            {enabledBack && resolveReject.length === 2 && (
+              <button type="button" className="btn btn-outline-secondary btn-sm" onClick={handleBack}>
+                <i className="bi bi-chevron-left"><span className=""></span></i>
+              </button>
+            )}
+          </div>
+          <div className="col text-end me-2 text-truncate">
+            <button type="button" className="btn btn-sm pt-0 pb-0" onClick={() => router.push(pageCommonConst.path.settingUserEditPersonal)}>
+              <i className="bi bi-person-circle fs-3 text-secondary"></i>
+            </button>
+            <span className="">{user.lastName + ' ' + user.firstName}</span>
+          </div>
+          <div className="col-auto me-2">
             <button type="button" className="btn btn-outline-secondary btn-sm" onClick={handleLogout}>
               <span className="">ログアウト</span>
             </button>
           </div>
         </div>
-      </>
-    )
-  }
-
-  return (
-    <>
-      <div className="sub-header pc-only">
-        {createSubHeader()}
-      </div>
-      <div className="sub-header sub-header-sp sp-only">
-        {createSubHeader()}
       </div>
       {/* <!-- プロバイダーでラップ --> */}
       <SubHeaderContext.Provider value={{ pageBack, setSubHeaderUserName, setPageTitle }}>

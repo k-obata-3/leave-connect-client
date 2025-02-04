@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import { useUserInfoStore } from '@/store/userInfoStore';
@@ -37,7 +36,7 @@ export default function CareerMemberList() {
   })
 
   useEffect(() =>{
-    pageTitle(pageCommonConst.pageName.careerMemberList);
+    pageTitle(pageCommonConst.pageName.career);
     pageBack(false);
   },[])
 
@@ -109,6 +108,10 @@ export default function CareerMemberList() {
     }
     const res = await outputSkillsheet(req);
     if(res.responseResult) {
+      const link = document.createElement('a');
+      link.href = res.result.url;
+      link.download = res.result.fileName;
+      link.click();
       setIsDownload(false);
     } else {
       setIsDownload(false);
@@ -125,25 +128,24 @@ export default function CareerMemberList() {
         {
           careerUserList?.map((careerUser: CareerUser, index: number) => (
             <div className="col-12 col-xl-3 col-md-4 p-2" key={index}>
-              <div className="card">
-                <div className="card-header row p-2">
-                  <span className="col text-truncate">{careerUser.fullName}</span>
+              <div className="custom-card mb-2">
+                <div className="custom-card-header row ps-2 pe-2">
+                  <h6 className="col text-truncate">{careerUser.fullName}</h6>
                   <div className="col-auto" hidden={!isAdmin() && getUserInfo().id != careerUser.userId.toString()}>
                     <button className="btn btn-outline-secondary btn-sm me-auto" onClick={() => onOutput(careerUser)}>出力</button>
                   </div>
                 </div>
-                <div className="card-body career-member-card-body" onClick={() => showCareerDetailView(careerUser)} style={careerUser.careerItem.length ? {cursor: 'pointer'} : {}}>
-                  <div>
+                <div className="custom-card-body career-member-card-body" onClick={() => showCareerDetailView(careerUser)} style={careerUser.careerItem.length ? {cursor: 'pointer'} : {}}>
+                  <div className="text-truncate text-wrap" style={{maxHeight: '100%', width: '100%'}}>
                     {
                       careerUser.careerItem?.map((item: string, i: number) => {
                         return (
-                        <div className="career-item-badge bg-primary-subtle" key={i} hidden={i >= 8}>
+                        <div className="career-item-badge bg-primary-subtle" key={i}>
                           <span>{item}</span>
                         </div>
                         )
                       })
                     }
-                    <span hidden={careerUser.careerItem.length <= 8}>{"..."}</span>
                     <span className="" hidden={!!careerUser.careerItem.length}>未登録</span>
                   </div>
                 </div>

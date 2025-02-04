@@ -14,7 +14,7 @@ type Props = {
 }
 
 export default function CareerDetailView({ isShow, user, detail, callback }: Props) {
-  const [apiErrors, setApiErrors] = useState<string[]>([]);
+  const [maxPeriod, setMaxPeriod] = useState<number>(0);
 
   useEffect(() =>{
     const modal = document.querySelector<HTMLElement>('.custom-modal-content');
@@ -37,6 +37,10 @@ export default function CareerDetailView({ isShow, user, detail, callback }: Pro
         html.style.cssText += 'overflow: hidden !important;';
         content.style.cssText += 'overflow: hidden !important;';
       }
+
+      const maxPeriodLang = Math.max(...Object.values(detail?.careerLang!));
+      const maxPeriodDb = Math.max(...Object.values(detail?.careerDb!));
+      setMaxPeriod(maxPeriodLang > maxPeriodDb ? maxPeriodLang : maxPeriodDb);
     }
   },[isShow])
 
@@ -48,14 +52,14 @@ export default function CareerDetailView({ isShow, user, detail, callback }: Pro
       )
     } else {
       Object.entries(careerItemMap).forEach(([key, value], index) => {
-        const period = value / user?.AffiliationPeriod! * 100;
+        const period = value / maxPeriod! * 100;
         const width = period > 100 ? 100 : period;
         el.push(
           <div className="row mb-2" key={index}>
             <p className="mb-1">
               <span className="text-wrap">{key}</span>
             </p>
-            <div className="text-end ms-2 pe-1 bg-primary-subtle" style={{ width: `${width}%` }}>
+            <div className="text-end ms-2 pe-1 bg-primary-subtle bg-gradiente" style={{ width: `${width}%` }}>
               <span className="text-nowrap">{Math.floor(value / 12 * 10) / 10}年</span>
             </div>
           </div>
@@ -95,26 +99,26 @@ export default function CareerDetailView({ isShow, user, detail, callback }: Pro
         </div>
         <div className="custom-modal-content-body ps-2 pe-2 mt-2" hidden={!detail}>
           <div className="row d-flex align-items-center">
-            <div className="col-12">
-              <h6 className="border-bottom border-primary mt-2 ps-1 pb-2">言語</h6>
+            <div className="col-12 pb-4">
+              <h6 className="career-detail-title">言語</h6>
               <div className="ps-2 me-2">
                 {createCareerHorizontalBar(detail?.careerLang)}
               </div>
             </div>
-            <div className="col-12">
-              <h6 className="border-bottom border-primary mt-4 ps-1 pb-2">データベース</h6>
+            <div className="col-12 pb-4">
+              <h6 className="career-detail-title">データベース</h6>
               <div className="ps-2 me-2">
                 {createCareerHorizontalBar(detail?.careerDb)}
               </div>
             </div>
-            <div className="col-12">
-              <h6 className="border-bottom border-primary mt-4 ps-1 pb-2">フレームワーク</h6>
+            <div className="col-12 pb-4">
+              <h6 className="career-detail-title">フレームワーク</h6>
               <div className="ps-2 me-2">
                 {createCareerBadge(detail?.careerFramework)}
               </div>
             </div>
-            <div className="col-12">
-              <h6 className="border-bottom border-primary mt-4 ps-1 pb-2">ツール</h6>
+            <div className="col-12 pb-2">
+              <h6 className="career-detail-title">ツール</h6>
               <div className="ps-2 me-2">
                 {createCareerBadge(detail?.careerTool)}
               </div>

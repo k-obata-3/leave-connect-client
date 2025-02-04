@@ -25,7 +25,7 @@ interface ApprovalGroup {
 
 interface Approver {
   [key: string]: {
-    id: string | null,
+    id: string,
     name: string | undefined,
   }
 }
@@ -68,7 +68,6 @@ export default function ApprovalGroupView({ isShow }: Props) {
 
     const res: GetApprovalGroupListResponse = await getApprovalGroupList();
     if(res.responseResult) {
-      console.log(res.approvalGroupList)
       setApprovalGroupList(res.approvalGroupList);
       resetApprovalGroupList(res.approvalGroupList);
     } else {
@@ -207,7 +206,7 @@ export default function ApprovalGroupView({ isShow }: Props) {
     let approvers: Approver = {}
     APPROVER_COL.forEach((col: string) => {
       approvers[col] = {
-        id: null,
+        id: '',
         name : '',
       }
     })
@@ -269,7 +268,7 @@ export default function ApprovalGroupView({ isShow }: Props) {
     if(!editItem.groupName) {
       errors.push('グループ名は必須入力です。');
     }
-    const selectedUserIds: (string | null)[] = Object.values(editItem.approver).filter((v: Approver[string]) => v.name).flatMap((v: Approver[string]) => v.id);
+    const selectedUserIds: string[] = Object.values(editItem.approver).filter((v: Approver[string]) => v.name).flatMap((v: Approver[string]) => v.id);
     if(selectedUserIds.length < 2) {
       errors.push('承認者を2名以上選択してください。');
     }
@@ -288,7 +287,7 @@ export default function ApprovalGroupView({ isShow }: Props) {
       const req: SaveApprovalGroupRequest = {
         id: edittingId,
         groupName: editItem?.groupName,
-        approval: selectedUserIds.filter(id => id !== null),
+        approval: selectedUserIds?.filter(id => id !== null),
       }
   
       await saveApprovalGroup(req).then(async(res: SaveApprovalGroupResponse) => {

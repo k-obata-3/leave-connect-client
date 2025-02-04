@@ -13,8 +13,8 @@ export default function CareerListView({ careerList, rowBtnHandler }: Props) {
   const TABLE_HEADER = [
     { label: '案件名', key: 'project_name', width: '300px' },
     { label: '概要', key: 'overview', width: 'auto' },
-    { label: '開始日', key: 'start_end_date', width: '110px' },
-    { label: '終了日', key: 'comment', width: '110px' },
+    { label: '開始日', key: 'start_date', width: '100px' },
+    { label: '終了日', key: 'end_date', width: '100px' },
     { label: '', key: 'action', width: '65px' },
   ];
 
@@ -39,10 +39,10 @@ export default function CareerListView({ careerList, rowBtnHandler }: Props) {
       careerList?.map((item, index) => (
         <tr key={index + 1}>
           <td className="">
-            <p className="text-nowrap">{item.projectName}</p>
+            <p className="text-wrap">{item.projectName}</p>
           </td>
           <td className="">
-            <p className="text-nowrap">{item.overview}</p>
+            <p className="text-wrap">{item.overview}</p>
           </td>
           <td className="text-center">
             <p className="text-nowrap">{item.startDate}</p>
@@ -61,7 +61,7 @@ export default function CareerListView({ careerList, rowBtnHandler }: Props) {
   const createCareerTableListForSp = (careerList: Career[]) => {
     return (
       careerList?.map((item, index) => (
-        <div className="list-row" key={index + 1} onClick={() => rowBtnHandler(item.id.toString())}>
+        <div className="custom-card cursor-pointer mb-2" key={index + 1} onClick={() => rowBtnHandler(item.id.toString())}>
           <p className="row mb-2">
             <span className="col-auto ms-1 me-auto fw-bold text-truncate">{item.projectName}</span>
           </p>
@@ -94,7 +94,7 @@ export default function CareerListView({ careerList, rowBtnHandler }: Props) {
             </tbody>
           </table>
         </div>
-        <div className="sp-only mt-4 mb-4">
+        <div className="sp-only">
           <p className="text-center" hidden={!!careerList.length}>取得結果 0件</p>
           <div className="">
             {createCareerTableListForSp(careerList)}

@@ -8,7 +8,7 @@ export interface getUserDetailsResponse extends ApiResponse {
   id: number,
   userId: string,
   status: number,
-  auth: number,
+  auth: string,
   firstName: string,
   lastName: string,
   firstNameKana: string,

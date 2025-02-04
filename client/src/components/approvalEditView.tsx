@@ -227,16 +227,37 @@ export default function ApprovalEditView({ taskId, applicationId, onReload }: Pr
               </p>
             </div>
           </div>
-          {/* 取得日時 */}
+          {/* 取得日開始 */}
           <div className="row align-items-center mb-3 g-3">
             <div className="col-md-2">
-              <label className="col-form-label fw-medium">取得日時</label>
+              <label className="col-form-label fw-medium">{application.sStartDate === application.sEndDate ? '取得日' : '取得日開始'}</label>
             </div>
             <div className="col ps-3">
               <p className="mb-0">
-                  <span className="me-3">{application.sStartDate}<span hidden={application.sStartDate == application.sEndDate}> ～ {application.sEndDate}</span></span>
-                  <span hidden={application.sStartDate != application.sEndDate}>{application.sStartTime} ～ {application.sEndTime}</span>
-                </p>
+                <span className="me-3">{application.sStartDate}</span>
+              </p>
+            </div>
+          </div>
+          {/* 取得日終了 */}
+          <div className="row align-items-center mb-3 g-3" hidden={application.sStartDate === application.sEndDate}>
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium">取得日終了</label>
+            </div>
+            <div className="col ps-3">
+              <p className="mb-0">
+                <span className="">{application.sEndDate}</span>
+              </p>
+            </div>
+          </div>
+          {/* 取得時間 */}
+          <div className="row align-items-center mb-3 g-3" hidden={application.sStartDate !== application.sEndDate}>
+            <div className="col-md-2">
+              <label className="col-form-label fw-medium">取得時間</label>
+            </div>
+            <div className="col ps-3">
+              <p className="mb-0">
+                <span>{application.sStartTime} ～ {application.sEndTime}</span>
+              </p>
             </div>
           </div>
           {/* 備考 */}

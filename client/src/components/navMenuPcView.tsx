@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useCommonStore } from '@/store/commonStore';
 import { useUserInfoStore } from '@/store/userInfoStore';
@@ -16,6 +16,7 @@ type Props = {
 }
 
 export default function NavMenuPcView({ children, push, onLogout }: Props) {
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -118,21 +119,14 @@ export default function NavMenuPcView({ children, push, onLogout }: Props) {
             </p>
           </li>
           {/* 個人設定 */}
-          <li className="nav-item" data-url={pageCommonConst.path.settingUser}>
+          {/*
+          <li className="nav-item" data-url={pageCommonConst.path.settingUserEditPersonal} onClick={e => onMenuClick(e)}>
             <p className="nav-link">
               <i className="bi bi-person-gear"></i>
               <span>{pageCommonConst.pageName.settingUser}</span>
             </p>
-            {/* 個人設定 サブメニュー */}
-            <div className="nav-item-sub">
-              <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPersonal} onClick={e => onMenuClick(e)}>
-                <p className="nav-link">{pageCommonConst.pageName.settingUserEditPersonal}</p>
-              </div>
-              <div className="sub-item" data-url={pageCommonConst.path.settingUserEditPassword} onClick={e => onMenuClick(e)}>
-                <p className="nav-link">{pageCommonConst.pageName.settingUserEditPassword}</p>
-              </div>
-            </div>
           </li>
+          */}
         </ul>
         <div className="border-top border-dark-subtle" hidden={!isAdmin()}>
           <ul className="nav flex-column mt-1 mb-1">
@@ -151,43 +145,22 @@ export default function NavMenuPcView({ children, push, onLogout }: Props) {
               </p>
             </li>
             {/* システム管理 */}
-            <li className="nav-item" data-url={pageCommonConst.path.settingSystem}>
+            <li className="nav-item" data-url={pageCommonConst.path.settingSystemGrantRule} onClick={e => onMenuClick(e)}>
               <p className="nav-link">
                 <i className="bi bi-gear"></i>
                 <span>{pageCommonConst.pageName.settingSystem}</span>
               </p>
-              {/* システム管理 サブメニュー */}
-              <div className="nav-item-sub-system">
-                <div className="sub-item" data-url={pageCommonConst.path.settingSystemGrantRule} onClick={e => onMenuClick(e)}>
-                  <p className="nav-link">{pageCommonConst.pageName.settingSystemGrantRule}</p>
-                </div>
-                <div className="sub-item" data-url={pageCommonConst.path.settingSystemApprovalGroup} onClick={e => onMenuClick(e)}>
-                  <p className="nav-link">{pageCommonConst.pageName.settingSystemApprovalGroup}</p>
-                </div>
-                <div className="sub-item" data-url={pageCommonConst.path.settingSystemCareerItem} onClick={e => onMenuClick(e)}>
-                  <p className="nav-link">{pageCommonConst.pageName.settingSystemCareerItem}</p>
-                </div>
-              </div>
             </li>
           </ul>
         </div>
         <div className="border-top border-dark-subtle">
           <ul className="nav flex-column mt-1 mb-1">
             {/* スキル管理 */}
-            <li className="nav-item" data-url={pageCommonConst.path.career}>
+            <li className="nav-item" data-url={pageCommonConst.path.career} onClick={e => onMenuClick(e)}>
               <p className="nav-link">
                 <i className="bi bi-person-workspace"></i>
                 <span>{pageCommonConst.pageName.career}</span>
               </p>
-              {/* 個人設定 サブメニュー */}
-              <div className="nav-item-sub">
-                <div className="sub-item" data-url={pageCommonConst.path.careerList} onClick={e => onMenuClick(e)}>
-                  <p className="nav-link">{pageCommonConst.pageName.careerList}</p>
-                </div>
-                <div className="sub-item" data-url={pageCommonConst.path.careerMemberList} onClick={e => onMenuClick(e)}>
-                  <p className="nav-link">{pageCommonConst.pageName.careerMemberList}</p>
-                </div>
-              </div>
             </li>
           </ul>
         </div>
@@ -204,30 +177,67 @@ export default function NavMenuPcView({ children, push, onLogout }: Props) {
           </ul>
         </div>
       </div>
+      <div className="sub-menu-nav">
+        {/* 個人設定 サブメニュー */}
+        <nav className="nav nav-underline" hidden={pathname !== pageCommonConst.path.settingUser}>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.editPersonal ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingUserEditPersonal, {scroll: true})}>
+            <span>{pageCommonConst.pageName.settingUserEditPersonal}</span>
+          </div>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.editPassword ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingUserEditPassword, {scroll: true})}>
+            <span>{pageCommonConst.pageName.settingUserEditPassword}</span>
+          </div>
+        </nav>
+        {/* システム管理 サブメニュー */}
+        <nav className="nav nav-underline" hidden={pathname !== pageCommonConst.path.settingSystem}>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.grantRule ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingSystemGrantRule, {scroll: true})}>
+            <span>{pageCommonConst.pageName.settingSystemGrantRule}</span>
+          </div>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.approvalGroup ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingSystemApprovalGroup, {scroll: true})}>
+            <span>{pageCommonConst.pageName.settingSystemApprovalGroup}</span>
+          </div>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.career ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingSystemCareerItem, {scroll: true})}>
+            <span>{pageCommonConst.pageName.settingSystemCareerItem}</span>
+          </div>
+        </nav>
+        {/* スキル管理 サブメニュー */}
+        <nav className="nav nav-underline" hidden={!(pathname === pageCommonConst.path.career || pathname === pageCommonConst.path.careerList || pathname === pageCommonConst.path.careerMemberList) || (pathname === pageCommonConst.path.careerList && searchParams.size > 0)}>
+          <div className={pathname === pageCommonConst.path.career ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.career, {scroll: true})}>
+            <span>{pageCommonConst.pageName.careerDashboard}</span>
+          </div>
+          <div className={pathname === pageCommonConst.path.careerMemberList ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.careerMemberList, {scroll: true})}>
+            <span>{pageCommonConst.pageName.careerMemberList}</span>
+          </div>
+          <div className={pathname === pageCommonConst.path.careerList ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.careerList, {scroll: true})}>
+            <span>{pageCommonConst.pageName.careerList}</span>
+          </div>
+        </nav>
+      </div>
       <div className="content-parent">
-        {/* スライドメニュー */}
-        <div className="slide-menu">
+        <div className="content-flex">
+          {/* スライドメニュー */}
+          <div className="slide-menu">
 
-        </div>
-        {/* コンテンツ表示エリア */}
-        <div className="content">
-          {/* その他のエラーメッセージ */}
-          <div className="alert alert-danger p-3" role="alert" hidden={!getNotificationMessageObject().errorMessageList.length}>
-            {
-              getNotificationMessageObject().errorMessageList.filter(msg => msg).map((msg, index) => {
-                return<p className="m-0" key={index}>{msg}</p>
-              })
-            }
           </div>
-          {/* 入力エラーメッセージ */}
-          <div className="alert alert-danger p-3" role="alert" hidden={!getNotificationMessageObject().inputErrorMessageList.length}>
-            {
-              getNotificationMessageObject().inputErrorMessageList.filter(msg => msg).map((msg, index) => {
-                return<p className="m-0" key={index}>{msg}</p>
-              })
-            }
+          {/* コンテンツ表示エリア */}
+          <div className="content">
+            {/* その他のエラーメッセージ */}
+            <div className="alert alert-danger p-3" role="alert" hidden={!getNotificationMessageObject().errorMessageList.length}>
+              {
+                getNotificationMessageObject().errorMessageList.filter(msg => msg).map((msg, index) => {
+                  return<p className="m-0" key={index}>{msg}</p>
+                })
+              }
+            </div>
+            {/* 入力エラーメッセージ */}
+            <div className="alert alert-danger p-3" role="alert" hidden={!getNotificationMessageObject().inputErrorMessageList.length}>
+              {
+                getNotificationMessageObject().inputErrorMessageList.filter(msg => msg).map((msg, index) => {
+                  return<p className="m-0" key={index}>{msg}</p>
+                })
+              }
+            </div>
+            {children}
           </div>
-          {children}
         </div>
       </div>
     </>

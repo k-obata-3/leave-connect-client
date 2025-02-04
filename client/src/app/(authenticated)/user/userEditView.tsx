@@ -13,22 +13,29 @@ import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import useConfirm from '@/hooks/useConfirm';
 import useSetSubHeaderUserName from '@/hooks/useSetSubHeaderUserName';
 import { confirmModalConst } from '@/consts/confirmModalConst';
+import utils from '@/assets/js/utils';
 import { SaveUserRequest, saveUser } from '@/api/saveUser';
 import { getUserDetails, getUserDetailsRequest } from '@/api/getUserDetails';
 import { getLoginUserInfo, getLoginUserInfoResponse } from '@/api/getLoginUserInfo';
 import GrantDaysModal from './grantDaysModal';
 
 type Props = {
-  userId: string | null,
+  userPrimaryId: string | null,
+  isNew: boolean,
   onReload: () => void,
 }
 
-export default function UserEditView({ userId, onReload }: Props) {
+export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) {
   const router = useRouter();
   let dateOption = {
     locale: Japanese,
     dateFormat: 'Y/m/d',
   };
+
+  const AUTH_INPUT_MAP = [
+    { key: 'standard', name: '一般', value: '1' },
+    { key: 'admin', name: '管理者', value: '0' },
+  ]
 
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
@@ -38,8 +45,10 @@ export default function UserEditView({ userId, onReload }: Props) {
   const setSubHeaderUserName = useSetSubHeaderUserName();
 
   const [showGrantDaysModal, setShowGrantDaysModal] = useState(false);
+  const [isLoadComplete, setIsLoadComplete] = useState(false);
   const [inputValues, setInputValues] = useState({
     userId: '',
+    password: '',
     firstName: '',
     lastName: '',
     firstNameKana: '',
@@ -48,6 +57,7 @@ export default function UserEditView({ userId, onReload }: Props) {
     joiningDate: new Date().toLocaleDateString('ja-JP'),
     referenceDate: new Date().toLocaleDateString('ja-JP'),
     workingDays: '5',
+    auth: '1',
     totalDeleteDays: '',
     totalAddDays: '',
     totalRemainingDays: '',
@@ -55,6 +65,8 @@ export default function UserEditView({ userId, onReload }: Props) {
   });
 
   const [inputError, setInputError] = useState({
+    userId: '',
+    password: '',
     firstName: '',
     lastName: '',
     firstNameKana: '',
@@ -65,29 +77,48 @@ export default function UserEditView({ userId, onReload }: Props) {
   });
 
   useEffect(() =>{
-    (async() => {
-      if(!userId) {
-        return;
-      }
+    setInputValues({
+      userId: '',
+      password: '',
+      firstName: '',
+      lastName: '',
+      firstNameKana: '',
+      lastNameKana: '',
+      dateOfBirth: new Date().toLocaleDateString('ja-JP'),
+      joiningDate: new Date().toLocaleDateString('ja-JP'),
+      referenceDate: new Date().toLocaleDateString('ja-JP'),
+      workingDays: '5',
+      auth: '1',
+      totalDeleteDays: '',
+      totalAddDays: '',
+      totalRemainingDays: '',
+      totalCarryoverDays: '',
+    });
 
-      setInputError({ ...inputError,
-        firstName: '',
-        lastName: '',
-        firstNameKana: '',
-        lastNameKana: '',
-        dateOfBirth: '',
-        joiningDate: '',
-        referenceDate: '',
-      })
+    setInputError({ ...inputError,
+      userId: '',
+      password: '',
+      firstName: '',
+      lastName: '',
+      firstNameKana: '',
+      lastNameKana: '',
+      dateOfBirth: '',
+      joiningDate: '',
+      referenceDate: '',
+    })
 
+    closeGrantDaysModal();
+
+    if(isNew) {
+      setIsLoadComplete(true);
+    } else if(userPrimaryId) {
       getUser();
-      closeGrantDaysModal();
-    })()
-  },[userId])
+    }
+  },[userPrimaryId, isNew])
 
   const getUser = async() => {
     const req: getUserDetailsRequest = {
-      id: userId,
+      id: userPrimaryId,
     }
 
     const res = await getUserDetails(req);
@@ -106,11 +137,13 @@ export default function UserEditView({ userId, onReload }: Props) {
         joiningDate: new Date(utcJoiningDate.getUTCFullYear(), utcJoiningDate.getMonth(), utcJoiningDate.getDate()).toLocaleDateString('ja-JP'),
         referenceDate: new Date(utcReferenceDate.getUTCFullYear(), utcReferenceDate.getMonth(), utcReferenceDate.getDate()).toLocaleDateString('ja-JP'),
         workingDays: res.workingDays,
+        auth: res.auth,
         totalDeleteDays: res.totalDeleteDays,
         totalAddDays: res.totalAddDays,
         totalRemainingDays: res.totalRemainingDays,
         totalCarryoverDays: res.totalCarryoverDays,
       });
+      setIsLoadComplete(true);
     } else {
       setNotificationMessageObject({
         errorMessageList: res.message ? [res.message] : [],
@@ -146,7 +179,7 @@ export default function UserEditView({ userId, onReload }: Props) {
   const callback = async(reload: boolean) => {
     if(reload) {
       // ログインユーザ自身の場合、共通Store内のユーザ情報を更新
-      if(userId == getUserInfo().id) {
+      if(userPrimaryId == getUserInfo().id) {
         await getLoginUserInfo().then(async(res: getLoginUserInfoResponse) => {
           if(res.responseResult) {
             setUserInfo(res);
@@ -156,6 +189,7 @@ export default function UserEditView({ userId, onReload }: Props) {
 
       // 更新後のユーザ情報を取得
       getUser();
+      onReload();
     }
     setShowGrantDaysModal(false);
   };
@@ -167,10 +201,12 @@ export default function UserEditView({ userId, onReload }: Props) {
   const onSubmit = async() => {
     const requiredErrors = {
       ...inputError,
-      ['lastName']: !inputValues.lastName ? '姓は必須入力です。' : '',
-      ['firstName']: !inputValues.firstName ? '名は必須入力です。' : '',
-      ['lastNameKana']: !inputValues.lastNameKana ? '姓(カナ)は必須入力です。' : '',
-      ['firstNameKana']: !inputValues.firstNameKana ? '名(カナ)は必須入力です。' : '',
+      ['userId']: !inputValues.userId.trim() ? 'ユーザIDは必須入力です。' : '',
+      ['password']: isNew && !inputValues.password?.trim() ? 'パスワードは必須入力です。' : '',
+      ['lastName']: !inputValues.lastName.trim() ? '姓は必須入力です。' : '',
+      ['firstName']: !inputValues.firstName.trim() ? '名は必須入力です。' : '',
+      ['lastNameKana']: !inputValues.lastNameKana.trim() ? '姓(カナ)は必須入力です。' : '',
+      ['firstNameKana']: !inputValues.firstNameKana.trim() ? '名(カナ)は必須入力です。' : '',
       ['dateOfBirth']: !inputValues.dateOfBirth ? '生年月日は必須入力です。' : '',
       ['joiningDate']: !inputValues.joiningDate? '入社日は必須入力です。': '',
       ['referenceDate']: !inputValues.referenceDate ? '基準日は必須入力です。' : '',
@@ -192,7 +228,9 @@ export default function UserEditView({ userId, onReload }: Props) {
       description: confirmModalConst.message.saveUser,
     }).then(async() => {
       const request: SaveUserRequest = {
-        id: userId,
+        id: userPrimaryId,
+        userId: inputValues.userId,
+        password: isNew ? utils.getHash(inputValues.password) : null,
         lastName: inputValues.lastName,
         firstName: inputValues.firstName,
         firstNameKana: inputValues.firstNameKana,
@@ -201,12 +239,13 @@ export default function UserEditView({ userId, onReload }: Props) {
         joiningDate: inputValues.joiningDate,
         referenceDate: inputValues.referenceDate,
         workingDays: inputValues.workingDays,
+        auth: inputValues.auth,
       }
 
       const res = await saveUser(request);
       if(res.responseResult) {
         // ログインユーザ自身の場合、共通Store内のユーザ情報、サブヘッダに表示しているユーザ名を更新
-        if(userId == getUserInfo().id) {
+        if(userPrimaryId == getUserInfo().id) {
           setUserInfo(res);
           setSubHeaderUserName(res.firstName, res.lastName);
         }
@@ -229,9 +268,9 @@ export default function UserEditView({ userId, onReload }: Props) {
 
   return (
     <>
-      <div className="operation-btn-parent-view">
+      <div className="operation-btn-parent-view" hidden={!isLoadComplete}>
         <div className="operation-btn-view-pc">
-          <button className="btn btn-outline-success" onClick={onUpdateGrantDays}>付与日数更新</button>
+          <button className="btn btn-outline-success" onClick={onUpdateGrantDays} hidden={isNew}>付与日数更新</button>
           <button className="btn btn-outline-primary ms-2" onClick={onSubmit}>保存</button>
         </div>
       </div>
@@ -242,7 +281,8 @@ export default function UserEditView({ userId, onReload }: Props) {
           <label className="col-form-label fw-medium" htmlFor="userId">ユーザID</label>
         </div>
         <div className="col-xl-4 col-6 pe-3 g-1">
-          <input className="form-control" type="text" value={inputValues.userId} name="userId" id="userId" disabled />
+          <input className="form-control" type="text" placeholder="ユーザID" value={inputValues.userId} name="userId" id="userId" onChange={(e) => handleOnChange(e)} disabled={!!userPrimaryId} />
+          <p className="input_error">{inputError.userId}</p>
         </div>
       </div>
       {/* 姓名 */}
@@ -280,7 +320,7 @@ export default function UserEditView({ userId, onReload }: Props) {
         </div>
         <div className="col-2">
           <Flatpickr className="form-select" id="dateOfBirth" options={dateOption}
-            value={inputValues.dateOfBirth} name="dateOfBirth" onChange={([date]) => handleOnDateChange(date, "dateOfBirth")} />
+            value={inputValues.dateOfBirth} name="dateOfBirth" placeholder="生年月日" onChange={([date]) => handleOnDateChange(date, "dateOfBirth")} />
           <p className="input_error">{inputError.dateOfBirth}</p>
         </div>
       </div>
@@ -291,7 +331,7 @@ export default function UserEditView({ userId, onReload }: Props) {
         </div>
         <div className="col-2">
           <Flatpickr className="form-select" id="joiningDate" options={dateOption}
-            value={inputValues.joiningDate} name="joiningDate" onChange={([date]) => handleOnDateChange(date, "joiningDate")} />
+            value={inputValues.joiningDate} name="joiningDate" placeholder="入社日" onChange={([date]) => handleOnDateChange(date, "joiningDate")} />
           <p className="input_error">{inputError.joiningDate}</p>
         </div>
       </div>
@@ -302,7 +342,7 @@ export default function UserEditView({ userId, onReload }: Props) {
         </div>
         <div className="col-2">
           <Flatpickr className="form-select" id="referenceDate" options={dateOption}
-            value={inputValues.referenceDate} name="referenceDate" onChange={([date]) => handleOnDateChange(date, "referenceDate")} />
+            value={inputValues.referenceDate} name="referenceDate" placeholder="基準日" onChange={([date]) => handleOnDateChange(date, "referenceDate")} />
           <p className="input_error">{inputError.referenceDate}</p>
         </div>
       </div>
@@ -321,8 +361,36 @@ export default function UserEditView({ userId, onReload }: Props) {
           </select>
         </div>
       </div>
-
+      {/* 権限 */}
       <div className="row mb-3 g-3">
+        <div className="col-md-2">
+          <label className="col-form-label fw-medium">権限</label>
+        </div>
+        <div className="col">
+          {
+            AUTH_INPUT_MAP.map((map: any, index: number) => {
+              return (
+                <div className="form-check-inline" key={index}>
+                  <input type="radio" className="btn-check" value={map.value} id={map.key} name={'auth'} autoComplete="off" checked={inputValues.auth == map.value} onChange={(e) => setInputValues({...inputValues, ['auth']: e.target.value})} disabled={getUserInfo().id == userPrimaryId}></input>
+                  <label className="btn btn-outline-secondary btn-sm" htmlFor={map.key}>{map.name}</label>
+                </div>
+              )
+            })
+          }
+        </div>
+      </div>
+      {/* パスワード */}
+      <div className="row mb-3 g-3" hidden={!isNew}>
+        <div className="col-md-2">
+          <label className="col-form-label fw-medium" htmlFor="password">パスワード</label>
+        </div>
+        <div className="col-xl-4 col-6 pe-3 g-1">
+          <input className="form-control" type="password" placeholder="パスワード" value={inputValues.password} name="password" id="password" onChange={(e) => handleOnChange(e)} />
+          <p className="input_error">{inputError.password}</p>
+        </div>
+      </div>
+
+      <div className="row mb-3 g-3" hidden={isNew}>
         <div className="col-md-10 offset-md-2">
           <div className="row mb-3 g-3">
             {/* 有給取得日数 */}
@@ -348,7 +416,7 @@ export default function UserEditView({ userId, onReload }: Props) {
           </div>
         </div>
       </div>
-      <GrantDaysModal userId={userId} isShow={showGrantDaysModal} callback={callback}></GrantDaysModal>
+      <GrantDaysModal userId={userPrimaryId} isShow={showGrantDaysModal} callback={callback}></GrantDaysModal>
     </>
   )
 };

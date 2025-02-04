@@ -24,6 +24,7 @@ export default function UserPage() {
   const pageTitle = useSetPageTitle();
 
   const [userId, setUserId] = useState<string | null>(null);
+  const [isNew, setIsNew] = useState(false);
   const [showEditView, setShowEditView] = useState(false);
   const [userList, setUserList] = useState<User[]>([]);
   const [pagerParams, setPagerParams] = useState({
@@ -39,13 +40,15 @@ export default function UserPage() {
   },[])
 
   useEffect(() =>{
+    setIsNew(searchParams?.get(pageCommonConst.param.isNew) ? true : false);
     setUserId(searchParams?.get(pageCommonConst.param.userId) ? searchParams?.get(pageCommonConst.param.userId) : null);
   },[searchParams])
 
   useEffect(() =>{
-    setShowEditView(!!userId);
-    pageTitle(!!userId ? pageCommonConst.pageName.userEdit : pageCommonConst.pageName.user);
-    if(userId) {
+    const isEdit = userId || isNew;
+    setShowEditView(!!isEdit);
+    pageTitle(!!isEdit ? isNew ? pageCommonConst.pageName.userNew : pageCommonConst.pageName.userEdit : pageCommonConst.pageName.user);
+    if(isEdit) {
       pageBack(true).then(() => {
         router.replace(pageCommonConst.path.user, {scroll: true});
       }).catch(() => {
@@ -54,7 +57,7 @@ export default function UserPage() {
     } else {
       pageBack(false);
     }
-  },[userId])
+  },[userId, isNew])
 
   /**
    * ユーザ一覧取得
@@ -107,16 +110,29 @@ export default function UserPage() {
     })
   };
 
+  /**
+   * 新規登録ボタン押下
+   * @param id 
+   */
+  const onCreateNewUser = () => {
+    router.push(`${pageCommonConst.path.user}?${pageCommonConst.param.isNew}=true`, {scroll: true});
+  };
+
   return (
     <div className="user-list">
       <div className="sp-only text-center">{pageCommonConst.notSupportMessage}</div>
       <div className="pc-only">
         <div className="" hidden={!!showEditView}>
+          <div className="row mb-2">
+            <div className="col-4 col-md-2 text-start pc-only">
+              <button className="btn btn-outline-primary" onClick={onCreateNewUser}>{pageCommonConst.pageName.userNew}</button>
+            </div>
+          </div>
           <UserListView userList={userList} rowBtnHandler={onEdit}></UserListView>
           <Pager params={{pageClickFnc: getPageList, limit: pagerParams.limit, totalCount: pagerParams.totalCount, page: pagerParams.currentPage}} />
         </div>
         <div className="col-xl-10 offset-xl-1" hidden={!showEditView}>
-          <UserEditView userId={userId} onReload={() => getPageList(pagerConst.initialCurrentPage)}></UserEditView>
+          <UserEditView userPrimaryId={userId} isNew={isNew} onReload={() => getPageList(pagerConst.initialCurrentPage)}></UserEditView>
         </div>
       </div>
     </div>
