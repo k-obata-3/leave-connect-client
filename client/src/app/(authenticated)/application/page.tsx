@@ -9,7 +9,6 @@ import usePageBack from '@/hooks/usePageBack';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { pagerConst } from '@/consts/pagerConst';
 import { Application, GetApplicationListRequest, GetApplicationListResponse, getApplicationList } from '@/api/getApplicationList';
-import { aggregateHoliday, AggregateHolidayRequest, AggregateResult } from '@/api/aggregateHoliday';
 import Pager from '@/components/pager';
 import ApplicationListView from '@/components/applicationListView';
 import ApplicationEditView from '@/components/applicationEditView';
@@ -153,35 +152,12 @@ export default function ApplicationPage() {
   /**
    * 集計ボタン押下
    */
-  const onAggregate = async() => {
-    window.open()
-    const req: AggregateHolidayRequest = {
-      userId: null,
-    }
-    const res = await aggregateHoliday(req);
-    if(res.responseResult) {
-      console.log(res.aggregateResults);
-      const url = window.URL.createObjectURL(res.result.blob);
-      // location.href = url;
-      // window.open(url, '_blank')
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = res.result.fileName;
-      link.click();
-      // window.open(url, '_blank')
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } else {
-      setNotificationMessageObject({
-        errorMessageList: res.message ? [res.message] : [],
-        inputErrorMessageList: [],
-      })
-    }
+  const onAggregate = () => {
+    window.open(`${pageCommonConst.path.applicationDownload}?${pageCommonConst.param.userId}=`, '_blank')
   };
 
   return (
     <div className="application-page">
-      <form action="パス" method="get" target="_blank" id="open_form"></form>
       <div className="" hidden={showEditView}>
         <div className="row mb-2">
           <div className="col-auto pc-only">

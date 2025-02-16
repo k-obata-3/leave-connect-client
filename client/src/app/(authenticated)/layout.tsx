@@ -59,60 +59,66 @@ export default function RootLayout({
 
   useEffect(() =>{
     (async() => {
-      // Store情報をあらかじめ初期化
-      // ログイン時に必ず本処理が呼び出される
-      // ※ログイン画面はLayoutコンポーネントが異なるため、本コンポーネントがログイン後にマウントされることによる
-      clearCommonObject();
-      clearNotificationMessageObject();
-      clearApplicationTypeObject();
-      clearUserNameList();
-      clearUserInfo();
-      clearCareerSettingObject();
-
-      const loginUserInfoRes: getLoginUserInfoResponse = await getLoginUserInfo()
-      if(loginUserInfoRes.responseResult) {
-        setUserInfo(loginUserInfoRes);
-
-        await getNotification().then((res: GetNotificationResponse) => {
-          if(res.responseResult) {
-            setCommonObject({
-              actionRequiredApplicationCount: res?.actionRequiredApplicationCount,
-              approvalTaskCount: res.approvalTaskCount,
-              activeApplicationCount: res.activeApplicationCount,
-            });
-          }
-        })
-      } else {
-        router.replace(pageCommonConst.path.login, {scroll: false});
-        return;
+      if(!pathname.match("/download")) {
+        await init();
       }
-
-      const res: GetApplicationTypeListResponse = await getApplicationTypeList();
-      if(res.responseResult) {
-        setApplicationTypeObject(res.result);
-      }
-
-      const careerSettingReq: GetSystemConfigsRequest = {
-        key: "careerSetting"
-      }
-      const careerSettingRes: GetSystemConfigsResponse = await getSystemConfigs(careerSettingReq);
-      if(careerSettingRes.responseResult) {
-        if(careerSettingRes.systemConfigs.length) {
-          const careerSettingVal = JSON.parse(careerSettingRes.systemConfigs[0]?.value);
-          setInchargeObjectList(careerSettingVal.incharge);
-          setRoleObjectList(careerSettingVal.role);
-        }
-      }
-
-      const userNameList: GetUserNameListResponse = await getUserNameList();
-      if(userNameList.responseResult) {
-        setUserNameList(userNameList.userNameList);
-      }
-
-      setIsCompleteLoad(true);
     })
     ();
   }, [])
+
+  const init = async() => {
+    // Store情報をあらかじめ初期化
+    // ログイン時に必ず本処理が呼び出される
+    // ※ログイン画面はLayoutコンポーネントが異なるため、本コンポーネントがログイン後にマウントされることによる
+    clearCommonObject();
+    clearNotificationMessageObject();
+    clearApplicationTypeObject();
+    clearUserNameList();
+    clearUserInfo();
+    clearCareerSettingObject();
+
+    const loginUserInfoRes: getLoginUserInfoResponse = await getLoginUserInfo()
+    if(loginUserInfoRes.responseResult) {
+      setUserInfo(loginUserInfoRes);
+
+      await getNotification().then((res: GetNotificationResponse) => {
+        if(res.responseResult) {
+          setCommonObject({
+            actionRequiredApplicationCount: res?.actionRequiredApplicationCount,
+            approvalTaskCount: res.approvalTaskCount,
+            activeApplicationCount: res.activeApplicationCount,
+          });
+        }
+      })
+    } else {
+      router.replace(pageCommonConst.path.login, {scroll: false});
+      return;
+    }
+
+    const res: GetApplicationTypeListResponse = await getApplicationTypeList();
+    if(res.responseResult) {
+      setApplicationTypeObject(res.result);
+    }
+
+    const careerSettingReq: GetSystemConfigsRequest = {
+      key: "careerSetting"
+    }
+    const careerSettingRes: GetSystemConfigsResponse = await getSystemConfigs(careerSettingReq);
+    if(careerSettingRes.responseResult) {
+      if(careerSettingRes.systemConfigs.length) {
+        const careerSettingVal = JSON.parse(careerSettingRes.systemConfigs[0]?.value);
+        setInchargeObjectList(careerSettingVal.incharge);
+        setRoleObjectList(careerSettingVal.role);
+      }
+    }
+
+    const userNameList: GetUserNameListResponse = await getUserNameList();
+    if(userNameList.responseResult) {
+      setUserNameList(userNameList.userNameList);
+    }
+
+    setIsCompleteLoad(true);
+  }
 
   useEffect(() =>{
     if(routePageList.includes(pathname)) {
@@ -220,6 +226,12 @@ export default function RootLayout({
     if (cancel) {
     }
   };
+
+  if(pathname.match("/download")) {
+    return (
+      <div>{children}</div>
+    )
+  }
 
   if (isCompleteLoad && !isSp) {
     return (

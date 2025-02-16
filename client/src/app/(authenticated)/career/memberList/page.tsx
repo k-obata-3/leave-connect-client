@@ -11,7 +11,6 @@ import { pageCommonConst } from '@/consts/pageCommonConst';
 import { pagerConst } from '@/consts/pagerConst';
 import { CareerDictionary, getCareerDictionary, GetCareerDictionaryRequest, GetCareerDictionaryResponse } from '@/api/getCareerDictionary';
 import { CareerUser, getCareerUserList, GetCareerUserListRequest } from '@/api/getCareerUserList';
-import { outputSkillsheet, OutputSkillsheetRequest } from '@/api/outputSkillsheet';
 import Pager from '@/components/pager';
 import CareerDetailView from './careerDetailView';
 
@@ -25,7 +24,6 @@ export default function CareerMemberList() {
   const pageTitle = useSetPageTitle();
 
   const [showDetailView, setShowDetailView] = useState(false);
-  const [isDownload, setIsDownload] = useState(false);
   const [careerUserList, setCareerUserList] = useState<CareerUser[]>([]);
   const [selectCareerUser, setSelectCareerUser] = useState<CareerUser | null>(null);
   const [careerDetail, setCareerDetail] = useState<CareerDictionary | null>(null);
@@ -99,32 +97,7 @@ export default function CareerMemberList() {
   }
 
   const onOutput = (careerUser: CareerUser) => {
-    // window.open(pageCommonConst.path.login)
-    fileOutput(careerUser);
-  }
-
-  const fileOutput = async(careerUser: CareerUser) => {
-    setIsDownload(true);
-    const req: OutputSkillsheetRequest = {
-      userId: careerUser.userId.toString(),
-    }
-    const res = await outputSkillsheet(req);
-    if(res.responseResult) {
-      const url = window.URL.createObjectURL(res.result.blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = res.result.fileName;
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      setIsDownload(false);
-    } else {
-      setIsDownload(false);
-      setNotificationMessageObject({
-        errorMessageList: res.message ? [res.message] : [],
-        inputErrorMessageList: [],
-      })
-    }
+    window.open(`${pageCommonConst.path.careerDownload}?${pageCommonConst.param.userId}=${careerUser.userId}`, '_blank')
   }
 
   return (
