@@ -42,15 +42,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     dateFormat: 'Y/m/d(D)',
   };
 
-  let timeOption = {
-    locale: Japanese,
-    dateFormat: "H:i",
-    enableTime: true,
-    noCalendar: true,
-    time_24hr: true,
-    minuteIncrement: 10,
-  };
-
   // 共通Store
   const { setCommonObject } = useCommonStore();
   const { setNotificationMessageObject } = useNotificationMessageStore();
@@ -70,8 +61,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     currentEndDate: today,
     startDate: '',
     endDate: '',
-    // startTime: '',
-    // endTime: '',
     totalTime: '',
     classification: '',
     type: '',
@@ -88,7 +77,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
 
   const [inputError, setInputError] = useState({
     startEndDateObj: '',
-    // startEndTime: '',
     approvalGroup: '',
     comment: '',
   });
@@ -105,7 +93,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     setIsLoadComplete(false);
     setInputError({ ...inputError,
       startEndDateObj: '',
-      // startEndTime: '',
       approvalGroup: '',
       comment: '',
     });
@@ -175,8 +162,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
           currentEndDate: endDateObj,
           startDate: startDateObj.toLocaleDateString('jp'),
           endDate: endDateObj.toLocaleDateString('jp'),
-          // startTime: `${startDateObj.getHours()}:${startDateObj.getMinutes()}:00`,
-          // endTime: `${endDateObj.getHours()}:${endDateObj.getMinutes()}:00`,
           totalTime: res.application.totalTime,
           classification: res.application.classification,
           type: res.application.type,
@@ -233,8 +218,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
 
     inputValues.type = applicationType;
     inputValues.classification = typeObject.initialValue?.classification.toString();
-    // inputValues.startTime = typeObject.initialValue?.startTime;
-    // inputValues.endTime = typeObject.initialValue?.endTime;
     inputValues.totalTime = typeObject.initialValue?.totalTime.toString();
     setIsTimeFormat(typeObject.format == ApplicationTypeFormat.time);
     setIsPeriodFormat(typeObject.format == ApplicationTypeFormat.period);
@@ -298,14 +281,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     }
   }
 
-  // const handleOnStartEndTimeChange = (date: Date, name: any) => {
-  //   if(date) {
-  //     setInputValues({ ...inputValues, [name]: date.toLocaleTimeString('ja-JP')});
-  //   } else {
-  //     setInputValues({ ...inputValues, [name]: null});
-  //   }
-  // }
-
   /**
    * 申請ボタン押下
    * @param action 
@@ -315,7 +290,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     const requiredErrors = {
       ...inputError,
       ['startEndDateObj']: inputValues.startDate && inputValues.endDate ? '' : '取得日は必須入力です。',
-      // ['startEndTime']: inputValues.startTime && inputValues.endTime ? '' : '取得時間は必須入力です。',
       ['comment']: inputValues.comment.trim() ? '' : '申請コメントは必須入力です。',
       ['approvalGroup']: currentSelectApprovalGroup.id ? '' : '承認グループを選択してください。',
     };
@@ -340,8 +314,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
         classification: inputValues.classification,
         startDate: inputValues.startDate,
         endDate: isPeriodFormat ? inputValues.endDate : inputValues.startDate,
-        // startTime: inputValues.startTime,
-        // endTime: inputValues.endTime,
         totalTime: inputValues.totalTime,
         comment: inputValues.comment,
         approvalGroupId: Number(currentSelectApprovalGroup.id),
@@ -606,37 +578,6 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
               </select>
             </div>
           </div>
-          {/*
-          <div className="row align-items-center mb-3 g-3" hidden={!isTimeFormat || !editEnabled}>
-            <div className="col-md-2 mb-2">
-              <label className="col-form-label fw-medium" htmlFor="startTime">取得時間</label>
-            </div>
-            <div className="col-5 col-md-2 mb-2" hidden={!editEnabled}>
-              <Flatpickr className="form-select" id="startTime" options={timeOption}
-                value={inputValues.startTime} name="startTime" onChange={([date]: any) => handleOnStartEndTimeChange(date, "startTime")}/>
-            </div>
-            <div className="col-1 text-center mb-2" hidden={!editEnabled}>
-              <span>～</span>
-            </div>
-            <div className="col-5 col-md-2 mb-2 me-2" hidden={!editEnabled}>
-              <Flatpickr className="form-select" id="endTime" options={timeOption}
-                value={inputValues.endTime} name="endTime" onChange={([date]: any) => handleOnStartEndTimeChange(date, "endTime")}/>
-            </div>
-            <div className="col-5 col-md-2 mb-2" hidden={!editEnabled}>
-              <select className="form-select" id="totalTime" value={inputValues.totalTime} name="totalTime" onChange={(e) => handleOnChange(e)} disabled={currentTotalTimeArray.length == 1}>
-                {
-                  currentTotalTimeArray.map((num: any, index: number) => (
-                    <option value={num} key={index}>{num}時間</option>
-                  ))
-                }
-              </select>
-            </div>
-            <p className="input_error" hidden={!editEnabled}>{inputError.startEndTime}</p>
-            <div className="col ps-3" hidden={editEnabled}>
-              <span>{application?.sStartTime} ～ {application?.sEndTime}</span>
-            </div>
-          </div>
-          */}
           {/* 備考 */}
           <div className="row mb-3 g-3">
             <div className="col-md-2">
