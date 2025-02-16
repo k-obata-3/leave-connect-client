@@ -18,6 +18,7 @@ export interface CareerUser {
   joiningDate: string,
   AffiliationPeriod: number,
   careerItem: string[],
+  status: number,
 }
 
 export async function getCareerUserList(req: GetCareerUserListRequest) {

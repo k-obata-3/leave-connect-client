@@ -21,7 +21,7 @@ export default function DashboardCardView() {
       </div>
       <div className="custom-card mb-2">
       <div className="custom-card-header">
-          <h6>有給取得日</h6>
+          <h6>有給取得日数</h6>
         </div>
         <div className="custom-card-body text-center">
           <span>{getUserInfo().totalDeleteDays}日</span>

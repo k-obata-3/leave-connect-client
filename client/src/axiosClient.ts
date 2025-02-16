@@ -103,27 +103,25 @@ export const axiosDelete = async(url: string) => {
 
 export const axiosFileDownload = async(url: string) => {
   return await axiosClient.get(url, { responseType:'arraybuffer' }).then((res: AxiosResponse) => {
+    let fileName = null;
+    let blob = null;
     if(res.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-      let blob = new Blob([res.data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,"});
       let disposition = res.headers['content-disposition'];
-      let fileName = null;
-
-      // 正規表現でfilenameを抜き出す
-      const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-      const matches = filenameRegex.exec(disposition);
-      if (matches != null && matches[1]) {
-          const fName = matches[1].replace(/['"]/g, '');
-          fileName = decodeURI(fName);
-      }
-
-      return {
-        responseResult: true,
-        result: {
-          'fileName': fileName,
-          'url': window.URL.createObjectURL(blob),
-        },
-      } as ApiResponse;
+      blob = new Blob([res.data], {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;"});
+      fileName = getFileName(disposition)
+    } else if(res.headers['content-type'] == 'application/pdf') {
+      let disposition = res.headers['content-disposition'];
+      blob = new Blob([res.data], {type: "application/pdf;"});
+      fileName = getFileName(disposition)
     }
+
+    return {
+      responseResult: fileName ? true : false,
+      result: {
+        'fileName': fileName,
+        'blob': blob,
+      },
+    } as ApiResponse;
 
     return {
       responseResult: false,
@@ -146,6 +144,19 @@ export const axiosFileDownload = async(url: string) => {
       } as ApiResponse;
     }
   })
+}
+
+const getFileName = (disposition: string) => {
+  // 正規表現でfilenameを抜き出す
+  let fileName = '';
+  const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+  const matches = filenameRegex.exec(disposition);
+  if (matches != null && matches[1]) {
+      const fName = matches[1].replace(/['"]/g, '');
+      fileName = decodeURI(fName);
+  }
+
+  return fileName;
 }
 
 /**

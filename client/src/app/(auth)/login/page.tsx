@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
@@ -14,6 +14,10 @@ export default function Login() {
   const { getNotificationMessageObject, setNotificationMessageObject } = useNotificationMessageStore();
   const [inputUserId, setInputUserId] = useState('test01@test.abc.123');
   const [inputPassword, setInputPassword] = useState('password');
+
+  useEffect(() =>{
+
+  }, [])
 
   /**
    * ログインボタン押下

@@ -510,7 +510,7 @@ select {
   z-index: -999;
   opacity: 0;
   transition: opacity 1s;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 .modal-overview.modal-show {
   z-index: 4;

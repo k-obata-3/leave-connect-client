@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import usePageBack from '@/hooks/usePageBack';
 import useSetPageTitle from '@/hooks/useSetPageTitle';
@@ -9,14 +9,25 @@ import { pageCommonConst } from '@/consts/pageCommonConst';
 import ApplicationEditView from '@/components/applicationEditView';
 
 export default function ApplicationEdit() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-    // カスタムフック
-    const pageBack = usePageBack();
-    const pageTitle = useSetPageTitle();
+  // カスタムフック
+  const pageBack = usePageBack();
+  const pageTitle = useSetPageTitle();
 
   useEffect(() =>{
-    pageBack(false);
     pageTitle(pageCommonConst.pageName.applicationNew);
+    const ref = searchParams.get(pageCommonConst.param.ref);
+    if(ref) {
+      pageBack(true).then(() => {
+        const ref = searchParams.get(pageCommonConst.param.ref);
+        router.replace(`${ref}`, {scroll: true});
+      }).catch(() => {
+        return true;
+      })
+    } else {
+      pageBack(false);
+    }
   },[])
 
   return (

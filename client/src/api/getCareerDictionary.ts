@@ -1,7 +1,6 @@
 import { axiosGet, ApiResponse } from "@/axiosClient";
 
 export interface GetCareerDictionaryRequest {
-  // careerId: string,
   userId: string
 }
 

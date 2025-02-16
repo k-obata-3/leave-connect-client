@@ -29,6 +29,7 @@ export interface Approval {
   sEndDate: string,
   sEndTime: string,
   sStartEndTime: string,
+  totalTime: number,
   comment: string,
   applicationUserName: string,
 }

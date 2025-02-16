@@ -5,6 +5,10 @@ export interface getUserDetailsRequest {
 }
 
 export interface getUserDetailsResponse extends ApiResponse {
+  userDetails: UserDetails,
+}
+
+export interface UserDetails {
   id: number,
   userId: string,
   status: number,
@@ -29,23 +33,7 @@ export async function getUserDetails(req: getUserDetailsRequest) {
     return {
       responseResult: res.responseResult,
       message: res.responseResult ? "" : res.message,
-      id: res.result?.id,
-      userId: res.result?.userId,
-      status: res.result?.status,
-      auth: res.result?.auth,
-      firstName: res.result?.firstName,
-      lastName: res.result?.lastName,
-      firstNameKana: res.result?.firstNameKana,
-      lastNameKana: res.result?.lastNameKana,
-      dateOfBirth: res.result?.dateOfBirth,
-      joiningDate: res.result?.joiningDate,
-      referenceDate: res.result?.referenceDate,
-      workingDays: res.result?.workingDays,
-      totalDeleteDays: res.result?.totalDeleteDays,
-      totalAddDays: res.result?.totalAddDays,
-      totalRemainingDays: res.result?.totalRemainingDays,
-      totalCarryoverDays: res.result?.totalCarryoverDays,
-      lastGrantDate: res.result?.lastGrantDate,
+      userDetails: res.result,
     } as getUserDetailsResponse;
   })
 }

@@ -4,17 +4,18 @@ import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation'
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
+import useSetPageTitle from '@/hooks/useSetPageTitle';
 import usePageBack from '@/hooks/usePageBack';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { pagerConst } from '@/consts/pagerConst';
 import { Application, GetApplicationListRequest, GetApplicationListResponse, getApplicationList } from '@/api/getApplicationList';
+import { aggregateHoliday, AggregateHolidayRequest, AggregateResult } from '@/api/aggregateHoliday';
 import Pager from '@/components/pager';
 import ApplicationListView from '@/components/applicationListView';
 import ApplicationEditView from '@/components/applicationEditView';
 import SearchSelectYearView from '@/components/searchSelectYearView';
 import SearchSelectStatusView from '@/components/searchSelectStatusView';
 import SearchSelectTypeView from '@/components/searchSelectTypeView';
-import useSetPageTitle from '@/hooks/useSetPageTitle';
 
 export default function ApplicationPage() {
   const router = useRouter();
@@ -146,15 +147,48 @@ export default function ApplicationPage() {
    * @param id 
    */
   const onCreateNewApplication = () => {
-    router.push(pageCommonConst.path.applicationNew, {scroll: true});
+    router.push(`${pageCommonConst.path.applicationNew}?${pageCommonConst.param.ref}=${pageCommonConst.path.application}`, {scroll: true});
+  };
+
+  /**
+   * 集計ボタン押下
+   */
+  const onAggregate = async() => {
+    window.open()
+    const req: AggregateHolidayRequest = {
+      userId: null,
+    }
+    const res = await aggregateHoliday(req);
+    if(res.responseResult) {
+      console.log(res.aggregateResults);
+      const url = window.URL.createObjectURL(res.result.blob);
+      // location.href = url;
+      // window.open(url, '_blank')
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = res.result.fileName;
+      link.click();
+      // window.open(url, '_blank')
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } else {
+      setNotificationMessageObject({
+        errorMessageList: res.message ? [res.message] : [],
+        inputErrorMessageList: [],
+      })
+    }
   };
 
   return (
     <div className="application-page">
+      <form action="パス" method="get" target="_blank" id="open_form"></form>
       <div className="" hidden={showEditView}>
         <div className="row mb-2">
-          <div className="col-4 col-md-2 text-start pc-only">
+          <div className="col-auto pc-only">
             <button className="btn btn-outline-primary" onClick={onCreateNewApplication}>{pageCommonConst.pageName.applicationNew}</button>
+          </div>
+          <div className="col-auto ms-2 pc-only">
+            <button className="btn btn-outline-primary" onClick={onAggregate}>集計</button>
           </div>
           {/* 検索条件 */}
           <div className="col row d-flex justify-content-end">

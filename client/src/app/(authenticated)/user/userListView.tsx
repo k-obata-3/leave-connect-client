@@ -2,6 +2,7 @@
 
 import React from 'react'
 
+import { commonConst } from '@/consts/commonConst';
 import { User } from '@/api/getUserList';
 
 type Props = {
@@ -47,10 +48,13 @@ export default function UserListView({ userList, rowBtnHandler }: Props) {
           {
             userList?.map((user, index) => (
               <React.Fragment key={index}>
-              <tr className={user.status != 1 ? "opacity-50" : ""}>
+              <tr className="">
                 <td className="align-middle" rowSpan={2}>
                   <p className="text-wrap">
-                    <span className={user.isUpdateGrant ? "opacity-0" : "opacity-100"}><i className="bi bi-exclamation-circle-fill text-danger"></i></span>
+                    <span className={user.isUpdateGrant && user.status == commonConst.userEffectiveStatus ? "opacity-0" : "opacity-100"}>
+                      <i className="bi bi-exclamation-circle-fill text-warning" hidden={user.status != commonConst.userEffectiveStatus}></i>
+                      <i className="bi bi-ban-fill text-danger" hidden={user.status == commonConst.userEffectiveStatus}></i>
+                    </span>
                     <span className="ms-2 me-2">{user.lastName}</span>
                     <span>{user.firstName}</span>
                   </p>
@@ -71,7 +75,7 @@ export default function UserListView({ userList, rowBtnHandler }: Props) {
                   <button className="btn btn-outline-primary btn-sm" onClick={() => rowBtnHandler(user.id.toString())}>編集</button>
                 </td>
               </tr>
-              <tr className={user.status != 1 ? "opacity-50" : ""}>
+              <tr className="">
                 <td className="text-center border-top-0" colSpan={2}>
                   <p className="text-nowrap" hidden={!user.periodStart}><span>{user.periodStart}</span><span className="ms-1 me-1">～</span><span>{user.periodEnd}</span></p>
                   <p className="text-nowrap" hidden={!!user.periodStart}><span>-</span></p>

@@ -20,6 +20,7 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
   const TABLE_HEADER = [
     { label: '申請日', key: 'application_date', width: '110px' },
     { label: '種類', key: 's_type', width: '130px' },
+    { label: '区分', key: 's_classification', width: '100px' },
     { label: '取得日時', key: 'start_end_date', width: '150px' },
     { label: '申請コメント', key: 'comment', width: 'auto' },
     { label: 'ステータス', key: 's_action', width: '100px' },
@@ -28,10 +29,10 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
 
   const ADMIN_TABLE_HEADER = [
     { label: '申請日', key: 'application_date', width: '110px' },
-    { label: '申請者', key: 'application_user', width: 'auto' },
     { label: '種類', key: 's_type', width: '130px' },
     { label: '区分', key: 's_classification', width: '100px' },
     { label: '取得日時', key: 'start_end_date', width: '130px' },
+    { label: '申請者', key: 'application_user', width: 'auto' },
     { label: 'ステータス', key: 's_action', width: '110px' },
     { label: '', key: 'action', width: '65px' },
   ];
@@ -74,9 +75,13 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
             <p className="text-nowrap">{item.sType}</p>
           </td>
           <td className="text-center">
-            <p className="text-nowrap">{item.sStartDate}</p>
-            <p className="text-nowrap" hidden={item.sStartDate !== item.sEndDate}>{item.sStartTime}～{item.sEndTime}</p>
-            <p className="text-nowrap" hidden={item.sStartDate === item.sEndDate}>{item.sEndDate}</p>
+            <p className="text-nowrap">{item.sClassification}</p>
+            <p className="text-nowrap">{item.totalTime}時間</p>
+          </td>
+          <td className="text-center">
+            <p className="text-nowrap">
+              <span className="">{item.sStartDate}<span className="" hidden={item.sStartDate == item.sEndDate}>～{item.sEndDate}</span></span>
+            </p>
           </td>
           <td>
             <p className="comment_col comment">{item.comment}</p>
@@ -108,9 +113,10 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
             <span className="col-3">取得日</span>
             <span className="col text-end">{item.sStartDate}<span className="col text-end" hidden={item.sStartDate == item.sEndDate}>～{item.sEndDate}</span></span>
           </p>
-          <p className="row" hidden={item.sStartDate != item.sEndDate}>
+          <p className="row">
             <span className="col-3">取得時間</span>
-            <span className="col text-end">{item.sStartTime}～{item.sEndTime}</span>
+            <span className="col text-end">{item.sClassification}</span>
+            <span className="col-auto text-end ps-2">{item.totalTime}時間</span>
           </p>
         </div>
       ))
@@ -124,19 +130,20 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
           <td className="text-center">
             <p className="text-nowrap">{item.sApplicationDate}</p>
           </td>
-          <td className="text-start">
-            <p className="text-wrap">{getUserName(item['applicationUserId'])}</p>
-          </td>
           <td className="text-center">
             <p className="text-nowrap">{item.sType}</p>
           </td>
           <td className="text-center">
             <p className="text-nowrap">{item.sClassification}</p>
+            <p className="text-nowrap">{item.totalTime}時間</p>
           </td>
           <td className="text-center">
-            <p className="text-nowrap">{item.sStartDate}</p>
-            <p className="text-nowrap" hidden={item.sStartDate !== item.sEndDate}>{item.sStartTime}～{item.sEndTime}</p>
-            <p className="text-nowrap" hidden={item.sStartDate === item.sEndDate}>{item.sEndDate}</p>
+            <p className="text-nowrap">
+              <span className="">{item.sStartDate}<span className="" hidden={item.sStartDate == item.sEndDate}>～{item.sEndDate}</span></span>
+            </p>
+          </td>
+          <td className="text-start">
+            <p className="text-wrap">{getUserName(item['applicationUserId'])}</p>
           </td>
           <td className="text-center">
             <p className="text-nowrap">{item.sAction}</p>
@@ -169,9 +176,10 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
             <span className="col-3">取得日</span>
             <span className="col text-end">{item.sStartDate}<span className="col text-end" hidden={item.sStartDate == item.sEndDate}>～{item.sEndDate}</span></span>
           </p>
-          <p className="row" hidden={item.sStartDate != item.sEndDate}>
+          <p className="row">
             <span className="col-3">取得時間</span>
-            <span className="col text-end">{item.sStartTime}～{item.sEndTime}</span>
+            <span className="col text-end">{item.sClassification}</span>
+            <span className="col-auto text-end ps-2">{item.totalTime}時間</span>
           </p>
         </div>
       ))

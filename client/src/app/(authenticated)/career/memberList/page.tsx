@@ -6,6 +6,7 @@ import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import { useUserInfoStore } from '@/store/userInfoStore';
 import usePageBack from '@/hooks/usePageBack';
 import useSetPageTitle from '@/hooks/useSetPageTitle';
+import { commonConst } from '@/consts/commonConst';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { pagerConst } from '@/consts/pagerConst';
 import { CareerDictionary, getCareerDictionary, GetCareerDictionaryRequest, GetCareerDictionaryResponse } from '@/api/getCareerDictionary';
@@ -81,10 +82,6 @@ export default function CareerMemberList() {
   };
 
   const showCareerDetailView = async(careerUser: CareerUser) => {
-    if(!careerUser.careerItem.length) {
-      return;
-    }
-
     const req: GetCareerDictionaryRequest = {
       userId: careerUser.userId.toString(),
     }
@@ -101,17 +98,25 @@ export default function CareerMemberList() {
     }
   }
 
-  const onOutput = async(careerUser: CareerUser) => {
+  const onOutput = (careerUser: CareerUser) => {
+    // window.open(pageCommonConst.path.login)
+    fileOutput(careerUser);
+  }
+
+  const fileOutput = async(careerUser: CareerUser) => {
     setIsDownload(true);
     const req: OutputSkillsheetRequest = {
       userId: careerUser.userId.toString(),
     }
     const res = await outputSkillsheet(req);
     if(res.responseResult) {
+      const url = window.URL.createObjectURL(res.result.blob);
       const link = document.createElement('a');
-      link.href = res.result.url;
+      link.href = url;
       link.download = res.result.fileName;
       link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
       setIsDownload(false);
     } else {
       setIsDownload(false);
@@ -131,11 +136,14 @@ export default function CareerMemberList() {
               <div className="custom-card mb-2">
                 <div className="custom-card-header row ps-2 pe-2">
                   <h6 className="col text-truncate">{careerUser.fullName}</h6>
+                  <span className="col-auto me-1" hidden={careerUser.status == commonConst.userEffectiveStatus}>
+                    <i className="bi bi-ban-fill text-danger"></i>
+                  </span>
                   <div className="col-auto" hidden={!isAdmin() && getUserInfo().id != careerUser.userId.toString()}>
                     <button className="btn btn-outline-secondary btn-sm me-auto" onClick={() => onOutput(careerUser)}>出力</button>
                   </div>
                 </div>
-                <div className="custom-card-body career-member-card-body" onClick={() => showCareerDetailView(careerUser)} style={careerUser.careerItem.length ? {cursor: 'pointer'} : {}}>
+                <div className="custom-card-body career-member-card-body" onClick={() => showCareerDetailView(careerUser)} style={{cursor: 'pointer'}}>
                   <div className="text-truncate text-wrap" style={{maxHeight: '100%', width: '100%'}}>
                     {
                       careerUser.careerItem?.map((item: string, i: number) => {

@@ -24,5 +24,6 @@ export const commonConst = {
     cancel: '',              // 取消
   },
 
-  initialApplicationTypeValues: "0",  // 年次有給休暇申請タイプ
+  initialApplicationTypeValues: 0,  // 年次有給休暇申請タイプ
+  userEffectiveStatus: 1,  // 有効なユーザのステータス
 } as const

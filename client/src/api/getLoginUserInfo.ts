@@ -17,6 +17,7 @@ export interface getLoginUserInfoResponse extends ApiResponse {
   totalAddDays: string,
   totalRemainingDays: string,
   totalCarryoverDays: string,
+  status: string,
 }
 
 export async function getLoginUserInfo() {
@@ -40,6 +41,7 @@ export async function getLoginUserInfo() {
       totalAddDays: res.result?.totalAddDays,
       totalRemainingDays: res.result?.totalRemainingDays,
       totalCarryoverDays: res.result?.totalCarryoverDays,
+      status: res.result?.status,
     } as getLoginUserInfoResponse;
   })
 }

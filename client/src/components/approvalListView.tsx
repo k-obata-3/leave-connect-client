@@ -13,6 +13,7 @@ type Props = {
 export default function ApprovalListView({ approvalList, rowBtnHandler }: Props) {
   const TABLE_HEADER = [
     { label: '種類', key: 'type_str', width: '130px' },
+    { label: '区分', key: 's_classification', width: '100px' },
     { label: '取得日時', key: 'start_end_date', width: '150px' },
     { label: '申請者', key: 'application_user_name', width: '200px' },
     { label: '承認者コメント', key: 'comment', width: 'auto' },
@@ -40,9 +41,13 @@ export default function ApprovalListView({ approvalList, rowBtnHandler }: Props)
                   <p className="text-nowrap">{item.sType}</p>
                 </td>
                 <td className="text-center">
-                  <p className="text-nowrap">{item.sStartDate}</p>
-                  <p className="text-nowrap" hidden={item.sStartDate !== item.sEndDate}>{item.sStartTime}～{item.sEndTime}</p>
-                  <p className="text-nowrap" hidden={item.sStartDate === item.sEndDate}>{item.sEndDate}</p>
+                  <p className="text-nowrap">{item.sClassification}</p>
+                  <p className="text-nowrap">{item.totalTime}時間</p>
+                </td>
+                <td className="text-center">
+                  <p className="text-nowrap">
+                    <span className="">{item.sStartDate}<span className="" hidden={item.sStartDate == item.sEndDate}>～{item.sEndDate}</span></span>
+                  </p>
                 </td>
                 <td>
                   <p className="text-start text-wrap">{item.applicationUserName}</p>
@@ -84,9 +89,10 @@ export default function ApprovalListView({ approvalList, rowBtnHandler }: Props)
             <span className="col-3">取得日</span>
             <span className="col text-end">{item.sStartDate}<span className="col text-end" hidden={item.sStartDate == item.sEndDate}>～{item.sEndDate}</span></span>
           </p>
-          <p className="row" hidden={item.sStartDate != item.sEndDate}>
+          <p className="row">
             <span className="col-3">取得時間</span>
-            <span className="col text-end">{item.sStartTime}～{item.sEndTime}</span>
+            <span className="col text-end">{item.sClassification}</span>
+            <span className="col-auto text-end ps-2">{item.totalTime}時間</span>
           </p>
         </div>
       ))

@@ -250,6 +250,7 @@ export default function ApprovalEditView({ taskId, applicationId, onReload }: Pr
             </div>
           </div>
           {/* 取得時間 */}
+          {/*
           <div className="row align-items-center mb-3 g-3" hidden={application.sStartDate !== application.sEndDate}>
             <div className="col-md-2">
               <label className="col-form-label fw-medium">取得時間</label>
@@ -260,6 +261,7 @@ export default function ApprovalEditView({ taskId, applicationId, onReload }: Pr
               </p>
             </div>
           </div>
+          */}
           {/* 備考 */}
           <div className="row mb-3 g-3">
             <div className="col-md-2">

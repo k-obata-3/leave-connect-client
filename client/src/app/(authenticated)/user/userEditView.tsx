@@ -12,10 +12,11 @@ import { useUserInfoStore } from '@/store/userInfoStore';
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import useConfirm from '@/hooks/useConfirm';
 import useSetSubHeaderUserName from '@/hooks/useSetSubHeaderUserName';
+import { commonConst } from '@/consts/commonConst';
 import { confirmModalConst } from '@/consts/confirmModalConst';
 import utils from '@/assets/js/utils';
 import { SaveUserRequest, saveUser } from '@/api/saveUser';
-import { getUserDetails, getUserDetailsRequest } from '@/api/getUserDetails';
+import { getUserDetails, getUserDetailsRequest, UserDetails } from '@/api/getUserDetails';
 import { getLoginUserInfo, getLoginUserInfoResponse } from '@/api/getLoginUserInfo';
 import GrantDaysModal from './grantDaysModal';
 
@@ -46,6 +47,7 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
 
   const [showGrantDaysModal, setShowGrantDaysModal] = useState(false);
   const [isLoadComplete, setIsLoadComplete] = useState(false);
+  const [userDetails, setUserDetails] = useState<UserDetails>()
   const [inputValues, setInputValues] = useState({
     userId: '',
     password: '',
@@ -58,10 +60,6 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
     referenceDate: new Date().toLocaleDateString('ja-JP'),
     workingDays: '5',
     auth: '1',
-    totalDeleteDays: '',
-    totalAddDays: '',
-    totalRemainingDays: '',
-    totalCarryoverDays: '',
   });
 
   const [inputError, setInputError] = useState({
@@ -89,10 +87,6 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
       referenceDate: new Date().toLocaleDateString('ja-JP'),
       workingDays: '5',
       auth: '1',
-      totalDeleteDays: '',
-      totalAddDays: '',
-      totalRemainingDays: '',
-      totalCarryoverDays: '',
     });
 
     setInputError({ ...inputError,
@@ -123,25 +117,22 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
 
     const res = await getUserDetails(req);
     if(res.responseResult) {
-      const utcDateOfBirth = new Date(res.dateOfBirth);
-      const utcJoiningDate = new Date(res.joiningDate);
-      const utcReferenceDate = new Date(res.referenceDate);
+      const utcDateOfBirth = new Date(res.userDetails.dateOfBirth);
+      const utcJoiningDate = new Date(res.userDetails.joiningDate);
+      const utcReferenceDate = new Date(res.userDetails.referenceDate);
+      setUserDetails(res.userDetails);
       setInputValues({
         ...inputValues,
-        userId: res.userId,
-        firstName: res.firstName,
-        lastName: res.lastName,
-        firstNameKana: res.firstNameKana,
-        lastNameKana: res.lastNameKana,
+        userId: res.userDetails.userId,
+        firstName: res.userDetails.firstName,
+        lastName: res.userDetails.lastName,
+        firstNameKana: res.userDetails.firstNameKana,
+        lastNameKana: res.userDetails.lastNameKana,
         dateOfBirth: new Date(utcDateOfBirth.getUTCFullYear(), utcDateOfBirth.getMonth(), utcDateOfBirth.getDate()).toLocaleDateString('ja-JP'),
         joiningDate: new Date(utcJoiningDate.getUTCFullYear(), utcJoiningDate.getMonth(), utcJoiningDate.getDate()).toLocaleDateString('ja-JP'),
         referenceDate: new Date(utcReferenceDate.getUTCFullYear(), utcReferenceDate.getMonth(), utcReferenceDate.getDate()).toLocaleDateString('ja-JP'),
-        workingDays: res.workingDays,
-        auth: res.auth,
-        totalDeleteDays: res.totalDeleteDays,
-        totalAddDays: res.totalAddDays,
-        totalRemainingDays: res.totalRemainingDays,
-        totalCarryoverDays: res.totalCarryoverDays,
+        workingDays: res.userDetails.workingDays,
+        auth: res.userDetails.auth,
       });
       setIsLoadComplete(true);
     } else {
@@ -270,8 +261,8 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
     <>
       <div className="operation-btn-parent-view" hidden={!isLoadComplete}>
         <div className="operation-btn-view-pc">
-          <button className="btn btn-outline-success" onClick={onUpdateGrantDays} hidden={isNew}>付与日数更新</button>
-          <button className="btn btn-outline-primary ms-2" onClick={onSubmit}>保存</button>
+          <button className="btn btn-outline-success" onClick={onUpdateGrantDays} hidden={isNew || userDetails?.status != commonConst.userEffectiveStatus}>付与日数更新</button>
+          <button className="btn btn-outline-primary ms-2" onClick={onSubmit} hidden={userDetails && userDetails?.status != commonConst.userEffectiveStatus}>保存</button>
         </div>
       </div>
 
@@ -396,22 +387,22 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
             {/* 有給取得日数 */}
             <div className="col-md-2 col-3 me-3">
               <label className="form-label fw-medium">有給取得日数</label>
-              <p className="mt-1 ps-3">{inputValues.totalDeleteDays}</p>
+              <p className="mt-1 ps-3">{userDetails?.totalDeleteDays}</p>
             </div>
             {/* 有給残日数 */}
             <div className="col-md-2 col-3 me-3">
               <label className="form-label fw-medium">有給残日数</label>
-              <p className="mt-1 ps-3">{inputValues.totalRemainingDays}</p>
+              <p className="mt-1 ps-3">{userDetails?.totalRemainingDays}</p>
             </div>
             {/* 繰越日数 */}
             <div className="col-md-2 col-3 me-3">
               <label className="form-label fw-medium">繰越日数</label>
-              <p className="mt-1 ps-3">{inputValues.totalCarryoverDays}</p>
+              <p className="mt-1 ps-3">{userDetails?.totalCarryoverDays}</p>
             </div>
             {/* 付与日数 */}
             <div className="col-md-2 col-3 me-3">
               <label className="form-label fw-medium">付与日数</label>
-              <p className="mt-1 ps-3">{inputValues.totalAddDays}</p>
+              <p className="mt-1 ps-3">{userDetails?.totalAddDays}</p>
             </div>
           </div>
         </div>

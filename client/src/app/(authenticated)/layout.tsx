@@ -23,6 +23,7 @@ import { getApplicationTypeList, GetApplicationTypeListResponse } from '@/api/ge
 import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse } from '@/api/getSystemConfigs';
 import NavMenuPcView from '@/components/navMenuPcView';
 import NavMenuSpView from '@/components/navMenuSpView';
+import Loading from './loading';
 
 export default function RootLayout({
   children,
@@ -107,6 +108,8 @@ export default function RootLayout({
       if(userNameList.responseResult) {
         setUserNameList(userNameList.userNameList);
       }
+
+      setIsCompleteLoad(true);
     })
     ();
   }, [])
@@ -134,8 +137,6 @@ export default function RootLayout({
       top: 0,
       behavior: "instant",
     });
-
-    setIsCompleteLoad(true)
   }, [pathname, isCompleteLoad])
 
   const setNavItems = (pathName: string) => {
@@ -236,7 +237,7 @@ export default function RootLayout({
     )
   } else {
     return(
-      <></>
+      <Loading></Loading>
     )
   }
 }

@@ -35,6 +35,7 @@ export interface Application {
   sEndDate: string,
   sEndTime: string,
   startEndTime: string,
+  totalTime: number,
   approvalGroupId: number,
   comment: string,
 }

@@ -66,13 +66,12 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
   const [isLoadComplete, setIsLoadComplete] = useState(false);
 
   const [inputValues, setInputValues] = useState({
-    // currentDate: today,
     currentStartDate: today,
     currentEndDate: today,
     startDate: '',
     endDate: '',
-    startTime: '',
-    endTime: '',
+    // startTime: '',
+    // endTime: '',
     totalTime: '',
     classification: '',
     type: '',
@@ -89,32 +88,46 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
 
   const [inputError, setInputError] = useState({
     startEndDateObj: '',
-    startEndTime: '',
+    // startEndTime: '',
     approvalGroup: '',
     comment: '',
   });
+
+  useEffect(() =>{
+    setApplication(null);
+    setApprovalTtasks([]);
+    setAvailableOperation(null);
+    setApprovalGroup([]);
+    setEditEnabled(false);
+    setIsTimeFormat(false);
+    setIsPeriodFormat(false);
+    setCurrentTotalTimeArray([]);
+    setIsLoadComplete(false);
+    setInputError({ ...inputError,
+      startEndDateObj: '',
+      // startEndTime: '',
+      approvalGroup: '',
+      comment: '',
+    });
+
+    if(isNew) {
+      const initialDate = selectDate ? new Date(selectDate) : today;
+      inputValues.startDate = initialDate.toLocaleDateString('ja-JP');
+      inputValues.endDate = initialDate.toLocaleDateString('ja-JP');
+      inputValues.currentStartDate = initialDate;
+      inputValues.currentEndDate = initialDate;
+      inputValues.comment = "";
+      inputValues.remarks = "";
+      resetSelectApplicationType(commonConst.initialApplicationTypeValues.toString());
+      setEditEnabled(true);
+    }
+  }, [isNew, applicationId])
 
   useEffect(() =>{
     (async() => {
       if(!(applicationId || isNew)) {
         return;
       }
-
-      setApplication(null);
-      setApprovalTtasks([]);
-      setAvailableOperation(null);
-      setApprovalGroup([]);
-      setEditEnabled(false);
-      setIsTimeFormat(false);
-      setIsPeriodFormat(false);
-      setCurrentTotalTimeArray([]);
-      setIsLoadComplete(false);
-      setInputError({ ...inputError,
-        startEndDateObj: '',
-        startEndTime: '',
-        approvalGroup: '',
-        comment: '',
-      });
 
       // 承認グループ設定
       const approvalGroupList = await callGetApprovalGroupList();
@@ -123,18 +136,9 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
       }
       setApprovalGroup(approvalGroupList);
 
-      if(applicationId && !isNew) {
+      if(applicationId) {
         await setApplicationInput();
-      } else if(isNew && !applicationId) {
-        const initialDate = selectDate ? new Date(selectDate) : today;
-        inputValues.startDate = initialDate.toLocaleDateString('ja-JP');
-        inputValues.endDate = initialDate.toLocaleDateString('ja-JP');
-        inputValues.currentStartDate = initialDate;
-        inputValues.currentEndDate = initialDate;
-        inputValues.comment = "";
-        inputValues.remarks = "";
-        resetSelectApplicationType(commonConst.initialApplicationTypeValues);
-        setEditEnabled(true);
+      } else if(isNew) {
         setIsLoadComplete(true);
       }
     })()
@@ -171,8 +175,8 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
           currentEndDate: endDateObj,
           startDate: startDateObj.toLocaleDateString('jp'),
           endDate: endDateObj.toLocaleDateString('jp'),
-          startTime: `${startDateObj.getHours()}:${startDateObj.getMinutes()}:00`,
-          endTime: `${endDateObj.getHours()}:${endDateObj.getMinutes()}:00`,
+          // startTime: `${startDateObj.getHours()}:${startDateObj.getMinutes()}:00`,
+          // endTime: `${endDateObj.getHours()}:${endDateObj.getMinutes()}:00`,
           totalTime: res.application.totalTime,
           classification: res.application.classification,
           type: res.application.type,
@@ -185,7 +189,17 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
           name: res.application.approvalGroupName,
           users: res.application.approvers,
         });
-        resetSelectApplicationType(res.application.type);
+
+        const typeObject = getApplicationTypeObject()?.find(item => item.value?.toString() == res.application.type);
+        if(typeObject){
+          setIsTimeFormat(typeObject.format == ApplicationTypeFormat.time);
+          setIsPeriodFormat(typeObject.format == ApplicationTypeFormat.period);
+          const classificationObject = typeObject.classifications?.find(item => item.value.toString() == res.application.classification);
+          if(classificationObject) {
+            setCurrentTotalTimeArray(getSelectTotalTimeArray(classificationObject));
+          }
+        }
+
         setIsLoadComplete(true);
       } else {
         setErrorMessage(res.message);
@@ -219,8 +233,8 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
 
     inputValues.type = applicationType;
     inputValues.classification = typeObject.initialValue?.classification.toString();
-    inputValues.startTime = typeObject.initialValue?.startTime;
-    inputValues.endTime = typeObject.initialValue?.endTime;
+    // inputValues.startTime = typeObject.initialValue?.startTime;
+    // inputValues.endTime = typeObject.initialValue?.endTime;
     inputValues.totalTime = typeObject.initialValue?.totalTime.toString();
     setIsTimeFormat(typeObject.format == ApplicationTypeFormat.time);
     setIsPeriodFormat(typeObject.format == ApplicationTypeFormat.period);
@@ -284,13 +298,13 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     }
   }
 
-  const handleOnStartEndTimeChange = (date: Date, name: any) => {
-    if(date) {
-      setInputValues({ ...inputValues, [name]: date.toLocaleTimeString('ja-JP')});
-    } else {
-      setInputValues({ ...inputValues, [name]: null});
-    }
-  }
+  // const handleOnStartEndTimeChange = (date: Date, name: any) => {
+  //   if(date) {
+  //     setInputValues({ ...inputValues, [name]: date.toLocaleTimeString('ja-JP')});
+  //   } else {
+  //     setInputValues({ ...inputValues, [name]: null});
+  //   }
+  // }
 
   /**
    * 申請ボタン押下
@@ -301,7 +315,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     const requiredErrors = {
       ...inputError,
       ['startEndDateObj']: inputValues.startDate && inputValues.endDate ? '' : '取得日は必須入力です。',
-      ['startEndTime']: inputValues.startTime && inputValues.endTime ? '' : '取得時間は必須入力です。',
+      // ['startEndTime']: inputValues.startTime && inputValues.endTime ? '' : '取得時間は必須入力です。',
       ['comment']: inputValues.comment.trim() ? '' : '申請コメントは必須入力です。',
       ['approvalGroup']: currentSelectApprovalGroup.id ? '' : '承認グループを選択してください。',
     };
@@ -320,15 +334,14 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
     const cancel = await confirm({
       description: `${action == commonConst.actionValue.draft.toString() ? confirmModalConst.message.saveApplication : confirmModalConst.message.submitApplication}`,
     }).then(async() => {
-      console.log(inputValues)
       const request: SaveApplicationRequest = {
         id: application?.id,
         type: inputValues.type,
         classification: inputValues.classification,
         startDate: inputValues.startDate,
         endDate: isPeriodFormat ? inputValues.endDate : inputValues.startDate,
-        startTime: inputValues.startTime,
-        endTime: inputValues.endTime,
+        // startTime: inputValues.startTime,
+        // endTime: inputValues.endTime,
         totalTime: inputValues.totalTime,
         comment: inputValues.comment,
         approvalGroupId: Number(currentSelectApprovalGroup.id),
@@ -579,7 +592,22 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
             <span className="input_error">{inputError.startEndDateObj}</span>
           </div>
           {/* 取得時間 */}
-          <div className="row align-items-center mb-3 g-3" hidden={!isTimeFormat}>
+          <div className="row align-items-center mb-3 g-3" hidden={!isTimeFormat || !editEnabled}>
+            <div className="col-md-2 mb-2">
+              <label className="col-form-label fw-medium" htmlFor="totalTime">取得時間</label>
+            </div>
+            <div className="col-5 col-md-2 mb-2">
+              <select className="form-select" id="totalTime" value={inputValues.totalTime} name="totalTime" onChange={(e) => handleOnChange(e)} disabled={currentTotalTimeArray.length == 1}>
+                {
+                  currentTotalTimeArray.map((num: any, index: number) => (
+                    <option value={num} key={index}>{num}時間</option>
+                  ))
+                }
+              </select>
+            </div>
+          </div>
+          {/*
+          <div className="row align-items-center mb-3 g-3" hidden={!isTimeFormat || !editEnabled}>
             <div className="col-md-2 mb-2">
               <label className="col-form-label fw-medium" htmlFor="startTime">取得時間</label>
             </div>
@@ -608,6 +636,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
               <span>{application?.sStartTime} ～ {application?.sEndTime}</span>
             </div>
           </div>
+          */}
           {/* 備考 */}
           <div className="row mb-3 g-3">
             <div className="col-md-2">

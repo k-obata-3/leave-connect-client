@@ -24,6 +24,7 @@ export interface ApplicationListByMonth extends ApiResponse {
   endDate: string,
   sEndDate: string,
   sEndTime: string,
+  totalTime: number,
 }
 
 export async function getApplicationListByMonth(req: GetApplicationListByMonthRequest) {

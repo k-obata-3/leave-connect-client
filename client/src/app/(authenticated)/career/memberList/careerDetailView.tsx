@@ -45,12 +45,14 @@ export default function CareerDetailView({ isShow, user, detail, callback }: Pro
   },[isShow])
 
   const createCareerHorizontalBar = (careerItemMap: CareerItemMap | undefined) => {
-    const el: JSX.Element[] = []
-    if(!careerItemMap) {
-      return (
-        <></>
-      )
-    } else {
+    if(careerItemMap) {
+      if(!Object.entries(careerItemMap).length) {
+        return(
+          <span>未登録</span>
+        )
+      }
+
+      const el: JSX.Element[] = []
       Object.entries(careerItemMap).forEach(([key, value], index) => {
         const period = value / maxPeriod! * 100;
         const width = period > 100 ? 100 : period;
@@ -65,18 +67,22 @@ export default function CareerDetailView({ isShow, user, detail, callback }: Pro
           </div>
         )
       })
+
+      return el;
     }
 
-    return el;
+    return <></>;
   }
 
   const createCareerBadge = (careerItemMap: CareerItemMap | undefined) => {
-    const el: JSX.Element[] = []
-    if(!careerItemMap) {
-      return (
-        <></>
-      )
-    } else {
+    if(careerItemMap) {
+      if(!Object.entries(careerItemMap).length) {
+        return(
+          <span>未登録</span>
+        )
+      }
+
+      const el: JSX.Element[] = []
       Object.entries(careerItemMap).forEach(([key, value], index) => {
         el.push(
           <div className="career-item-badge text-wrap bg-primary-subtle" style={{maxWidth: '100%'}} key={index}>
@@ -84,9 +90,11 @@ export default function CareerDetailView({ isShow, user, detail, callback }: Pro
           </div>
         )
       })
+
+      return el;
     }
 
-    return el;
+    return <></>;
   }
 
   return (
@@ -94,7 +102,8 @@ export default function CareerDetailView({ isShow, user, detail, callback }: Pro
       <div className="custom-modal-content col-12 col-md-8 offset-md-2" hidden={!isShow}>
         <div className="custom-modal-header">
           <div className="me-1"><i className="bi bi-person-vcard fs-4 me-1"></i></div>
-            <h5 className="flex-grow-1 m-0 text-truncate">{user?.fullName}</h5>
+          <h5 className="m-0 text-truncate">{user?.fullName}</h5>
+          <h6 className="flex-grow-1 m-0 text-nowrap ps-2">{user?.joiningDate}<span className="ps-1"></span>入社</h6>
           <button className="btn btn-outline-default" onClick={() => callback(false)}><i className="bi bi-x-lg"></i></button>
         </div>
         <div className="custom-modal-content-body ps-2 pe-2 mt-2" hidden={!detail}>

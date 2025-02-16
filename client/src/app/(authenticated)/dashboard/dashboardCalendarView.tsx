@@ -100,6 +100,7 @@ export default function DashboardCalendarView() {
           'sClassification': item.sClassification,
           'sStartTime': item.sStartTime,
           'sEndTime': item.sEndTime,
+          'totalTime': item.totalTime,
           'sAction': item.sAction,
           'sType': item.sType,
         },
@@ -125,7 +126,7 @@ export default function DashboardCalendarView() {
       <div className="calendar-event-content pc-only">
         <b>{eventContent.event.extendedProps.sAction}</b><br></br>
         <i>{eventContent.event.extendedProps.sType}</i><br></br>
-        <i>{eventContent.event.extendedProps.sStartTime}～{eventContent.event.extendedProps.sEndTime}</i>
+        <i>{eventContent.event.extendedProps.sClassification}</i><i className="ps-2">{eventContent.event.extendedProps.totalTime}時間</i>
       </div>
       <div className="calendar-event-content sp-only">
         <b className="">{eventContent.event.extendedProps.sAction}</b>
@@ -150,7 +151,7 @@ export default function DashboardCalendarView() {
       return;
     }
 
-    router.push(`${pageCommonConst.path.applicationNew}?${pageCommonConst.param.selectDate}=${eventArg.dateStr}`, {scroll: true});
+    router.push(`${pageCommonConst.path.applicationNew}?${pageCommonConst.param.selectDate}=${eventArg.dateStr}&${pageCommonConst.param.ref}=${pageCommonConst.path.dashboard}`, {scroll: true});
   };
 
   /**
