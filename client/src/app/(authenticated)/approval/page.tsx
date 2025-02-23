@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-import { useUserInfoStore } from '@/store/userInfoStore';
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
 import useSetPageTitle from '@/hooks/useSetPageTitle';
@@ -134,7 +133,7 @@ export default function ApprovalPage() {
   };
 
   return (
-    <div className="approval-list">
+    <div className="approval-page">
       <div className="" hidden={!!showEditView}>
         <div className="row mb-2">
           {/* 検索条件 */}

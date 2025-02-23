@@ -8,10 +8,10 @@ import useConfirm from '@/hooks/useConfirm';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { confirmModalConst } from '@/consts/confirmModalConst';
 import { UserNameObject } from '@/api/getUserNameList';
-import { GetSystemConfigsRequest } from '@/api/getSystemConfigs';
+import { GetSystemSettingRequest } from '@/api/getSystemSettings';
 import { ApprovalGroupObject, getApprovalGroupList, GetApprovalGroupListResponse } from '@/api/getApprovalGroupList';
 import { saveApprovalGroup, SaveApprovalGroupRequest, SaveApprovalGroupResponse } from '@/api/saveApprovalGroup';
-import { deleteSystemConfig, DeleteSystemConfigRequest, DeleteSystemConfigResponse } from '@/api/deleteSystemConfig';
+import { deleteSystemSetting, DeleteSystemSettingRequest, DeleteSystemSettingResponse } from '@/api/deleteSystemSetting';
 
 type Props = {
   isShow: boolean,
@@ -62,7 +62,7 @@ export default function ApprovalGroupView({ isShow }: Props) {
   },[isShow])
 
   const getApprovalGroup = async() => {
-    const req: GetSystemConfigsRequest = {
+    const req: GetSystemSettingRequest = {
       key: pageCommonConst.tabName.approvalGroup,
     }
 
@@ -326,11 +326,11 @@ export default function ApprovalGroupView({ isShow }: Props) {
       confirmationText: confirmModalConst.button.delete,
       description: confirmModalConst.message.deleteApprovalGroup,
     }).then(async() => {
-      const req: DeleteSystemConfigRequest = {
+      const req: DeleteSystemSettingRequest = {
         id: item.groupId!,
       }
   
-      await deleteSystemConfig(req).then(async(res: DeleteSystemConfigResponse) => {
+      await deleteSystemSetting(req).then(async(res: DeleteSystemSettingResponse) => {
         if(res.responseResult) {
           getApprovalGroup();
           resetState();

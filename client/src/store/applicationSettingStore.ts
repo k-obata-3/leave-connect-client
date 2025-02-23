@@ -24,8 +24,6 @@ export type ApplicationClassificationObject = {
 }
 
 export type ApplicationInitialValueObject = {
-  startTime: string,
-  endTime: string,
   classification: number,
   totalTime: number,
 }

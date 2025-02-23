@@ -10,9 +10,10 @@ type Props = {
   callback: (value: string) => void,
   currentValue: string,
   label?: string,
+  hiddenSelectAll?: boolean,
 }
 
-export default function SearchSelectUserView({ callback, currentValue, label }: Props) {
+export default function SearchSelectUserView({ callback, currentValue, label, hiddenSelectAll = false }: Props) {
   const { getUserNameList } = useUserNameListStore();
 
   return (
@@ -23,7 +24,7 @@ export default function SearchSelectUserView({ callback, currentValue, label }: 
         </div>
         <div className="col">
           <select className="form-select" id="searchUser" value={currentValue} onChange={(e) => callback(e.target.value)}>
-            <option value=''>{searchSelectConst.label.all}</option>
+            <option value=''>{hiddenSelectAll ? searchSelectConst.label.nonSelect : searchSelectConst.label.all}</option>
             {
               getUserNameList()?.map((user: UserNameObject, index: number) => (
                 <option value={user.id} key={index}>{user.fullName}</option>

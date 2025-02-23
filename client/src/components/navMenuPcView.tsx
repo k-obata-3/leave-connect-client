@@ -137,18 +137,25 @@ export default function NavMenuPcView({ children, push, onLogout }: Props) {
                 <span>{pageCommonConst.pageName.adminApplication}</span>
               </p>
             </li>
+            {/* 休暇集計 */}
+            <li className="nav-item" data-url={pageCommonConst.path.adminBook} onClick={e => onMenuClick(e)}>
+              <p className="nav-link">
+                <i className="bi bi-journal-check"></i>
+                <span>{pageCommonConst.pageName.adminBook}</span>
+              </p>
+            </li>
             {/* ユーザ管理 */}
-            <li className="nav-item" data-url={pageCommonConst.path.user} onClick={e => onMenuClick(e)}>
+            <li className="nav-item" data-url={pageCommonConst.path.adminUser} onClick={e => onMenuClick(e)}>
               <p className="nav-link">
                 <i className="bi bi-people"></i>
-                <span>{pageCommonConst.pageName.user}</span>
+                <span>{pageCommonConst.pageName.adminUser}</span>
               </p>
             </li>
             {/* システム管理 */}
-            <li className="nav-item" data-url={pageCommonConst.path.settingSystemGrantRule} onClick={e => onMenuClick(e)}>
+            <li className="nav-item" data-url={pageCommonConst.path.adminSettingGrantRule} onClick={e => onMenuClick(e)}>
               <p className="nav-link">
                 <i className="bi bi-gear"></i>
-                <span>{pageCommonConst.pageName.settingSystem}</span>
+                <span>{pageCommonConst.pageName.adminSetting}</span>
               </p>
             </li>
           </ul>
@@ -188,15 +195,15 @@ export default function NavMenuPcView({ children, push, onLogout }: Props) {
           </div>
         </nav>
         {/* システム管理 サブメニュー */}
-        <nav className="nav nav-underline" hidden={pathname !== pageCommonConst.path.settingSystem}>
-          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.grantRule ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingSystemGrantRule, {scroll: true})}>
-            <span>{pageCommonConst.pageName.settingSystemGrantRule}</span>
+        <nav className="nav nav-underline" hidden={pathname !== pageCommonConst.path.adminSetting}>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.grantRule ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.adminSettingGrantRule, {scroll: true})}>
+            <span>{pageCommonConst.pageName.adminSettingGrantRule}</span>
           </div>
-          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.approvalGroup ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingSystemApprovalGroup, {scroll: true})}>
-            <span>{pageCommonConst.pageName.settingSystemApprovalGroup}</span>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.approvalGroup ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.adminSettingApprovalGroup, {scroll: true})}>
+            <span>{pageCommonConst.pageName.adminSettingApprovalGroup}</span>
           </div>
-          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.career ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingSystemCareerItem, {scroll: true})}>
-            <span>{pageCommonConst.pageName.settingSystemCareerItem}</span>
+          <div className={searchParams.get(pageCommonConst.param.tab) === pageCommonConst.tabName.career ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.adminSettingCareerItem, {scroll: true})}>
+            <span>{pageCommonConst.pageName.adminSettingCareerItem}</span>
           </div>
         </nav>
         {/* スキル管理 サブメニュー */}

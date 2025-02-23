@@ -146,7 +146,7 @@ export default function AdminApplicationPage() {
   };
 
   return (
-    <div className="application-list">
+    <div className="admin-application-page">
       <div className="" hidden={showEditView}>
         <div className="row mb-2">
           {/* 検索条件 */}

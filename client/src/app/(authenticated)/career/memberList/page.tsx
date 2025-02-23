@@ -14,7 +14,7 @@ import { CareerUser, getCareerUserList, GetCareerUserListRequest } from '@/api/g
 import Pager from '@/components/pager';
 import CareerDetailView from './careerDetailView';
 
-export default function CareerMemberList() {
+export default function CareerMemberListPage() {
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
   const { getUserInfo, isAdmin } = useUserInfoStore();

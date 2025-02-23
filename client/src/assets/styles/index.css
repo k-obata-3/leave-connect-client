@@ -230,8 +230,8 @@ body {
 .career-dashboard-page,
 .career-member-list-page,
 .career-list-page,
-.config-system,
-.config-user {
+.admin-setting-view,
+.setting-user {
 
 }
 .caree-edit-view {
@@ -239,7 +239,7 @@ body {
 }
 
 @media screen and (max-width: 1023px) {
-  .config-user {
+  .setting-user {
     margin-top: 0;
   } 
 }

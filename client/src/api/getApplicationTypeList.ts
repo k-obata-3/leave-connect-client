@@ -26,15 +26,13 @@ export type ApplicationClassification = {
 }
 
 export type ApplicationInitialValue = {
-  startTime: string,
-  endTime: string,
   classification: number,
   totalTime: number,
 }
 
 
 export async function getApplicationTypeList() {
-  return await axiosGet(`systemConfig/applicationType/list`).then((res: ApiResponse) => {
+  return await axiosGet(`systemSetting/applicationType/list`).then((res: ApiResponse) => {
     return {
       responseResult: res.responseResult,
       message: res.responseResult ? "" : res.message,

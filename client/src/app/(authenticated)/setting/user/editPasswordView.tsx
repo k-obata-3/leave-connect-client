@@ -11,7 +11,7 @@ import { logout } from '@/api/logout';
 import { changePassword, ChangePasswordRequest, ChangePasswordResponse } from '@/api/changePassword';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 
-export default function EditPassword() {
+export default function EditPasswordView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // 共通Store

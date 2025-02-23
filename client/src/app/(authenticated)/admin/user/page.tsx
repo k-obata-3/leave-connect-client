@@ -13,7 +13,7 @@ import Pager from '@/components/pager';
 import UserListView from './userListView';
 import UserEditView from './userEditView';
 
-export default function UserPage() {
+export default function AdminUserPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -47,10 +47,10 @@ export default function UserPage() {
   useEffect(() =>{
     const isEdit = userId || isNew;
     setShowEditView(!!isEdit);
-    pageTitle(!!isEdit ? isNew ? pageCommonConst.pageName.userNew : pageCommonConst.pageName.userEdit : pageCommonConst.pageName.user);
+    pageTitle(!!isEdit ? isNew ? pageCommonConst.pageName.adminUserNew : pageCommonConst.pageName.adminUserEdit : pageCommonConst.pageName.adminUser);
     if(isEdit) {
       pageBack(true).then(() => {
-        router.replace(pageCommonConst.path.user, {scroll: true});
+        router.replace(pageCommonConst.path.adminUser, {scroll: true});
       }).catch(() => {
         return true;
       })
@@ -102,9 +102,9 @@ export default function UserPage() {
    * @param userId 
    */
   const onEdit = (userId: string) => {
-    router.push(`${pageCommonConst.path.user}?${pageCommonConst.param.userId}=${userId}`, {scroll: true});
+    router.push(`${pageCommonConst.path.adminUser}?${pageCommonConst.param.userId}=${userId}`, {scroll: true});
     pageBack(true).then(() => {
-      router.replace(pageCommonConst.path.user, {scroll: true});
+      router.replace(pageCommonConst.path.adminUser, {scroll: true});
     }).catch(() => {
       return true;
     })
@@ -115,17 +115,17 @@ export default function UserPage() {
    * @param id 
    */
   const onCreateNewUser = () => {
-    router.push(`${pageCommonConst.path.user}?${pageCommonConst.param.isNew}=true`, {scroll: true});
+    router.push(`${pageCommonConst.path.adminUser}?${pageCommonConst.param.isNew}=true`, {scroll: true});
   };
 
   return (
-    <div className="user-list">
+    <div className="admin-user-page">
       <div className="sp-only text-center">{pageCommonConst.notSupportMessage}</div>
       <div className="pc-only">
         <div className="" hidden={!!showEditView}>
           <div className="row mb-2">
-            <div className="col-4 col-md-2 text-start pc-only">
-              <button className="btn btn-outline-primary" onClick={onCreateNewUser}>{pageCommonConst.pageName.userNew}</button>
+            <div className="col-4 col-md-2 text-start">
+              <button className="btn btn-outline-primary" onClick={onCreateNewUser}>{pageCommonConst.pageName.adminUserNew}</button>
             </div>
           </div>
           <UserListView userList={userList} rowBtnHandler={onEdit}></UserListView>

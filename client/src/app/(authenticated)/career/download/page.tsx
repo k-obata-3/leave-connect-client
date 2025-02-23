@@ -7,7 +7,7 @@ import { pageCommonConst } from '@/consts/pageCommonConst';
 import { confirmModalConst } from '@/consts/confirmModalConst';
 import { outputSkillsheet, OutputSkillsheetRequest } from '@/api/outputSkillsheet';
 
-export default function DownloadPage() {
+export default function CareerDownloadPage() {
   const searchParams = useSearchParams();
   const [downloadComplete, setDownloadComplete] = useState(false);
   const [downloadErrorMessage, setDownloadErrorMessage] = useState("");
@@ -27,8 +27,8 @@ export default function DownloadPage() {
       userId: searchParams.get(pageCommonConst.param.userId)?.toString(),
     }
     const res = await outputSkillsheet(req);
-    setDownloadComplete(true);
     if(res.responseResult) {
+      setDownloadComplete(true);
       const url = window.URL.createObjectURL(res.result.blob);
       const link = document.createElement('a');
       link.href = url;
@@ -43,11 +43,11 @@ export default function DownloadPage() {
 
   return (
     <div className="custom-modal-overview modal-show">
-      <div className="custom-modal-content col-12 col-md-8 offset-md-2">
-        <h5 className="text-center">ダウンロード中...</h5>
+      <div className="custom-modal-content col-12 col-md-6 offset-md-6">
+        <h5 className="text-center">{downloadComplete ? "ダウンロード完了" : "ダウンロード中..."}</h5>
         <p className="text-center text-danger">{downloadErrorMessage}</p>
         <div className="custom-modal-footer">
-          <button className="btn btn-secondary col-auto col-md-5" onClick={() => window.close()} disabled={!downloadComplete}>{confirmModalConst.button.close}</button>
+          <button className="btn btn-secondary col-auto col-md-5" onClick={() => window.close()} disabled={!(downloadComplete || downloadErrorMessage) }>{confirmModalConst.button.close}</button>
         </div>
       </div>
     </div>

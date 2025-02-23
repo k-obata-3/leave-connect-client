@@ -8,7 +8,7 @@ import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import ApplicationEditView from '@/components/applicationEditView';
 
-export default function ApplicationEdit() {
+export default function ApplicationNewPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // カスタムフック
@@ -31,7 +31,7 @@ export default function ApplicationEdit() {
   },[])
 
   return (
-    <div className="">
+    <div className="application-new-page">
       <ApplicationEditView isAdminFlow={false} isNew={true} selectDate={searchParams?.get(pageCommonConst.param.selectDate)} applicationId={null} onReload={() => {}}></ApplicationEditView>
     </div>
   );

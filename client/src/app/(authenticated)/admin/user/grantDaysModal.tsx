@@ -72,8 +72,8 @@ export default function GrantDaysModal({ userId, isShow, callback }: Props) {
 
     for (const value of Object.values(formatErrors)) {
       if(value.length) {
-        setApiErrors(formatErrors);
-        return;
+        // setApiErrors(formatErrors);
+        // return;
       }
     }
 

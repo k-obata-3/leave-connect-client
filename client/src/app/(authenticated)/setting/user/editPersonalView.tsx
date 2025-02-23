@@ -4,7 +4,7 @@ import React from 'react';
 
 import { useUserInfoStore } from '@/store/userInfoStore';
 
-export default function EditPersonal() {
+export default function EditPersonalView() {
   // 共通Store
   const { getUserInfo } = useUserInfoStore();
 

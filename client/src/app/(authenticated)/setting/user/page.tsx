@@ -7,10 +7,10 @@ import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
 import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
-import EditPersonal from './editPersonal';
-import EditPassword from './editPassword';
+import EditPersonalView from './editPersonalView';
+import EditPasswordView from './editPasswordView';
 
-export default function SettingUser() {
+export default function SettingUserPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -43,23 +43,13 @@ export default function SettingUser() {
   },[searchParams])
 
   return (
-    <div className="config-user-page">
-      {/* 個人設定 サブメニュー */}
-      {/* <nav className="nav sub-menu-nav nav-underline pc-only">
-        <div className={currentMenu.keyword === pageCommonConst.tabName.editPersonal ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingUserEditPersonal, {scroll: true})}>
-          <span>{pageCommonConst.pageName.settingUserEditPersonal}</span>
-        </div>
-        <div className={currentMenu.keyword === pageCommonConst.tabName.editPassword ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingUserEditPassword, {scroll: true})}>
-          <span>{pageCommonConst.pageName.settingUserEditPassword}</span>
-        </div>
-      </nav> */}
-
-      <div className="config-user">
+    <div className="setting-user-page">
+      <div className="setting-user">
         <div hidden={currentMenu.keyword !== pageCommonConst.tabName.editPersonal}>
-          <EditPersonal></EditPersonal>
+          <EditPersonalView></EditPersonalView>
         </div>
         <div hidden={currentMenu.keyword !== pageCommonConst.tabName.editPassword}>
-          <EditPassword></EditPassword>
+          <EditPasswordView></EditPasswordView>
         </div>
       </div>
     </div>

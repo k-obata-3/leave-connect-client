@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react';
 
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import { pageCommonConst } from '@/consts/pageCommonConst';
-import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse } from '@/api/getSystemConfigs';
+import { getSystemSettings, GetSystemSettingRequest, GetSystemSettingResponse } from '@/api/getSystemSettings';
 
 type Props = {
   isShow: boolean,
 }
 
-export default function GrantRule({ isShow }: Props) {
+export default function GrantRuleView({ isShow }: Props) {
   // 共通Store
   const { setNotificationMessageObject } = useNotificationMessageStore();
 
@@ -28,14 +28,14 @@ export default function GrantRule({ isShow }: Props) {
   },[isShow])
 
     const getGrantRule = async() => {
-      const req: GetSystemConfigsRequest = {
+      const req: GetSystemSettingRequest = {
         key: pageCommonConst.tabName.grantRule,
       }
   
-      const res: GetSystemConfigsResponse = await getSystemConfigs(req);
+      const res: GetSystemSettingResponse = await getSystemSettings(req);
       if(res.responseResult) {
-        if(res.systemConfigs.length) {
-          const grantRule = JSON.parse(res.systemConfigs[0].value);
+        if(res.SystemSettings.length) {
+          const grantRule = JSON.parse(res.SystemSettings[0].value);
           setYearsOfService(grantRule['sectionMonth']);
           setWorkingDays(grantRule['workingDays'])
         }

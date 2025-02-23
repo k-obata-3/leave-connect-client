@@ -8,7 +8,7 @@ import usePageBack from '@/hooks/usePageBack';
 import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 
-export default function Career() {
+export default function CareerPage() {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -25,7 +25,7 @@ export default function Career() {
   },[])
 
   return (
-    <div className="career-dashboard-page">
+    <div className="career-page">
 
     </div>
   );

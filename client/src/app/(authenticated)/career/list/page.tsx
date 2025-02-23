@@ -13,7 +13,7 @@ import Pager from '@/components/pager';
 import CareerListView from './careerListView';
 import CareerEditView from './careerEditView';
 
-export default function CareerList() {
+export default function CareerListPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

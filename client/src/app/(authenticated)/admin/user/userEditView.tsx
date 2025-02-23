@@ -19,6 +19,7 @@ import { SaveUserRequest, saveUser } from '@/api/saveUser';
 import { getUserDetails, getUserDetailsRequest, UserDetails } from '@/api/getUserDetails';
 import { getLoginUserInfo, getLoginUserInfoResponse } from '@/api/getLoginUserInfo';
 import GrantDaysModal from './grantDaysModal';
+import { pageCommonConst } from '@/consts/pageCommonConst';
 
 type Props = {
   userPrimaryId: string | null,
@@ -242,7 +243,7 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
         }
 
         onReload();
-        router.replace('/user', {scroll: true});
+        router.replace(pageCommonConst.path.adminUser, {scroll: true});
       } else {
         setNotificationMessageObject({
           errorMessageList: res.message ? [res.message] : [],

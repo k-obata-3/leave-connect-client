@@ -7,18 +7,18 @@ import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import usePageBack from '@/hooks/usePageBack';
 import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
-import GrantRule from './grantRule';
+import GrantRuleView from './grantRuleView';
 import ApprovalGroupView from './approvalGroupView';
 import CareerItemView from './careerItemView';
 
-export default function SettingSystem() {
+export default function AdminSettingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const ITEM = [
-    { contentName: pageCommonConst.pageName.settingSystemGrantRule, keyword: pageCommonConst.tabName.grantRule },
-    { contentName: pageCommonConst.pageName.settingSystemApprovalGroup, keyword: pageCommonConst.tabName.approvalGroup },
-    { contentName: pageCommonConst.pageName.settingSystemCareerItem, keyword: pageCommonConst.tabName.career }
+    { contentName: pageCommonConst.pageName.adminSettingGrantRule, keyword: pageCommonConst.tabName.grantRule },
+    { contentName: pageCommonConst.pageName.adminSettingApprovalGroup, keyword: pageCommonConst.tabName.approvalGroup },
+    { contentName: pageCommonConst.pageName.adminSettingCareerItem, keyword: pageCommonConst.tabName.career }
   ]
 
   // 共通Store
@@ -33,7 +33,7 @@ export default function SettingSystem() {
   });
 
   useEffect(() =>{
-    pageTitle(pageCommonConst.pageName.settingSystem);
+    pageTitle(pageCommonConst.pageName.adminSetting);
     const tab = searchParams?.get(pageCommonConst.param.tab) ?? '';
     const item = ITEM.find((item: any) => item.keyword === tab);
     if(item) {
@@ -49,25 +49,12 @@ export default function SettingSystem() {
   },[searchParams])
 
   return (
-    <div className="config-system-page">
+    <div className="admin-setting-page">
       <div className="sp-only text-center">{pageCommonConst.notSupportMessage}</div>
       <div className="pc-only">
-        {/* システム管理 サブメニュー */}
-        {/* <nav className="nav sub-menu-nav nav-underline">
-          <div className={currentMenu.keyword === pageCommonConst.tabName.grantRule ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingSystemGrantRule, {scroll: true})}>
-            <span>{pageCommonConst.pageName.settingSystemGrantRule}</span>
-          </div>
-          <div className={currentMenu.keyword === pageCommonConst.tabName.approvalGroup ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingSystemApprovalGroup, {scroll: true})}>
-            <span>{pageCommonConst.pageName.settingSystemApprovalGroup}</span>
-          </div>
-          <div className={currentMenu.keyword === pageCommonConst.tabName.career ? "nav-link active" : "nav-link"} onClick={() => router.push(pageCommonConst.path.settingSystemCareerItem, {scroll: true})}>
-            <span>{pageCommonConst.pageName.settingSystemCareerItem}</span>
-          </div>
-        </nav> */}
-
-        <div className="config-system">
+        <div className="admin-setting-view">
           <div hidden={currentMenu.keyword !== pageCommonConst.tabName.grantRule}>
-            <GrantRule isShow={currentMenu.keyword === pageCommonConst.tabName.grantRule}></GrantRule>
+            <GrantRuleView isShow={currentMenu.keyword === pageCommonConst.tabName.grantRule}></GrantRuleView>
           </div>
           <div hidden={currentMenu.keyword !== pageCommonConst.tabName.approvalGroup}>
             <ApprovalGroupView isShow={currentMenu.keyword === pageCommonConst.tabName.approvalGroup}></ApprovalGroupView>

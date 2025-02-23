@@ -20,7 +20,7 @@ import { getNotification, GetNotificationResponse } from '@/api/getNotification'
 import { getUserNameList, GetUserNameListResponse } from '@/api/getUserNameList';
 import { getLoginUserInfo, getLoginUserInfoResponse } from '@/api/getLoginUserInfo';
 import { getApplicationTypeList, GetApplicationTypeListResponse } from '@/api/getApplicationTypeList';
-import { getSystemConfigs, GetSystemConfigsRequest, GetSystemConfigsResponse } from '@/api/getSystemConfigs';
+import { getSystemSettings, GetSystemSettingRequest, GetSystemSettingResponse } from '@/api/getSystemSettings';
 import NavMenuPcView from '@/components/navMenuPcView';
 import NavMenuSpView from '@/components/navMenuSpView';
 import Loading from './loading';
@@ -52,8 +52,8 @@ export default function RootLayout({
     pageCommonConst.path.applicationNew,
     pageCommonConst.path.approval,
     pageCommonConst.path.adminApplication,
-    pageCommonConst.path.user,
-    pageCommonConst.path.settingSystem,
+    pageCommonConst.path.adminUser,
+    pageCommonConst.path.adminSetting,
     pageCommonConst.path.settingUser,
   ] as string[];
 
@@ -100,13 +100,13 @@ export default function RootLayout({
       setApplicationTypeObject(res.result);
     }
 
-    const careerSettingReq: GetSystemConfigsRequest = {
+    const careerSettingReq: GetSystemSettingRequest = {
       key: "careerSetting"
     }
-    const careerSettingRes: GetSystemConfigsResponse = await getSystemConfigs(careerSettingReq);
+    const careerSettingRes: GetSystemSettingResponse = await getSystemSettings(careerSettingReq);
     if(careerSettingRes.responseResult) {
-      if(careerSettingRes.systemConfigs.length) {
-        const careerSettingVal = JSON.parse(careerSettingRes.systemConfigs[0]?.value);
+      if(careerSettingRes.SystemSettings.length) {
+        const careerSettingVal = JSON.parse(careerSettingRes.SystemSettings[0]?.value);
         setInchargeObjectList(careerSettingVal.incharge);
         setRoleObjectList(careerSettingVal.role);
       }
@@ -184,9 +184,9 @@ export default function RootLayout({
         }
       }
     }
-    if(!isSp && (pathname === pageCommonConst.path.settingSystem)) {
+    if(!isSp && (pathname === pageCommonConst.path.adminSetting)) {
       for (let index = 0; index < navItems.length; index++) {
-        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.settingSystemGrantRule) {
+        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.adminSettingGrantRule) {
           navItems[index].classList.add(currentClassName);
           break;
         }

@@ -26,6 +26,7 @@ export const searchSelectConst = {
   ] as SelectList[],
   label: {
     all: "すべて",
+    nonSelect: "未選択",
     action: "アクション",
     status: "ステータス",
     user: "申請者",
