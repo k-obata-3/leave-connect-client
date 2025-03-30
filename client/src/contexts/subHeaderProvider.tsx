@@ -1,11 +1,12 @@
 import React, { useState, useCallback } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 
+import { useUserInfoStore } from '@/store/userInfoStore';
 import SubHeaderContext from './subHeaderContext'
 import useConfirm from '@/hooks/useConfirm'
+import { pageCommonConst } from '@/consts/pageCommonConst';
 import { confirmModalConst } from '@/consts/confirmModalConst';
 import { logout } from '@/api/logout'
-import { pageCommonConst } from '@/consts/pageCommonConst';
 
 export const SubHeaderProvider = ({
   children,
@@ -19,6 +20,8 @@ export const SubHeaderProvider = ({
   const [resolve, reject] = resolveReject
 
   const router = useRouter();
+  // 共通Store
+  const { clearUserInfo } = useUserInfoStore();
   // モーダル表示 カスタムフック
   const confirm = useConfirm();
   const [user, setUser] = useState({
@@ -59,6 +62,7 @@ export const SubHeaderProvider = ({
       description: confirmModalConst.message.logout,
     }).then(async() => {
       const res = await logout();
+      clearUserInfo();
       router.replace(pageCommonConst.path.login, {scroll: false});
     }).catch(() => {
       return true

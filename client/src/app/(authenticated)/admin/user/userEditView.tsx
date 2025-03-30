@@ -13,13 +13,13 @@ import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import useConfirm from '@/hooks/useConfirm';
 import useSetSubHeaderUserName from '@/hooks/useSetSubHeaderUserName';
 import { commonConst } from '@/consts/commonConst';
+import { pageCommonConst } from '@/consts/pageCommonConst';
 import { confirmModalConst } from '@/consts/confirmModalConst';
 import utils from '@/assets/js/utils';
 import { SaveUserRequest, saveUser } from '@/api/saveUser';
 import { getUserDetails, getUserDetailsRequest, UserDetails } from '@/api/getUserDetails';
-import { getLoginUserInfo, getLoginUserInfoResponse } from '@/api/getLoginUserInfo';
 import GrantDaysModal from './grantDaysModal';
-import { pageCommonConst } from '@/consts/pageCommonConst';
+import RegulateDaysModal from './regulateDaysModal';
 
 type Props = {
   userPrimaryId: string | null,
@@ -47,6 +47,7 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
   const setSubHeaderUserName = useSetSubHeaderUserName();
 
   const [showGrantDaysModal, setShowGrantDaysModal] = useState(false);
+  const [showRegulateDaysModal, setShowRegulateDaysModal] = useState(false);
   const [isLoadComplete, setIsLoadComplete] = useState(false);
   const [userDetails, setUserDetails] = useState<UserDetails>()
   const [inputValues, setInputValues] = useState({
@@ -103,6 +104,7 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
     })
 
     closeGrantDaysModal();
+    closeRegulateDaysModal();
 
     if(isNew) {
       setIsLoadComplete(true);
@@ -168,22 +170,26 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
     setShowGrantDaysModal(false);
   };
 
+  /**
+   * 日数調整ボタン押下
+   */
+  const onRegulateDays = () => {
+    setShowRegulateDaysModal(true);
+  }
+
+  const closeRegulateDaysModal = () => {
+    setShowRegulateDaysModal(false);
+  };
+
   const callback = async(reload: boolean) => {
     if(reload) {
-      // ログインユーザ自身の場合、共通Store内のユーザ情報を更新
-      if(userPrimaryId == getUserInfo().id) {
-        await getLoginUserInfo().then(async(res: getLoginUserInfoResponse) => {
-          if(res.responseResult) {
-            setUserInfo(res);
-          }
-        })
-      }
-
       // 更新後のユーザ情報を取得
       getUser();
       onReload();
     }
-    setShowGrantDaysModal(false);
+
+    closeGrantDaysModal();
+    closeRegulateDaysModal();
   };
 
   /**
@@ -262,8 +268,9 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
     <>
       <div className="operation-btn-parent-view" hidden={!isLoadComplete}>
         <div className="operation-btn-view-pc">
-          <button className="btn btn-outline-success" onClick={onUpdateGrantDays} hidden={isNew || userDetails?.status != commonConst.userEffectiveStatus}>付与日数更新</button>
-          <button className="btn btn-outline-primary ms-2" onClick={onSubmit} hidden={userDetails && userDetails?.status != commonConst.userEffectiveStatus}>保存</button>
+          <button className="btn btn-outline-secondary" onClick={onRegulateDays} hidden={isNew || userDetails?.status != commonConst.USER_EFFECTIVE_STATUS}>日数調整</button>
+          <button className="btn btn-outline-success ms-2" onClick={onUpdateGrantDays} hidden={isNew || userDetails?.status != commonConst.USER_EFFECTIVE_STATUS}>休暇付与</button>
+          <button className="btn btn-outline-primary ms-2" onClick={onSubmit} hidden={userDetails && userDetails?.status != commonConst.USER_EFFECTIVE_STATUS}>保存</button>
         </div>
       </div>
 
@@ -323,7 +330,7 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
         </div>
         <div className="col-2">
           <Flatpickr className="form-select" id="joiningDate" options={dateOption}
-            value={inputValues.joiningDate} name="joiningDate" placeholder="入社日" onChange={([date]) => handleOnDateChange(date, "joiningDate")} />
+            value={inputValues.joiningDate} name="joiningDate" placeholder="入社日" onChange={([date]) => handleOnDateChange(date, "joiningDate")} disabled={!!userPrimaryId} />
           <p className="input_error">{inputError.joiningDate}</p>
         </div>
       </div>
@@ -334,7 +341,7 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
         </div>
         <div className="col-2">
           <Flatpickr className="form-select" id="referenceDate" options={dateOption}
-            value={inputValues.referenceDate} name="referenceDate" placeholder="基準日" onChange={([date]) => handleOnDateChange(date, "referenceDate")} />
+            value={inputValues.referenceDate} name="referenceDate" placeholder="基準日" onChange={([date]) => handleOnDateChange(date, "referenceDate")} disabled={!!userPrimaryId} />
           <p className="input_error">{inputError.referenceDate}</p>
         </div>
       </div>
@@ -381,34 +388,48 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
           <p className="input_error">{inputError.password}</p>
         </div>
       </div>
-
       <div className="row mb-3 g-3" hidden={isNew}>
         <div className="col-md-10 offset-md-2">
-          <div className="row mb-3 g-3">
-            {/* 有給取得日数 */}
-            <div className="col-md-2 col-3 me-3">
-              <label className="form-label fw-medium">有給取得日数</label>
-              <p className="mt-1 ps-3">{userDetails?.totalDeleteDays}</p>
-            </div>
-            {/* 有給残日数 */}
-            <div className="col-md-2 col-3 me-3">
-              <label className="form-label fw-medium">有給残日数</label>
-              <p className="mt-1 ps-3">{userDetails?.totalRemainingDays}</p>
-            </div>
-            {/* 繰越日数 */}
-            <div className="col-md-2 col-3 me-3">
-              <label className="form-label fw-medium">繰越日数</label>
-              <p className="mt-1 ps-3">{userDetails?.totalCarryoverDays}</p>
-            </div>
-            {/* 付与日数 */}
-            <div className="col-md-2 col-3 me-3">
-              <label className="form-label fw-medium">付与日数</label>
-              <p className="mt-1 ps-3">{userDetails?.totalAddDays}</p>
-            </div>
-          </div>
+          <p className="text-nowrap mb-1">
+            <span className="me-2 fw-bold">対象期間:</span>
+            <span hidden={!userDetails?.periodStart}>
+              <span>{userDetails?.periodStart}</span>
+              <span className="ms-1 me-1">～</span>
+              <span>{userDetails?.periodEnd}</span>
+            </span>
+            <span hidden={!!userDetails?.periodStart}>{userDetails?.periodStart}-</span>
+          </p>
+          <table className="table">
+            <thead className="table-light">
+              <tr className="text-center" style={{lineHeight: "0.75rem"}}>
+              <th scope="row">付与日数</th>
+              <th scope="row">有給残日数</th>
+                <th scope="row">有給取得日数</th>
+                <th scope="row">時間単位の有給取得</th>
+                
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="text-center" style={{lineHeight: "0.5rem"}}>
+                  <p className="text-nowrap">{userDetails?.totalAddDays}日</p>
+                </td>
+                <td className="text-center" style={{lineHeight: "0.5rem"}}>
+                  <p className="text-nowrap">{userDetails?.totalRemainingDays}日</p>
+                </td>
+                <td className="text-center" style={{lineHeight: "0.5rem"}}>
+                  <p className="text-nowrap">{userDetails?.totalDeleteDays}日</p>
+                </td>
+                <td className="text-center" style={{lineHeight: "0.5rem"}}>
+                  <p className="text-nowrap">{userDetails?.totalDeleteTimes}時間</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <GrantDaysModal userId={userPrimaryId} isShow={showGrantDaysModal} callback={callback}></GrantDaysModal>
+      <GrantDaysModal userDetails={userDetails} isShow={showGrantDaysModal} callback={callback}></GrantDaysModal>
+      <RegulateDaysModal userDetails={userDetails} isShow={showRegulateDaysModal} callback={callback}></RegulateDaysModal>
     </>
   )
 };

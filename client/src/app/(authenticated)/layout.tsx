@@ -30,6 +30,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const CURRENT_CLASS_NAME = 'current-nav-item';
+
   const router = useRouter();
   const pathname = usePathname();
   const { setUserInfo, clearUserInfo } = useUserInfoStore();
@@ -146,7 +148,6 @@ export default function RootLayout({
   }, [pathname, isCompleteLoad])
 
   const setNavItems = (pathName: string) => {
-    const currentClassName = 'current-nav-item';
     const navItems: HTMLCollectionOf<Element> = document.getElementsByClassName('nav-item');
     for (let index = 0; index < navItems.length; index++) {
       if(!navItems[index].getAttribute('data-url')) {
@@ -154,52 +155,41 @@ export default function RootLayout({
       }
 
       if(pathname === navItems[index].getAttribute('data-url')) {
-        navItems[index].classList.add(currentClassName);
+        navItems[index].classList.add(CURRENT_CLASS_NAME);
       } else {
-        navItems[index].classList.remove(currentClassName);
+        navItems[index].classList.remove(CURRENT_CLASS_NAME);
+      }
+
+      if(isSp && isCurrentMenuChildrenSp(navItems[index])) {
+        navItems[index].classList.add(CURRENT_CLASS_NAME);
+      } else if(!isSp && isCurrentMenuChildrenPc(navItems[index])) {
+        navItems[index].classList.add(CURRENT_CLASS_NAME);
       }
     }
-    if(isSp && (pathname === pageCommonConst.path.careerList)) {
-      for (let index = 0; index < navItems.length; index++) {
-        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.careerMemberList) {
-          navItems[index].classList.add(currentClassName);
-          break;
-        }
-      }
-    }
-    if(isSp && (pathname === pageCommonConst.path.adminApplication)) {
-      for (let index = 0; index < navItems.length; index++) {
-        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.application) {
-          navItems[index].classList.add(currentClassName);
-          break;
-        }
-      }
+  }
+
+  const isCurrentMenuChildrenPc = (navItem: Element) => {
+    const navItemUrl = navItem.getAttribute('data-url')
+    if(pathname === pageCommonConst.path.applicationNew && navItemUrl === pageCommonConst.path.application) {
+      return true;
+    }else if((pathname === pageCommonConst.path.careerList || pathname === pageCommonConst.path.careerMemberList) && navItemUrl === pageCommonConst.path.career) {
+      return true;
+    } else if(pathname === pageCommonConst.path.adminSetting && navItemUrl === pageCommonConst.path.adminSettingGrantRule) {
+      return true;
     }
 
-    if(!isSp && (pathname === pageCommonConst.path.careerList || pathname === pageCommonConst.path.careerMemberList)) {
-      for (let index = 0; index < navItems.length; index++) {
-        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.career) {
-          navItems[index].classList.add(currentClassName);
-          break;
-        }
-      }
+    return false;
+  }
+
+  const isCurrentMenuChildrenSp = (navItem: Element) => {
+    const navItemUrl = navItem.getAttribute('data-url')
+    if(pathname === pageCommonConst.path.adminApplication && navItemUrl === pageCommonConst.path.application) {
+      return true;
+    }else if(pathname === pageCommonConst.path.careerList && navItemUrl === pageCommonConst.path.careerMemberList) {
+      return true;
     }
-    if(!isSp && (pathname === pageCommonConst.path.adminSetting)) {
-      for (let index = 0; index < navItems.length; index++) {
-        if(navItems[index].getAttribute('data-url') === pageCommonConst.path.adminSettingGrantRule) {
-          navItems[index].classList.add(currentClassName);
-          break;
-        }
-      }
-    }
-    // if(!isSp && (pathname === pageCommonConst.path.settingUser)) {
-    //   for (let index = 0; index < navItems.length; index++) {
-    //     if(navItems[index].getAttribute('data-url') === pageCommonConst.path.settingUserEditPersonal) {
-    //       navItems[index].classList.add(currentClassName);
-    //       break;
-    //     }
-    //   }
-    // }
+
+    return false;
   }
 
   const push = (e: React.MouseEvent<HTMLLIElement | HTMLDivElement>) => {
@@ -219,6 +209,7 @@ export default function RootLayout({
       description: confirmModalConst.message.logout,
     }).then(async() => {
       const res = await logout();
+      clearUserInfo();
       router.replace(pageCommonConst.path.login, {scroll: false});
     }).catch(() => {
       return true

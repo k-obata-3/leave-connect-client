@@ -101,8 +101,8 @@ export const axiosDelete = async(url: string) => {
   })
 }
 
-export const axiosFileDownload = async(url: string) => {
-  return await axiosClient.get(url, { responseType:'arraybuffer' }).then((res: AxiosResponse) => {
+export const axiosFileDownload = async(url: string, req: any) => {
+  return await axiosClient.post(url, req, { responseType:'arraybuffer' }).then((res: AxiosResponse) => {
     let fileName = null;
     let blob = null;
     if(res.headers['content-type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {

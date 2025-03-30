@@ -27,7 +27,7 @@ export default function CareerListView({ careerList, rowBtnHandler }: Props) {
       <>
         {
           TABLE_HEADER.map((header) => (
-            <th scope="col" key={header.key} style={{width: header.width}}>{header.label}</th>
+            <th scope="row" key={header.key} style={{width: header.width}}>{header.label}</th>
           ))
         }
       </>

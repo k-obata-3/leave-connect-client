@@ -2,50 +2,38 @@
 
 import { useEffect, useState } from "react";
 
-import { getGrantDays, GetGrantDaysRequest, GetGrantDaysResponse, GrantDays } from "@/api/getGrantDays";
+import { getGrantDays, GetGrantDaysRequest, GetGrantDaysResponse, GrantPeriod } from "@/api/getGrantDays";
 import { updateGrantDays, UpdateGrantDaysRequest, UpdateGrantDaysResponse } from "@/api/updateGrantDays";
 import { confirmModalConst } from "@/consts/confirmModalConst";
+import { UserDetails } from "@/api/getUserDetails";
 
 type Props = {
-  userId: string | null,
+  userDetails: UserDetails | undefined,
   isShow: boolean,
   callback: (reload: boolean) => void,
 }
 
-export default function GrantDaysModal({ userId, isShow, callback }: Props) {
+export default function GrantDaysModal({ userDetails, isShow, callback }: Props) {
   const [apiErrors, setApiErrors] = useState<string[]>([]);
-  const [grantDays, setGrantDays] = useState<GetGrantDaysResponse | null>();
-  const [inputValues, setInputValues] = useState({
-    totalDeleteDays: '0',
-    totalRemainingDays: '0',
-    totalCarryoverDays: '0',
-    totalAddDays: '0'
-  });
+  const [grantPeriods, setGrantPeriods] = useState<GrantPeriod[] | []>();
 
   useEffect(() =>{
     (async() => {
-      if(!(userId && isShow)) {
+      if(!(userDetails && isShow)) {
         callback(false);
         return;
       }
 
       setApiErrors([]);
-      setGrantDays(null);
+      setGrantPeriods([])
 
       const request: GetGrantDaysRequest = {
-        id: userId,
+        userId: userDetails.id.toString(),
       }
 
       await getGrantDays(request).then(async(res: GetGrantDaysResponse) => {
         if(res.responseResult) {
-          setGrantDays(res)
-          setInputValues({...inputValues,
-            totalDeleteDays: res.grantDays.find(val => val.key === 'totalDeleteDays')?.afterValue!,
-            totalRemainingDays: res.grantDays.find(val => val.key === 'totalRemainingDays')?.afterValue!,
-            totalCarryoverDays: res.grantDays.find(val => val.key === 'totalCarryoverDays')?.afterValue!,
-            totalAddDays: res.grantDays.find(val => val.key === 'totalAddDays')?.afterValue!,
-          })
-
+          setGrantPeriods(res.grantPeriods);
         } else {
           setApiErrors(res.message ? [res.message] : [])
         }
@@ -53,36 +41,17 @@ export default function GrantDaysModal({ userId, isShow, callback }: Props) {
     })()
   },[isShow])
 
-  const handleOnChange = (e: any) => {
-    setInputValues({ ...inputValues, [e.target.name]: e.target.value});
-  }
-
   /**
    * 更新ボタン押下
    * @returns 
    */
   const onUpdateGrantDays = async() => {
-    const regexp = /^([1-9]\d*|0)(\.\d+)?$/;
-    const formatErrors = [
-      !regexp.test(inputValues.totalDeleteDays) ? '取得日数の入力値が不正です。' : '',
-      !regexp.test(inputValues.totalRemainingDays) ? '残日数の入力値が不正です。' : '',
-      !regexp.test(inputValues.totalCarryoverDays) ? '繰越日数の入力値が不正です。' : '',
-      !regexp.test(inputValues.totalAddDays) ? '付与日数の入力値が不正です。' : '',
-    ];
-
-    for (const value of Object.values(formatErrors)) {
-      if(value.length) {
-        // setApiErrors(formatErrors);
-        // return;
-      }
+    if(!userDetails) {
+      return;
     }
 
     const request: UpdateGrantDaysRequest = {
-      userId: userId,
-      totalDeleteDays: inputValues.totalDeleteDays,
-      totalRemainingDays: inputValues.totalRemainingDays,
-      totalCarryoverDays: inputValues.totalCarryoverDays,
-      totalAddDays: inputValues.totalAddDays,
+      userId: userDetails.id.toString(),
     }
 
     await updateGrantDays(request).then(async(res: UpdateGrantDaysResponse) => {
@@ -96,7 +65,7 @@ export default function GrantDaysModal({ userId, isShow, callback }: Props) {
 
   return (
     <div className={isShow ? "custom-modal-overview modal-show" : "custom-modal-overview"}>
-      <div className="custom-modal-content col-12 col-md-8 offset-md-2" hidden={!isShow}>
+      <div className="custom-modal-content col-12 col-md-10 offset-md-1" hidden={!isShow}>
         <div className="custom-modal-header">
           <div className="me-1"><i className="bi bi-question-circle-fill text-primary fs-4"></i></div>
             <h5 className="flex-grow-1 m-0">{confirmModalConst.label.confirm}</h5>
@@ -110,83 +79,66 @@ export default function GrantDaysModal({ userId, isShow, callback }: Props) {
               })
             }
           </div>
-          <p className=" text-center">{confirmModalConst.message.updateGrantDays}</p>
-          <div className="row" hidden={!(grantDays?.validErrors?.length || grantDays?.warnings?.length)}>
-            {
-              grantDays?.warnings?.filter(msg => msg).map((msg, index) => {
-                return <p className="text-danger col-10 offset-1 mb-0" key={index}>{msg}</p>
-              })
-            }
-            {
-              grantDays?.validErrors?.filter(msg => msg).map((msg, index) => {
-                return <p className="text-danger col-10 offset-1 mb-0" key={index}>{msg}</p>
-              })
-            }
-          </div>
-          <div className="row d-flex align-items-center ps-2 pe-2 mt-2">
-            <div className="">
-              <div className="row mb-1 pt-2">
-                <span className="col-12 col-md-3 offset-md-2 fw-medium pb-2">基準日</span>
-                <span className="col-11 offset-1 col-md-5 pb-2">{grantDays?.referenceDate}</span>
-              </div>
-              <div className="row mb-1 pt-2">
-                <span className="col-12 col-md-3 offset-md-2 fw-medium pb-2">継続勤続期間</span>
-                <span className="col-11 offset-1 col-md-5">{grantDays?.totalService ? grantDays?.totalService: '-'}</span>
-              </div>
-              <div className="row mb-1 pt-2">
-                <span className="col-12 col-md-3 offset-md-2 fw-medium pb-2">対象期間</span>
-                <span className="col-11 offset-1 col-md-5" hidden={!grantDays?.periodStart}>
-                  <span>{grantDays?.periodStart}</span>
-                  <span className="ms-1 me-1">～</span>
-                  <span>{grantDays?.periodEnd}</span>
-                </span>
-                <span className="col-11 offset-1 col-md-5 pb-2" hidden={!!grantDays?.periodStart}>
-                  <span>-</span>
-                </span>
-              </div>
-              <div className="row mb-1 pt-2">
-                <span className="col-12 col-md-3 offset-md-2 fw-medium pb-2">最終更新日</span>
-                <span className="col-11 offset-1 col-md-5 pb-2">{grantDays?.lastGrantDate ? grantDays?.lastGrantDate : '-'}</span>
-              </div>
-              {
-                grantDays?.grantDays.map((item: GrantDays, index: number) => {
-                  return (
-                    <div className="row mb-1" key={index}>
-                      <span className="col-12 col-md-3 offset-md-2 fw-medium mt-2">{item.label}</span>
-                      <span className="col-4 col-md-2 mt-2 ps-4">{item.beforeValue}</span>
-                      <span className="col-3 col-md-1 mt-2"><i className="bi bi-arrow-right"></i></span>
-                      <div className="col-4 col-md-2">
-                        {
-                          item.key === 'totalAddDays' ? (
-                            <input className="form-control mb-1" type="text" value={inputValues.totalAddDays} name="totalAddDays" id="totalAddDays" onChange={(e) => {handleOnChange(e)}} />
-                          ) : ''
-                        }
-                        {
-                          item.key === 'totalCarryoverDays' ? (
-                            <input className="form-control mb-1" type="text" value={inputValues.totalCarryoverDays} name="totalCarryoverDays" id="totalCarryoverDays" onChange={(e) => {handleOnChange(e)}} />
-                          ) : ''
-                        }
-                        {
-                          item.key === 'totalDeleteDays' ? (
-                            <input className="form-control mb-1" type="text" value={inputValues.totalDeleteDays} name="totalDeleteDays" id="totalDeleteDays" onChange={(e) => {handleOnChange(e)}} />
-                          ) : ''
-                        }
-                        {
-                          item.key === 'totalRemainingDays' ? (
-                            <input className="form-control mb-1" type="text" value={inputValues.totalRemainingDays} name="totalRemainingDays" id="totalRemainingDays" onChange={(e) => {handleOnChange(e)}} />
-                          ) : ''
-                        }
-                      </div>
-                    </div>
+          <p className=" text-center m-0">{confirmModalConst.message.settingGrantDays}</p>
+          <p className="text-center text-warning mt-2" hidden={!!apiErrors.length || !!grantPeriods?.length}>基準日を迎えていないため設定できません。</p>
+          <p className="text-center text-warning mt-2" hidden={!grantPeriods?.length || !!grantPeriods?.filter(period => !period.isGranted).length}>設定は不要です。</p>
+          <div>
+            <table className="table" style={{width: "28rem"}}>
+              <thead></thead>
+              <tbody className="">
+                <tr className="text-center" style={{lineHeight: "0.75rem"}}>
+                  <th scope="col" className="table-light" style={{width: "6rem"}}>基準日</th>
+                  <td style={{width: "8rem"}}>{userDetails?.referenceDate}</td>
+                  <th scope="col" className="table-light" style={{width: "6rem"}}>稼働日数</th>
+                  <td style={{width: "8rem"}}>{userDetails?.workingDays}日</td>
+                </tr>
+              </tbody>
+            </table>
+            <table className="table" hidden={!grantPeriods?.length}>
+              <thead className="table-light">
+                <tr className="text-center" style={{lineHeight: "0.75rem"}}>
+                  <th scope="row">勤続期間</th>
+                  <th scope="row">通算月数</th>
+                  <th scope="row">対象期間</th>
+                  <th scope="row">規定付与日数</th>
+                  <th scope="row">付与状況</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  grantPeriods?.map((period: GrantPeriod, index: number) =>
+                    <tr key={index}>
+                      <td className="text-center" style={{lineHeight: "0.5rem", width: "6rem"}}>
+                        <p className="text-nowrap">{period.totalYear}</p>
+                      </td>
+                      <td className="text-center" style={{lineHeight: "0.5rem", width: "6rem"}}>
+                        <p className="text-nowrap">{period.months}</p>
+                      </td>
+                      <td className="text-center" style={{lineHeight: "0.5rem", width: "14rem"}}>
+                        <p className="text-nowrap">
+                          <span>{period.startDate}</span>
+                          <span className="ps-1 pe-1">～</span>
+                          <span>{period.endDate}</span>
+                        </p>
+                      </td>
+                      <td className="text-center" style={{lineHeight: "0.5rem", width: "8rem"}}>
+                        <p className="text-nowrap">{period.grantRuleAddDays}</p>
+                      </td>
+                      <td className="text-center" style={{lineHeight: "0.5rem", width: "6rem"}}>
+                        <span className="badge text-bg-primary" hidden={!(period.isGranted && period.isValid)}>有効</span>
+                        <span className="badge text-bg-secondary" hidden={!(period.isGranted && !period.isValid)}>無効</span>
+                        <span className="badge text-bg-warning" hidden={!!period.isGranted}>未設定</span>
+                      </td>
+                    </tr>
                   )
-                })
-              }
-            </div>
+                }
+              </tbody>
+            </table>
           </div>
         </div>
         <div className="custom-modal-footer">
-          <button className="btn btn-secondary col-auto col-md-5" onClick={() => callback(false)}>{confirmModalConst.button.cancel}</button>
-          <button className='btn btn-primary col-auto col-md-5 ms-3' onClick={onUpdateGrantDays} disabled={!!grantDays?.validErrors?.length}>{confirmModalConst.button.update}</button>
+          <button className="btn btn-secondary col-auto col-md-5" onClick={() => callback(false)}>{confirmModalConst.button.close}</button>
+          <button className='btn btn-primary col-auto col-md-5 ms-3' onClick={onUpdateGrantDays} disabled={!grantPeriods?.filter(period => !period.isGranted).length}>{confirmModalConst.button.update}</button>
         </div>
       </div>
     </div>

@@ -14,9 +14,13 @@ type UserInfo = {
   referenceDate: string,
   workingDays: string,
   totalDeleteDays: string,
+  totalDeleteTimes: string,
   totalAddDays: string,
   totalRemainingDays: string,
   totalCarryoverDays: string,
+  periodStart: string,
+  periodEnd: string,
+  isUpdateGrant: boolean,
 }
 
 type UserInfoStore = {
@@ -42,9 +46,13 @@ export const useUserInfoStore = create<UserInfoStore>((set, get) => ({
     referenceDate: '',
     workingDays: '0',
     totalDeleteDays: '0',
+    totalDeleteTimes: '0',
     totalAddDays: '0',
     totalRemainingDays: '0',
     totalCarryoverDays: '0',
+    periodStart: '',
+    periodEnd: '',
+    isUpdateGrant: false,
   },
   setUserInfo: (userinfo) => set((state) => ({
     userInfo: userinfo
@@ -64,9 +72,13 @@ export const useUserInfoStore = create<UserInfoStore>((set, get) => ({
       referenceDate: '',
       workingDays: '0',
       totalDeleteDays: '0',
+      totalDeleteTimes: '0',
       totalAddDays: '0',
       totalRemainingDays: '0',
       totalCarryoverDays: '0',
+      periodStart: '',
+      periodEnd: '',
+      isUpdateGrant: false,
     }
   })),
   getUserInfo: () => get().userInfo,

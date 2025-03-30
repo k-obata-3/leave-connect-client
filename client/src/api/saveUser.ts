@@ -33,9 +33,13 @@ export interface SaveUserResponse extends ApiResponse {
   referenceDate: string,
   workingDays: string,
   totalDeleteDays: string,
+  totalDeleteTimes: string,
   totalAddDays: string,
   totalRemainingDays: string,
   totalCarryoverDays: string,
+  periodStart: string,
+  periodEnd: string,
+  isUpdateGrant: boolean,
 }
 
 export async function saveUser(req: SaveUserRequest) {
@@ -56,9 +60,13 @@ export async function saveUser(req: SaveUserRequest) {
       referenceDate: res.result?.referenceDate,
       workingDays: res.result?.workingDays,
       totalDeleteDays: res.result?.totalDeleteDays,
+      totalDeleteTimes: res.result?.totalDeleteTimes,
       totalAddDays: res.result?.totalAddDays,
       totalRemainingDays: res.result?.totalRemainingDays,
       totalCarryoverDays: res.result?.totalCarryoverDays,
+      periodStart: res.result?.periodStart,
+      periodEnd: res.result?.periodEnd,
+      isUpdateGrant: res.result?.isUpdateGrant,
     } as SaveUserResponse;
   })
 }

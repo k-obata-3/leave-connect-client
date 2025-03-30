@@ -99,7 +99,7 @@ export default function CareerDetailView({ isShow, user, detail, callback }: Pro
 
   return (
     <div className={isShow ? "custom-modal-overview modal-show" : "custom-modal-overview"}>
-      <div className="custom-modal-content col-12 col-md-8 offset-md-2" hidden={!isShow}>
+      <div className="custom-modal-content col-12 col-md-10 offset-md-1" hidden={!isShow}>
         <div className="custom-modal-header">
           <div className="me-1"><i className="bi bi-person-vcard fs-4 me-1"></i></div>
           <h5 className="m-0 text-truncate">{user?.fullName}</h5>

@@ -57,7 +57,7 @@ export default function ApplicationListView({ applicationList, rowBtnHandler }: 
       <>
         {
           tableHeader.map((header) => (
-            <th scope="col" key={header.key} style={{width: header.width}}>{header.label}</th>
+            <th scope="row" key={header.key} style={{width: header.width}}>{header.label}</th>
           ))
         }
       </>

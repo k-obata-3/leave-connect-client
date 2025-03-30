@@ -76,11 +76,15 @@ export default function AdminApplicationPage() {
     setShowEditView(!!applicationId);
     pageTitle(!!applicationId ? pageCommonConst.pageName.applicationConfirm : pageCommonConst.pageName.adminApplication);
     if(applicationId) {
-      pageBack(true).then(() => {
-        router.replace(pageCommonConst.path.adminApplication, {scroll: true});
-      }).catch(() => {
-        return true;
-      })
+      if(searchParams.get(pageCommonConst.param.ref)) {
+        pageBack(true).then(() => {
+          router.replace(pageCommonConst.path.adminApplication, {scroll: true});
+        }).catch(() => {
+          return true;
+        })
+      } else {
+        pageBack(false);
+      }
     } else {
       pageBack(false);
     }
@@ -137,12 +141,7 @@ export default function AdminApplicationPage() {
    * @param id 
    */
   const onEdit = (id: string) => {
-    router.push(`${pageCommonConst.path.adminApplication}?${pageCommonConst.param.applicationId}=${id}`, {scroll: true});
-    pageBack(true).then(() => {
-      router.replace(pageCommonConst.path.adminApplication, {scroll: true});
-    }).catch(() => {
-      return true;
-    })
+    router.push(`${pageCommonConst.path.adminApplication}?${pageCommonConst.param.applicationId}=${id}&${pageCommonConst.param.ref}=${pageCommonConst.path.adminApplication}`, {scroll: true});
   };
 
   return (

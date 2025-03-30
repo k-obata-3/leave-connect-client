@@ -8,7 +8,7 @@ import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import SearchSelectUserView from '@/components/searchSelectUserView';
 import { searchSelectConst } from '@/consts/searchSelectConst';
-import { AcquisitionResult, getGrantPeriods, GetGrantPeriodsRequest, Period } from '@/api/getGrantPeriods';
+import { AcquisitionResult, getAggregateResults, GetAggregateResultsRequest, Period } from '@/api/getAggregateResults';
 
 export default function AdminBookPage() {
   // 共通Store
@@ -20,7 +20,7 @@ export default function AdminBookPage() {
   const [periodList, setPeriodList] = useState<Period[]>([]);
   const [currentSearchParams, setCurrentSearchParams] = useState({
     currentSearchUser: '',
-    currentSearchPeriod: '',
+    currentSearchMonths: '',
   });
 
   const [searchHandler, setSearchHandler] = useState({
@@ -30,27 +30,21 @@ export default function AdminBookPage() {
       setCurrentSearchParams({
         ...currentSearchParams,
         currentSearchUser: val,
-        currentSearchPeriod: '',
+        currentSearchMonths: '',
       });
       getGrantPeriodList(val);
     },
     changeSearchPeriod: (val: string, periodList: Period[]) => {
-      currentSearchParams.currentSearchPeriod = val;
+      currentSearchParams.currentSearchMonths = val;
       const period = val.split("-");
-      if(period.length == 2) {
-        periodList?.forEach(item => {
-          item.isShow = item.startDate == period[0] && item.endDate == period[1] ? true : false;
-        });
-      } else {
-        periodList?.forEach(item => {
-          item.isShow = true;
-        });
-      }
+      periodList?.forEach(item => {
+        item.isShow = !val || item.months.toString() == val ? true : false;
+      });
       setPeriodList(periodList);
       setCurrentSearchParams({
         ...currentSearchParams,
         currentSearchUser: currentSearchParams.currentSearchUser,
-        currentSearchPeriod: val,
+        currentSearchMonths: val,
       });
     },
   });
@@ -65,11 +59,10 @@ export default function AdminBookPage() {
       return;
     }
 
-    const req: GetGrantPeriodsRequest = {
+    const req: GetAggregateResultsRequest = {
       userId: userId,
     }
-
-    const res = await getGrantPeriods(req);
+    const res = await getAggregateResults(req);
     if(res.responseResult) {
       res.periods?.forEach(item => {
         item.isShow = true
@@ -84,11 +77,23 @@ export default function AdminBookPage() {
   }
 
   /**
-   * 集計ボタン押下
+   * 出力ボタン押下
    */
   const onOutput = () => {
-    window.open(`${pageCommonConst.path.adminBookDownload}?${pageCommonConst.param.userId}=${currentSearchParams.currentSearchUser}`, '_blank')
+    let url = `${pageCommonConst.path.adminBookDownload}?${pageCommonConst.param.userId}=${currentSearchParams.currentSearchUser}`;;
+    if(currentSearchParams.currentSearchMonths) {
+      url += `&${pageCommonConst.param.months}=${currentSearchParams.currentSearchMonths}`;
+    }
+
+    window.open(url, '_blank')
   };
+
+    /**
+   * 申請情報を別タブ表示
+   */
+    const onEditApplication = (applicationId: string) => {
+      window.open(`${pageCommonConst.path.adminApplication}?${pageCommonConst.param.applicationId}=${applicationId}`, '_blank')
+    };
 
   return (
     <div className="admin-book-page">
@@ -106,11 +111,11 @@ export default function AdminBookPage() {
                   <label className="col-form-label ms-2 me-2" htmlFor="searchPeriod">対象期間</label>
                 </div>
                 <div className="col-auto" style={{width: "250px"}}>
-                  <select className="form-select" id="searchPeriod" value={currentSearchParams.currentSearchPeriod} onChange={(e) => searchHandler.changeSearchPeriod(e.target.value, periodList)} disabled={!currentSearchParams.currentSearchUser}>
+                  <select className="form-select" id="searchPeriod" value={currentSearchParams.currentSearchMonths} onChange={(e) => searchHandler.changeSearchPeriod(e.target.value, periodList)} disabled={!currentSearchParams.currentSearchUser}>
                     <option value=''>{searchSelectConst.label.all}</option>
                     {
                       periodList?.map((period: Period, index: number) => 
-                        <option value={`${period.startDate}-${period.endDate}`} key={index}>{period.startDate}～{period.endDate}</option>
+                        <option value={period.months} key={index}>{period.startDate}～{period.endDate}</option>
                       )
                     }
                   </select>
@@ -126,30 +131,44 @@ export default function AdminBookPage() {
           {
             periodList?.map((period: Period, index: number) =>
               <div key={index} hidden={!period.isShow}>
-                <h6 className='border-bottom ps-4'>{period.startDate}～{period.endDate}</h6>
-                <p className="ps-2 pb-2 mb-0" hidden={!!period.acquisitionResults.length}>-</p>
-                <table className="table" style={{width: `${period.acquisitionResults.length * 5}rem`}} hidden={!period.acquisitionResults.length}>
-                  <thead className="table-light">
-                    <tr className="text-center" style={{lineHeight: "0.75rem"}}>
-                      {
-                        period?.acquisitionResults?.map((acquisitionResult: AcquisitionResult, i: number) =>
-                          <th scope="col" key={i}>{acquisitionResult.acquisitionDate.substring(5)}</th>
-                        )
-                      }
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      {
-                        period?.acquisitionResults?.map((acquisitionResult: AcquisitionResult, i: number) =>
-                          <td className="text-center" key={i} style={{lineHeight: "0.5rem"}}>
-                            <p className="text-nowrap">{acquisitionResult.totalTime}時間</p>
-                          </td>
-                        )
-                      }
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="row border-bottom pb-1">
+                  <h6 className="col ps-2">{period.startDate}～{period.endDate}</h6>
+                  <p className="col-auto m-0"><span className="badge text-bg-primary" hidden={!(period.isGranted && period.isValid)}>有効</span></p>
+                  <p className="col-auto m-0"><span className="badge text-bg-secondary" hidden={!(period.isGranted && !period.isValid)}>無効</span></p>
+                  <p className="col-auto m-0"><span className="badge text-bg-warning" hidden={!!period.isGranted}>未設定</span></p>
+                  <p className="col-auto m-0 ps-1" style={{width: "8rem"}}><span className="pe-2">付与日数:</span>{period.grantRuleAddDays}<span>日</span></p>
+                </div>
+                <p className="ps-2 pb-1 m-0" hidden={!!period.acquisitionResults.length}>-</p>
+                <div className="overflow-auto pt-1">
+                  <table className="table" style={{width: `auto`}} hidden={!period.acquisitionResults.length}>
+                    <thead className="table-light">
+                      <tr className="text-center" style={{lineHeight: "0.75rem"}}>
+                        {
+                          period?.acquisitionResults?.map((acquisitionResult: AcquisitionResult, i: number) =>
+                            <th scope="row" key={i}>
+                              <span>{acquisitionResult.acquisitionDate}</span>
+                              <span className="ps-1">({acquisitionResult.weekday})</span>
+                            </th>
+                          )
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        {
+                          period?.acquisitionResults?.map((acquisitionResult: AcquisitionResult, i: number) =>
+                            <React.Fragment key={i}>
+                              <td className="text-center cursor-pointer" style={{lineHeight: "1rem"}} onClick={() => onEditApplication(acquisitionResult.applicationId)}>
+                                <p className="text-nowrap pb-1">{acquisitionResult.totalTime}時間</p>
+                                <p className="border-top pt-1">{acquisitionResult.actionName}</p>
+                              </td>
+                            </React.Fragment>
+                          )
+                        }
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )
           }

@@ -109,7 +109,7 @@ export default function CareerMemberListPage() {
               <div className="custom-card mb-2">
                 <div className="custom-card-header row ps-2 pe-2">
                   <h6 className="col text-truncate">{careerUser.fullName}</h6>
-                  <span className="col-auto me-1" hidden={careerUser.status == commonConst.userEffectiveStatus}>
+                  <span className="col-auto me-1" hidden={careerUser.status == commonConst.USER_EFFECTIVE_STATUS}>
                     <i className="bi bi-ban-fill text-danger"></i>
                   </span>
                   <div className="col-auto" hidden={!isAdmin() && getUserInfo().id != careerUser.userId.toString()}>

@@ -25,11 +25,10 @@ export type User = {
   totalDeleteDays: number,
   totalAddDays: number,
   totalRemainingDays: number,
-  totalCarryoverDays: number,
+  totalDeleteTimes: number,
   periodStart: string,
   periodEnd: string,
   isUpdateGrant: boolean,
-  lastGrantDate: string,
 }
 
 export async function getUserList(req: GetUserListRequest) {

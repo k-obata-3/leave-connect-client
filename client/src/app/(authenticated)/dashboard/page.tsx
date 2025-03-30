@@ -8,6 +8,7 @@ import useSetPageTitle from '@/hooks/useSetPageTitle';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import DashboardCardView from './dashboardCardView';
 import DashboardCalendarView from './dashboardCalendarView';
+import AggregateView from './aggregateView';
 
 export default function Dashboard() {
   // カスタムフック
@@ -22,11 +23,16 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
       <div className="row">
-        <div className="col dashboard-card">
-          <DashboardCardView></DashboardCardView>
+        <div className="col-auto dashboard-card-calendar">
+          <div className="row dashboard-card">
+            <DashboardCardView></DashboardCardView>
+          </div>
+          <div className="col-auto dashboard-calendar">
+            <DashboardCalendarView></DashboardCalendarView>
+          </div>
         </div>
-        <div className="col-auto dashboard-calendar justify-content-center">
-          <DashboardCalendarView></DashboardCalendarView>
+        <div className="col dashboard-aggregate-view">
+          <AggregateView></AggregateView>
         </div>
       </div>
     </div>

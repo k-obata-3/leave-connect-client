@@ -22,10 +22,13 @@ export interface UserDetails {
   referenceDate: string,
   workingDays: string,
   totalDeleteDays: string,
+  totalDeleteTimes: string,
   totalAddDays: string,
   totalRemainingDays: string,
   totalCarryoverDays: string,
-  lastGrantDate: string,
+  periodStart: string,
+  periodEnd: string,
+  isUpdateGrant: boolean,
 }
 
 export async function getUserDetails(req: getUserDetailsRequest) {

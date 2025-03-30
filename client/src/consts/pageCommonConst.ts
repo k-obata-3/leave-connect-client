@@ -5,7 +5,6 @@ export const pageCommonConst = {
     dashboard: "/dashboard",
     application: "/application",
     applicationNew: "/application/new",
-    applicationDownload: "/application/download",
     approval: "/approval",
     settingUser: "/setting/user",
     settingUserEditPersonal: "/setting/user?tab=editPersonal",
@@ -33,7 +32,7 @@ export const pageCommonConst = {
     applicationConfirm: "申請確認",
     applicationEdit: "申請",
     applicationNew: "新規申請",
-    applicationDownload: "",
+    aggregateApplication: "有給休暇集計",
     approval: "承認一覧",
     approvalEdit: "承認",
     settingUser: "個人設定",
@@ -48,7 +47,7 @@ export const pageCommonConst = {
     careerMemberList: "保有スキル一覧",
     // 管理者メニュー
     adminApplication: "申請管理",
-    adminBook: "休暇集計",
+    adminBook: "有給休暇集計",
     adminBookDownload: "",
     adminSetting: "システム管理",
     adminSettingGrantRule: "付与日数設定",
@@ -75,6 +74,7 @@ export const pageCommonConst = {
     taskId: "taskId",
     ref: "ref",
     careerId: "careerId",
+    months: "months",
   },
   notSupportMessage: "Not supported device",
 } as const

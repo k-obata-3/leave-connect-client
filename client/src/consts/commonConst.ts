@@ -5,7 +5,7 @@ export const commonConst = {
   },
   message: {
   },
-  systemName: "休暇申請管理",
+  systemName: "休暇申請・スキル管理",
   systemVersion: "0.0.0",
   actionValue: {
     draft: 0,      // 下書き
@@ -24,6 +24,9 @@ export const commonConst = {
     cancel: '',              // 取消
   },
 
-  initialApplicationTypeValues: 0,  // 年次有給休暇申請タイプ
-  userEffectiveStatus: 1,  // 有効なユーザのステータス
+  PAID_HOLIDAY_TYPE_VALUE: 0,                    // 年次有給休暇　申請タイプ値
+  PAID_HOLIDAY_REGULATE_TYPE_VALUE: 99,          // 日数調整 申請タイプ値
+  APPLICATION_CLASSIFICATION_ALL_DAYS_VALUE: 0,  // 全日休暇 設定値
+  APPLICATION_CLASSIFICATION_TIME_VALUE: 3,      // 時間単位休暇 設定値
+  USER_EFFECTIVE_STATUS: 1,                      // 有効なユーザのステータス
 } as const

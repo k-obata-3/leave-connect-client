@@ -10,6 +10,7 @@ import "bootstrap-icons/font/bootstrap-icons.css"
 import '@/assets/styles/index.css';
 import { ConfirmProvider } from '@/contexts/confirmProvider';
 import Header from '@/components/header';
+import { useUserInfoStore } from '@/store/userInfoStore';
 
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -23,12 +24,17 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // 共通Store
+  const { getUserInfo, isAdmin } = useUserInfoStore();
+
   return (
     <html>
       <head />
       {/* <body className={inter.className}> */}
       <body>
-        <Header />
+        <div hidden={!getUserInfo()?.id}>
+          <Header />
+        </div>
         <ConfirmProvider>
           <div className="content-body">
             {children}

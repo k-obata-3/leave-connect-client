@@ -25,6 +25,7 @@ export default function ApplicationDownloadPage() {
 
     const req: OutputAggregateRequest = {
       userId: searchParams.get(pageCommonConst.param.userId),
+      months: searchParams.get(pageCommonConst.param.months),
     }
     const res = await outputAggregate(req);
     if(res.responseResult) {

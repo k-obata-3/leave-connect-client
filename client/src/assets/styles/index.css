@@ -322,6 +322,8 @@ body {
     width: auto;
   }
 }
+/** --- コンテンツ表示領域 END --- */
+
 
 .page-title {
   line-height: var(--sub-header-height);
@@ -329,30 +331,50 @@ body {
   font-size: large;
 }
 
-/** --- コンテンツ表示領域 END --- */
 
-/** --- ログイン画面 STR --- */
+/** --- 各画面 STR --- */
+/* ログイン画面 */
 .login-page {
-  position: fixed;
-  top: var(--navbar-height);
+  position: relative;
   width: 100%;
-  height: 100%;
+  height: 100vh;
   overflow: hidden;
+  background: var(--navbar-bg-color);
 }
 .login-content-error {
   position: fixed;
   width: 100%;
-  padding-top: 1rem;
+  padding: 0.5rem;
+}
+.login-content-title {
+  margin-top: -6rem;
+  
+  color: var(--navbar-text-color);
+  text-align: center;
+}
+.login-content {
+  position: absolute;
+  justify-content: center;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  z-index: 0;
+  transform: translateY(-50%) translateX(-50%);
+  -webkit-transform: translateY(-50%) translateX(-50%);
 }
 
-.login-content {
-  z-index: 0;
-  padding: 0 0.5rem;
-  /* position: relative; */
-  /* top: 50%; */
-  transform: translate(0, 50%);
+/* ユーザ管理画面 */
+.user-list-legend {
+  position: absolute;
+  right: 2rem;
+  margin-top: -1.5rem;
 }
-/** --- ログイン画面 END --- */
+.user-list-legend p {
+  margin: 0;
+  font-size: small;
+}
+
+/** --- 各画面 END --- */
 
 /** --- card コンポーネント STR --- */
 .custom-card {
@@ -376,7 +398,6 @@ body {
 .custom-card-body {
   padding: 0.5rem 0 0 0;
 }
-
 /** --- card コンポーネント END --- */
 
 

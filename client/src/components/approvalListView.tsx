@@ -28,7 +28,7 @@ export default function ApprovalListView({ approvalList, rowBtnHandler }: Props)
           <tr className="text-center">
             {
               TABLE_HEADER.map((header) => (
-                <th scope="col" key={header.key} style={{width: header.width}}>{header.label}</th>
+                <th scope="row" key={header.key} style={{width: header.width}}>{header.label}</th>
               ))
             }
           </tr>

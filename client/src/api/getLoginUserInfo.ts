@@ -13,11 +13,15 @@ export interface getLoginUserInfoResponse extends ApiResponse {
   joiningDate: string,
   referenceDate: string,
   workingDays: string,
+  status: string,
   totalDeleteDays: string,
+  totalDeleteTimes: string,
   totalAddDays: string,
   totalRemainingDays: string,
   totalCarryoverDays: string,
-  status: string,
+  periodStart: string,
+  periodEnd: string,
+  isUpdateGrant: boolean,
 }
 
 export async function getLoginUserInfo() {
@@ -37,11 +41,15 @@ export async function getLoginUserInfo() {
       joiningDate: res.result?.joiningDate,
       referenceDate: res.result?.referenceDate,
       workingDays: res.result?.workingDays,
+      status: res.result?.status,
       totalDeleteDays: res.result?.totalDeleteDays,
+      totalDeleteTimes: res.result?.totalDeleteTimes,
       totalAddDays: res.result?.totalAddDays,
       totalRemainingDays: res.result?.totalRemainingDays,
       totalCarryoverDays: res.result?.totalCarryoverDays,
-      status: res.result?.status,
+      periodStart: res.result?.periodStart,
+      periodEnd: res.result?.periodEnd,
+      isUpdateGrant: res.result?.isUpdateGrant,
     } as getLoginUserInfoResponse;
   })
 }

@@ -149,22 +149,12 @@ export default function ApplicationPage() {
     router.push(`${pageCommonConst.path.applicationNew}?${pageCommonConst.param.ref}=${pageCommonConst.path.application}`, {scroll: true});
   };
 
-  /**
-   * 集計ボタン押下
-   */
-  const onAggregate = () => {
-    window.open(`${pageCommonConst.path.applicationDownload}?${pageCommonConst.param.userId}=`, '_blank')
-  };
-
   return (
     <div className="application-page">
       <div className="" hidden={showEditView}>
         <div className="row mb-2">
           <div className="col-auto pc-only">
             <button className="btn btn-outline-primary" onClick={onCreateNewApplication}>{pageCommonConst.pageName.applicationNew}</button>
-          </div>
-          <div className="col-auto ms-2 pc-only">
-            <button className="btn btn-outline-primary" onClick={onAggregate}>集計</button>
           </div>
           {/* 検索条件 */}
           <div className="col row d-flex justify-content-end">

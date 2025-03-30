@@ -105,7 +105,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
       inputValues.currentEndDate = initialDate;
       inputValues.comment = "";
       inputValues.remarks = "";
-      resetSelectApplicationType(commonConst.initialApplicationTypeValues.toString());
+      resetSelectApplicationType(commonConst.PAID_HOLIDAY_TYPE_VALUE.toString());
       setEditEnabled(true);
     }
   }, [isNew, applicationId])
@@ -504,7 +504,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
               <select className="form-select" id="type" value={inputValues.type} name="type" onChange={(e) => handleOnChange(e)}>
                 {
                   getApplicationTypeObject()?.map((item: ApplicationTypeObject, index: number) => {
-                    return <option value={item.value} key={index}>{item.name}</option>
+                    return <option value={item.value} key={index} disabled={item.value == commonConst.PAID_HOLIDAY_REGULATE_TYPE_VALUE}>{item.name}</option>
                   })
                 }
               </select>

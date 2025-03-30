@@ -3,18 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { useUserInfoStore } from '@/store/userInfoStore';
 import { useNotificationMessageStore } from '@/store/notificationMessageStore';
 import useConfirm from '@/hooks/useConfirm';
 import utils from '@/assets/js/utils';
+import { pageCommonConst } from '@/consts/pageCommonConst';
 import { confirmModalConst } from '@/consts/confirmModalConst';
 import { logout } from '@/api/logout';
 import { changePassword, ChangePasswordRequest, ChangePasswordResponse } from '@/api/changePassword';
-import { pageCommonConst } from '@/consts/pageCommonConst';
 
 export default function EditPasswordView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   // 共通Store
+  const { clearUserInfo } = useUserInfoStore();
   const { setNotificationMessageObject } = useNotificationMessageStore();
   // モーダル表示 カスタムフック
   const confirm = useConfirm();
@@ -82,6 +84,7 @@ export default function EditPasswordView() {
       await changePassword(req).then(async(res: ChangePasswordResponse) => {
         if(res.responseResult) {
           const res = await logout();
+          clearUserInfo();
           router.replace(pageCommonConst.path.login, {scroll: false});
         } else {
           setNotificationMessageObject({
@@ -125,7 +128,7 @@ export default function EditPasswordView() {
             <label className="col-form-label fw-medium">変更後パスワード</label>
           </div>
           <div className="col col-md-5 ps-3">
-            <input className="form-control" type="text" placeholder="変更後パスワード" value={inputValues.afterChangePassword} name="afterChangePassword" id="afterChangePassword" onChange={(e) => handleOnChange(e)} />
+            <input className="form-control" type="password" placeholder="変更後パスワード" value={inputValues.afterChangePassword} name="afterChangePassword" id="afterChangePassword" onChange={(e) => handleOnChange(e)} />
             <p className="input_error">{inputError.afterChangePassword}</p>
           </div>
         </div>
@@ -135,7 +138,7 @@ export default function EditPasswordView() {
             <label className="col-form-label fw-medium">確認用パスワード</label>
           </div>
           <div className="col col-md-5 ps-3 mb-2">
-            <input className="form-control" type="text" placeholder="確認用パスワード" value={inputValues.afterChangePasswordConfirm} name="afterChangePasswordConfirm" id="afterChangePasswordConfirm" onChange={(e) => handleOnChange(e)} />
+            <input className="form-control" type="password" placeholder="確認用パスワード" value={inputValues.afterChangePasswordConfirm} name="afterChangePasswordConfirm" id="afterChangePasswordConfirm" onChange={(e) => handleOnChange(e)} />
             <p className="input_error">{inputError.afterChangePasswordConfirm}</p>
             <p className="input_error">{inputError.mismatchPassword}</p>
           </div>

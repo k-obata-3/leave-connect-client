@@ -29,7 +29,7 @@ export default function ApprovalStatusListView({ tasks }: Props) {
           <tr className="text-center">
             {
               TABLE_HEADER.map((header) => (
-                <th scope="col" key={header.key}>{header.label}</th>
+                <th scope="row" key={header.key}>{header.label}</th>
               ))
             }
           </tr>
@@ -72,12 +72,9 @@ export default function ApprovalStatusListView({ tasks }: Props) {
           <div className="col-8 col-md-10 approval-status-list-col approval-status-list-name pe-2">
             <span className="text-truncate">{item.userName}</span>
           </div>
-          <div className="col-4 col-md-2 align-self-end approval-status-list-col" hidden={item.action==1}>
-            <p className="text-center mb-0">{`${item.operationDate ? item.operationDate?.substring(0, 10): ''}`}</p>
+          <div className="col-4 col-md-2 align-self-end approval-status-list-col">
+            <p className="text-center mb-0">{`${item.operationDate ? item.operationDate?.substring(0, 10): '-'}`}</p>
             <span className={`col-12 badge status-color ${getStatusColrClassName(item)}`}>{item.sAction}</span>
-          </div>
-          <div className="col approval-status-list-col approval-status-list-pending" hidden={item.action!=1}>
-            <i className="bi bi-exclamation-triangle"></i>
           </div>
         </div>
       ))

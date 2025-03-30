@@ -14,6 +14,7 @@ export const confirmModalConst = {
     update: "更新",
     delete: "削除",
     applicationCancel: "取消",
+    regulate: "調整",
   },
   message: {
     logout: "ログアウトします。よろしいですか?",
@@ -27,7 +28,7 @@ export const confirmModalConst = {
     cancelApplication: "取消します。よろしいですか?",
     approvalApplication: "承認します。よろしいですか?",
     rejectApplication: "差戻します。よろしいですか?",
-    updateGrantDays: "付与日数を更新します。よろしいですか?",
+    settingGrantDays: "付与情報が未設定の期間を対象に付与日数を設定します。よろしいですか?",
     saveCareer: "保存します。よろしいですか?",
     deleteCareer: "削除します。よろしいですか?",
     deleteCareerItem: "項目を削除します。よろしいですか?",

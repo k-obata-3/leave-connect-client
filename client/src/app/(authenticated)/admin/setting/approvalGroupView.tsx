@@ -365,9 +365,9 @@ export default function ApprovalGroupView({ isShow }: Props) {
           <table className="table">
             <thead className="table-light">
               <tr className="text-center">
-                <th scope="col" key="group_name">グループ名</th>
-                <th scope="col" key="approver">承認者</th>
-                <th scope="col" key="action"></th>
+                <th scope="row" key="group_name">グループ名</th>
+                <th scope="row" key="approver">承認者</th>
+                <th scope="row" key="action"></th>
               </tr>
             </thead>
             <tbody>
