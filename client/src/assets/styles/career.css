@@ -1,0 +1,9 @@
+.circle {
+  animation: circleAnimation 1s;
+}
+
+@keyframes circleAnimation {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+}

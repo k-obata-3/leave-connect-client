@@ -137,6 +137,13 @@ export default function UserEditView({ userPrimaryId, isNew, onReload }: Props) 
         workingDays: res.userDetails.workingDays,
         auth: res.userDetails.auth,
       });
+      
+      if(res.userDetails.status != commonConst.USER_EFFECTIVE_STATUS) {
+        setNotificationMessageObject({
+          errorMessageList: ["無効なユーザのため編集できません。"],
+          inputErrorMessageList: [],
+        })
+      }
       setIsLoadComplete(true);
     } else {
       setNotificationMessageObject({

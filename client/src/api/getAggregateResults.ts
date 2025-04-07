@@ -15,6 +15,9 @@ export type Period = {
   endDate: string,
   months: number,
   grantRuleAddDays: number,
+  currentYearTotalDeleteDays: number,
+  currentYearTotalDeleteTime: number,
+  currentYearTotalDeleteTimeHourUnit: number,
   isGranted: boolean,
   isValid: boolean,
   acquisitionResults: AcquisitionResult[],
@@ -23,11 +26,15 @@ export type Period = {
 
 export interface AcquisitionResult {
   applicationId: string,
+  applicationType: number,
+  applicationTypeName: string,
   acquisitionDate: string,
   weekday: string
   totalTime: number,
   action: number,
   actionName: string,
+  classification: number,
+  classificationName: string,
 }
 
 export async function getAggregateResults(req: GetAggregateResultsRequest) {

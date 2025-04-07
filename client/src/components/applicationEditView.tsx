@@ -612,7 +612,7 @@ export default function ApplicationEditView({ isAdminFlow, isNew, selectDate, ap
             </div>
           </div>
           {/* 承認グループ */}
-          <div className="row align-items-center mb-3 g-3">
+          <div className="row align-items-center mb-3 g-3" hidden={!!application && !application.approvalGroupId}>
             <div className="col-md-2">
               <label className="col-form-label fw-medium" htmlFor="approvalGroup">承認グループ</label>
             </div>

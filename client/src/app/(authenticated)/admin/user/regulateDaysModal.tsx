@@ -148,9 +148,9 @@ export default function RegulateDaysModal({ userDetails, isShow, callback }: Pro
               })
             }
           </div>
-          <p className="text-center">有給休暇の取得日数を旧システムから引継ぎます。</p>
-          <p className="text-center m-0"><span className="pe-1">例:</span><span>2025年4月1日時点での有給休暇の取得日数が5日、時間単位分が2時間の場合、調整日に「2025/04/01」</span></p>
-          <p className="text-center"><span>取得日数(時間単位を除く)に「5」、取得日数(時間単位分)に「2」を入力してください。</span></p>
+          <p className="text-center">有給休暇の取得日数の調整を行います。</p>
+          <p className="text-center m-0"><span className="pe-1">例:</span><span>2024/10/1～2025/9/30の有給休暇の取得日数が5日、時間単位分が2時間の場合</span></p>
+          <p className="text-center"><span>調整日に対象期間内の任意の日付、取得日数(時間単位を除く)に「5」、取得日数(時間単位分)に「2」を入力してください。</span></p>
           <div className="col-10 offset-1">
             <div className="row mb-3 g-3">
               <div className="col-md-4">

@@ -9,6 +9,7 @@ import { pageCommonConst } from '@/consts/pageCommonConst';
 import SearchSelectUserView from '@/components/searchSelectUserView';
 import { searchSelectConst } from '@/consts/searchSelectConst';
 import { AcquisitionResult, getAggregateResults, GetAggregateResultsRequest, Period } from '@/api/getAggregateResults';
+import { commonConst } from '@/consts/commonConst';
 
 export default function AdminBookPage() {
   // 共通Store
@@ -125,6 +126,18 @@ export default function AdminBookPage() {
             <div className="col-auto ms-2">
               <button className="btn btn-outline-primary" onClick={onOutput} disabled={!currentSearchParams.currentSearchUser}>出力</button>
             </div>
+            <div className="col ps-4 text-end" style={{marginTop: "-0.25rem"}}>
+              <div className="row m-0">
+                <p>
+                  <span className="pe-1"><i className="bi bi-calendar3 text-info pe-1"></i>全休/半休</span>
+                  <span className="ps-2 pe-3"><i className="bi bi-clock-history text-warning pe-1"></i>時間単位</span>
+                </p>
+                <p>
+                  <span className=""><i className="bi bi-check-circle-fill text-success pe-1"></i>承認完了</span>
+                  <span className="ps-3"><i className="bi bi-check opacity-25 pe-1"></i>承認未完了</span>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
         <div className="pt-2" hidden={!periodList.length}>
@@ -133,10 +146,18 @@ export default function AdminBookPage() {
               <div key={index} hidden={!period.isShow}>
                 <div className="row border-bottom pb-1">
                   <h6 className="col ps-2">{period.startDate}～{period.endDate}</h6>
+                  <p className="col-auto pe-4 m-0">
+                    <span className="text-info"><i className="bi bi-calendar3"></i></span>
+                    <span className="ps-1"><i className="bi bi-check-circle-fill text-success pe-1"></i>:</span>
+                    <span className="ps-2 pe-4">{period.currentYearTotalDeleteTime}時間({period.currentYearTotalDeleteDays}日)</span>
+                    <span className="text-warning"><i className="bi bi-clock-history"></i></span>
+                    <span className="ps-1"><i className="bi bi-check-circle-fill text-success pe-1"></i>:</span>
+                    <span className="ps-2">{period.currentYearTotalDeleteTimeHourUnit}時間</span>
+                  </p>
                   <p className="col-auto m-0"><span className="badge text-bg-primary" hidden={!(period.isGranted && period.isValid)}>有効</span></p>
                   <p className="col-auto m-0"><span className="badge text-bg-secondary" hidden={!(period.isGranted && !period.isValid)}>無効</span></p>
                   <p className="col-auto m-0"><span className="badge text-bg-warning" hidden={!!period.isGranted}>未設定</span></p>
-                  <p className="col-auto m-0 ps-1" style={{width: "8rem"}}><span className="pe-2">付与日数:</span>{period.grantRuleAddDays}<span>日</span></p>
+                  <p className="col-auto m-0 ps-1" style={{width: "8rem"}}>付与日数<span className="pe-1"></span>{period.grantRuleAddDays}<span>日</span></p>
                 </div>
                 <p className="ps-2 pb-1 m-0" hidden={!!period.acquisitionResults.length}>-</p>
                 <div className="overflow-auto pt-1">
@@ -159,8 +180,15 @@ export default function AdminBookPage() {
                           period?.acquisitionResults?.map((acquisitionResult: AcquisitionResult, i: number) =>
                             <React.Fragment key={i}>
                               <td className="text-center cursor-pointer" style={{lineHeight: "1rem"}} onClick={() => onEditApplication(acquisitionResult.applicationId)}>
-                                <p className="text-nowrap pb-1">{acquisitionResult.totalTime}時間</p>
-                                <p className="border-top pt-1">{acquisitionResult.actionName}</p>
+                                <p className="text-nowrap pb-1">
+                                  <span className="text-info" hidden={acquisitionResult.classification === commonConst.APPLICATION_CLASSIFICATION_TIME_VALUE}><i className="bi-calendar3"></i></span>
+                                  <span className="text-warning" hidden={acquisitionResult.classification !== commonConst.APPLICATION_CLASSIFICATION_TIME_VALUE}><i className="bi bi-clock-history"></i></span>
+                                  <span className="ps-1">{acquisitionResult.totalTime}時間</span>
+                                </p>
+                                <p className="border-top pt-2">
+                                  <span className="opacity-25" hidden={acquisitionResult.action === commonConst.actionValue.complete}><i className="bi bi-check"></i></span>
+                                  <span className="text-success" hidden={acquisitionResult.action !== commonConst.actionValue.complete}><i className="bi bi-check-circle-fill"></i></span>
+                                </p>
                               </td>
                             </React.Fragment>
                           )

@@ -71,12 +71,15 @@ export default function NavMenuSpView({ children, push, next }: Props) {
           </div>
         </nav>
         {/* スキル管理メニュータブ */}
-        <nav className="nav menu-tab nav-underline nav-justified" hidden={!((pathname === pageCommonConst.path.careerList || pathname === pageCommonConst.path.careerMemberList) && !searchParams?.get(pageCommonConst.param.careerId) && !searchParams?.get(pageCommonConst.param.isNew))}>
+        <nav className="nav menu-tab nav-underline nav-justified" hidden={!((pathname === pageCommonConst.path.career || pathname === pageCommonConst.path.careerList || pathname === pageCommonConst.path.careerMemberList) && !searchParams?.get(pageCommonConst.param.careerId) && !searchParams?.get(pageCommonConst.param.isNew))}>
+          <div className={pathname === pageCommonConst.path.career ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.career)}>
+            <span className="text-truncate">{pageCommonConst.pageName.careerDashboard}</span>
+          </div>
           <div className={pathname === pageCommonConst.path.careerMemberList ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.careerMemberList)}>
-            <span>{pageCommonConst.pageName.careerMemberList}</span>
+            <span className="text-truncate">{pageCommonConst.pageName.careerMemberList}</span>
           </div>
           <div className={pathname === pageCommonConst.path.careerList ? "col-6 nav-link active" : "col-6 nav-link"} onClick={() => next(pageCommonConst.path.careerList)}>
-            <span>{pageCommonConst.pageName.careerList}</span>
+            <span className="text-truncate">{pageCommonConst.pageName.careerList}</span>
           </div>
         </nav>
         {/* コンテンツ表示エリア */}
@@ -133,7 +136,7 @@ export default function NavMenuSpView({ children, push, next }: Props) {
               </p>
             </li>
             {/* スキル管理 */}
-            <li className="nav-item" data-url={pageCommonConst.path.careerMemberList} onClick={() => next(pageCommonConst.path.careerMemberList)}>
+            <li className="nav-item" data-url={pageCommonConst.path.career} onClick={() => next(pageCommonConst.path.career)}>
               <p className="nav-link mb-0">
                 <i className="bi bi-person-workspace"></i>
                 <span>{pageCommonConst.pageName.career}</span>

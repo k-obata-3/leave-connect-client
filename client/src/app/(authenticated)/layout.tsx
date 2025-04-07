@@ -185,7 +185,7 @@ export default function RootLayout({
     const navItemUrl = navItem.getAttribute('data-url')
     if(pathname === pageCommonConst.path.adminApplication && navItemUrl === pageCommonConst.path.application) {
       return true;
-    }else if(pathname === pageCommonConst.path.careerList && navItemUrl === pageCommonConst.path.careerMemberList) {
+    }else if((pathname === pageCommonConst.path.careerList || pathname === pageCommonConst.path.careerMemberList) && navItemUrl === pageCommonConst.path.career) {
       return true;
     }
 

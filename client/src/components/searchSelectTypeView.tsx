@@ -1,9 +1,10 @@
 "use client"
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation';
 
 import { ApplicationTypeObject, useApplicationSettingStore } from '@/store/applicationSettingStore';
+import { commonConst } from '@/consts/commonConst';
 import { pageCommonConst } from '@/consts/pageCommonConst';
 import { searchSelectConst } from '@/consts/searchSelectConst';
 
@@ -17,6 +18,15 @@ export default function SearchSelectTypeView({ callback, currentValue, label }: 
   const pathname = usePathname();
   // 共通Store
   const { getApplicationTypeObject } = useApplicationSettingStore();
+
+  const [selectList, setSelectList] = useState<ApplicationTypeObject[]>([]);
+  useEffect(() =>{
+    if(pathname === pageCommonConst.path.adminApplication) {
+      setSelectList(getApplicationTypeObject());
+    }else{
+      setSelectList(getApplicationTypeObject()?.filter(item => item.value !== commonConst.PAID_HOLIDAY_REGULATE_TYPE_VALUE))
+    }
+  },[pathname])
 
   return (
     <>
@@ -32,7 +42,7 @@ export default function SearchSelectTypeView({ callback, currentValue, label }: 
             }
             </>
             {
-              getApplicationTypeObject()?.map((item: ApplicationTypeObject, index: number) => {
+              selectList.map((item: ApplicationTypeObject, index: number) => {
                 return <option value={item.value} key={index}>{item.name}</option>
               })
             }

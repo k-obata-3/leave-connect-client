@@ -14,6 +14,7 @@ type Props = {
 export default function AggregateView({ }: Props) {
   const { getUserInfo } = useUserInfoStore();
   const [periods, setPeriods] = useState<Period[] | []>();
+  const [message, setMessage] = useState<string>("");
 
   useEffect(() =>{
     (async() => {
@@ -24,7 +25,13 @@ export default function AggregateView({ }: Props) {
       }
       await getAggregateResults(req).then(async(res: GetAggregateResultsResponse) => {
         if(res.responseResult) {
-          setPeriods(res.periods?.filter(period => period.isValid));
+          if(res.periods.length) {
+            setPeriods(res.periods?.filter(period => period.isValid));
+          } else {
+            setMessage("休暇情報が存在しません");
+          }
+        } else {
+          setMessage(res.message!);
         }
       });
     })()
@@ -50,12 +57,11 @@ export default function AggregateView({ }: Props) {
       <div className="custom-card-header">
         <h6>{pageCommonConst.pageName.aggregateApplication}</h6>
       </div>
-      <div className="custom-card-body" hidden={!!periods?.length}>休暇情報が存在しません</div>
+      <div className="custom-card-body text-danger text-center">{message}</div>
       <div className="custom-card-body" hidden={!periods?.length}>
         {
           periods?.map((period: Period, index: number) =>
             <div key={index}>
-              {/* <h6 className="ps-1">{period.startDate}～{period.endDate}</h6> */}
               <div className="row pb-1 ps-1">
                 <h6 className="col">{period.startDate}～{period.endDate}</h6>
                 <p className="col-auto m-0 pe-3"><span className="pe-2">{period.isGranted ? "付与日数" : "付与予定日数"}:</span>{period.grantRuleAddDays}<span>日</span></p>
@@ -85,7 +91,8 @@ export default function AggregateView({ }: Props) {
                             <p className="text-wrap">{acquisitionResult.totalTime}時間</p>
                           </td>
                           <td className="col text-center">
-                            <span className={`col-12 badge status-color ${getStatusColrClassName(acquisitionResult)}`}>{acquisitionResult.actionName}</span>
+                            <span className="col-12" hidden={acquisitionResult.applicationType !== commonConst.PAID_HOLIDAY_REGULATE_TYPE_VALUE}>{acquisitionResult.applicationTypeName}</span>
+                            <span className={`col-12 badge status-color ${getStatusColrClassName(acquisitionResult)}`} hidden={acquisitionResult.applicationType === commonConst.PAID_HOLIDAY_REGULATE_TYPE_VALUE}>{acquisitionResult.actionName}</span>
                           </td>
                         </tr>
                       ))

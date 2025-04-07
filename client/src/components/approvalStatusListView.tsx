@@ -101,14 +101,14 @@ export default function ApprovalStatusListView({ tasks }: Props) {
 
   return (
     <>
-      <div className="" id="approval-status-list">
+      <div className="" id="approval-status-list" hidden={!tasks.length}>
         <div className="">
           <h6>承認状況</h6>
         </div>
-        <div className='pc-only'>
+        <div className="pc-only">
           {createListViewForPc()}
         </div>
-        <div className='sp-only'>
+        <div className="sp-only">
           {createListViewForSp()}
         </div>
       </div>
